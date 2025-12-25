@@ -119,10 +119,10 @@
       aria-label="メインナビゲーション"
     >
       <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
-        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-2xl">
+        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-xl">
           岡山大学 珈琲サークル「ゆげ」
         </a>
-        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-xl">
+        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-lg">
           <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
           <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
           <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
@@ -239,18 +239,6 @@
                   </button>
                   <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="regular">
                     定期開催
-                  </button>
-                  <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="learn">
-                    学ぶ会
-                  </button>
-                  <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="booth">
-                    出店
-                  </button>
-                  <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="cafe">
-                    カフェ巡り
-                  </button>
-                  <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="special">
-                    特別
                   </button>
                 </div>
               </div>
@@ -413,116 +401,19 @@
           color: "#4A3728",
           badge: "bg-[#4A3728] text-white transition hover:bg-[#3B2C22]",
         },
-        learn: {
-          label: "珈琲を学ぶ会",
-          color: "#D2691E",
-          badge: "bg-[#D2691E] text-white transition hover:bg-[#B85A1A]",
-        },
-        booth: {
-          label: "出店・外部イベント",
-          color: "#FF8C42",
-          badge: "bg-[#FF8C42] text-white transition hover:bg-[#E67833]",
-        },
-        cafe: {
-          label: "カフェ巡り",
-          color: "#E8B4A8",
-          badge: "bg-[#E8B4A8] text-primary transition hover:bg-[#DCA197]",
-        },
-        special: {
-          label: "特別イベント",
-          color: "#8B3A3A",
-          badge: "bg-[#8B3A3A] text-white transition hover:bg-[#7A3030]",
-        },
       };
 
       const events = [
         {
-          date: "2026-01-18",
-          type: "learn",
-          title: "コーヒーの産地を知ろう",
-          time: "14:00-16:00",
-          location: "岡山大学〇〇棟",
-          description:
-            "中南米、アフリカ、アジア...世界のコーヒー産地について学びます。飲み比べも予定しています。",
-          signup: "参加希望はInstagramのDMでもOKです。",
-          image: "images/event-jan-2.jpg",
-        },
-        {
-          date: "2026-01-25",
-          type: "cafe",
-          title: "岡山駅周辺のカフェ探訪",
-          time: "13:00-17:00",
-          location: "岡山駅東口",
-          description:
-            "岡山駅周辺の人気カフェを巡ります！新しいお気に入りを一緒に見つけましょう。",
-          signup: "集合場所は前日までに共有します。",
-          image: "images/event-jan-3.jpg",
-        },
-        {
           date: "2026-02-13",
           type: "regular",
-          title: "バレンタイン特別企画",
+          title: "定期活動",
           time: "18:00-20:00",
           location: "岡山大学〇〇棟",
           description:
-            "コーヒーとチョコレートのペアリングを楽しもう！甘い香りに包まれる回です。",
-          signup: "参加希望はLINEでご連絡ください。",
-          image: "images/event-feb-1.jpg",
-        },
-        {
-          date: "2026-02-15",
-          type: "learn",
-          title: "焙煎度による味の違い",
-          time: "14:00-16:00",
-          location: "岡山大学〇〇棟",
-          description:
-            "浅煎り、中煎り、深煎り...焙煎度の違いを体験します。初心者向けの解説付きです。",
-          signup: "定員制のため、早めの申込みがおすすめです。",
-          image: "images/event-feb-2.jpg",
-        },
-        {
-          date: "2026-02-22",
-          type: "booth",
-          title: "学祭でコーヒー販売！",
-          time: "10:00-16:00",
-          location: "岡山大学キャンパス",
-          description:
-            "学内イベントでドリップコーヒーを販売します。お手伝い大歓迎！",
-          signup: "スタッフ希望はフォームから受付予定です。",
-          image: "images/event-feb-3.jpg",
-        },
-        {
-          date: "2026-03-13",
-          type: "regular",
-          title: "春休み前の交流会",
-          time: "18:00-20:00",
-          location: "岡山大学〇〇棟",
-          description:
-            "春休みの計画を語りながら、コーヒーでリラックス。新メンバー歓迎です。",
-          signup: "飛び入り参加もOKです。",
-          image: "images/event-mar-1.jpg",
-        },
-        {
-          date: "2026-03-21",
-          type: "special",
-          title: "プロの焙煎士による焙煎ワークショップ",
-          time: "13:00-17:00",
-          location: "〇〇焙煎所（岡山市内）",
-          description:
-            "プロから直接学ぶ、本格的な焙煎体験！※要事前申込・参加費別途",
-          signup: "応募フォームはInstagramで告知します。",
-          image: "images/event-mar-2.jpg",
-        },
-        {
-          date: "2026-03-28",
-          type: "cafe",
-          title: "倉敷美観地区カフェツアー",
-          time: "11:00-17:00",
-          location: "倉敷駅",
-          description:
-            "美観地区の雰囲気あるカフェを巡ります。写真好きの方にもおすすめ！",
-          signup: "参加希望はLINEでご連絡ください。",
-          image: "images/event-mar-3.jpg",
+            "ゆげの定例会です。コーヒーの抽出や交流を中心に、気軽に参加できます。",
+          signup: "参加希望はLINEまたはInstagramのDMでご連絡ください。",
+          image: "images/coming-soon.svg",
         },
       ];
 
@@ -544,6 +435,8 @@
 
       const getEventsForDate = (dateKey) =>
         events.filter((event) => event.date === dateKey && (activeFilter === "all" || event.type === activeFilter));
+
+      const excludeRegularDates = new Set(["2026-01-08", "2026-02-12", "2026-02-14"]);
 
       const renderCalendar = () => {
         calendarWrapper.classList.add("is-changing");
@@ -570,7 +463,7 @@
             const date = new Date(year, month, dayNumber);
             const dateKey = toDateKey(date);
             const dayEvents = getEventsForDate(dateKey);
-            const isSecondThursday = dayNumber === secondThursday;
+            const isSecondThursday = dayNumber === secondThursday && !excludeRegularDates.has(dateKey);
             const isToday =
               today.getFullYear() === year &&
               today.getMonth() === month &&

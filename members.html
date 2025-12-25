@@ -91,17 +91,17 @@
     <script src="js/main.js" defer></script>
   </head>
   <body class="bg-background text-textbase font-sans">
-    <!-- グローバルナビゲーション -->
+    <!- グローバルナビゲーション ->
     <nav
       id="site-nav"
       class="fixed inset-x-0 top-0 z-50 bg-background/80 text-textbase transition duration-300"
       aria-label="メインナビゲーション"
     >
       <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
-        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-2xl">
+        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-xl">
           岡山大学 珈琲サークル「ゆげ」
         </a>
-        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-xl">
+        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-lg">
           <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
           <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
           <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
@@ -150,7 +150,7 @@
       </div>
     </nav>
 
-    <!-- ページヘッダー -->
+    <!- ページヘッダー ->
     <header class="relative pt-24">
       <div class="mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
         <p class="hero-reveal text-xs uppercase tracking-[0.35em] text-secondary" style="animation-delay: 0.2s;">
@@ -165,7 +165,7 @@
       </div>
     </header>
 
-    <!-- メインコンテンツ -->
+    <!- メインコンテンツ ->
     <main class="mx-auto max-w-screen-2xl px-6 pb-20">
       <section class="hero-reveal" style="animation-delay: 0.8s;">
         <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
@@ -180,7 +180,7 @@
                 <p class="text-sm font-semibold">メンバー数</p>
               </div>
               <p class="text-3xl font-semibold text-primary">
-                <span data-countup data-target="17" data-suffix="名">0</span>
+                <span>-</span>
               </p>
               <p class="text-sm text-muted">学部・学年を越えて集まっています。</p>
             </article>
@@ -191,10 +191,10 @@
               </div>
               <p class="text-2xl font-semibold text-primary">
                 <span class="text-base text-muted">男性</span>
-                <span data-countup data-target="9" data-suffix="名">0</span>
+                <span>-</span>
                 <span class="mx-2 text-muted">/</span>
                 <span class="text-base text-muted">女性</span>
-                <span data-countup data-target="8" data-suffix="名">0</span>
+                <span>-</span>
               </p>
               <p class="text-sm text-muted">落ち着いた雰囲気で交流しています。</p>
             </article>
@@ -206,15 +206,15 @@
               <div class="text-sm font-semibold text-primary">
                 <div class="flex flex-wrap gap-x-2 gap-y-1">
                   <span class="text-muted">学部生：</span>
-                  <span>1年生 <span data-countup data-target="4" data-suffix="名">0</span></span>
-                  <span>2年生 <span data-countup data-target="5" data-suffix="名">0</span></span>
-                  <span>3年生 <span data-countup data-target="4" data-suffix="名">0</span></span>
-                  <span>4年生 <span data-countup data-target="2" data-suffix="名">0</span></span>
+                  <span>1年生 <span>-</span></span>
+                  <span>2年生 <span>-</span></span>
+                  <span>3年生 <span>-</span></span>
+                  <span>4年生 <span>-</span></span>
                 </div>
                 <div class="mt-2 flex flex-wrap gap-x-2 gap-y-1">
                   <span class="text-muted">大学院生：</span>
-                  <span>修士1年 <span data-countup data-target="1" data-suffix="名">0</span></span>
-                  <span>修士2年 <span data-countup data-target="1" data-suffix="名">0</span></span>
+                  <span>修士1年 <span>-</span></span>
+                  <span>修士2年 <span>-</span></span>
                 </div>
               </div>
               <p class="text-sm text-muted">幅広い学年で活動しています。</p>
@@ -225,7 +225,7 @@
                 <p class="text-sm font-semibold">所属学部数</p>
               </div>
               <p class="text-3xl font-semibold text-primary">
-                <span data-countup data-target="7" data-suffix="学部">0</span>
+                <span>-</span>
               </p>
               <p class="text-sm text-muted">多彩な視点が集まるコミュニティです。</p>
             </article>
@@ -245,7 +245,7 @@
                 <div class="relative h-36 w-36 overflow-hidden rounded-full border-4 border-secondary/60">
                   <img
                     src="images/profile-leader1.jpg"
-                    alt="共同代表 石井さん"
+                    alt="共同代表 -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
@@ -255,7 +255,7 @@
                     代表
                   </span>
                 </div>
-                <h3 class="mt-4 text-2xl font-semibold text-primary">石井 さくら</h3>
+                <h3 class="mt-4 text-2xl font-semibold text-primary">-</h3>
                 <p class="mt-1 text-sm font-semibold text-secondary">共同代表</p>
                 <p class="mt-2 text-sm text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
@@ -277,7 +277,7 @@
                 <div class="relative h-36 w-36 overflow-hidden rounded-full border-4 border-secondary/60">
                   <img
                     src="images/profile-leader2.jpg"
-                    alt="共同代表 高橋さん"
+                    alt="共同代表 -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
@@ -287,7 +287,7 @@
                     代表
                   </span>
                 </div>
-                <h3 class="mt-4 text-2xl font-semibold text-primary">高橋 優斗</h3>
+                <h3 class="mt-4 text-2xl font-semibold text-primary">-</h3>
                 <p class="mt-1 text-sm font-semibold text-secondary">共同代表</p>
                 <p class="mt-2 text-sm text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
@@ -319,7 +319,7 @@
                 <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-staff1.jpg"
-                    alt="運営メンバー 佐藤さん"
+                    alt="運営メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
@@ -327,7 +327,7 @@
                   />
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-primary">佐藤 みお</h3>
+                  <h3 class="text-lg font-semibold text-primary">-</h3>
                   <span class="mt-1 inline-flex items-center rounded-full bg-secondary/20 px-2 py-0.5 text-xs font-semibold text-primary">
                     運営
                   </span>
@@ -347,7 +347,7 @@
                 <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-staff2.jpg"
-                    alt="運営メンバー 中村さん"
+                    alt="運営メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
@@ -355,7 +355,7 @@
                   />
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-primary">中村 颯太</h3>
+                  <h3 class="text-lg font-semibold text-primary">-</h3>
                   <span class="mt-1 inline-flex items-center rounded-full bg-secondary/20 px-2 py-0.5 text-xs font-semibold text-primary">
                     運営
                   </span>
@@ -375,7 +375,7 @@
                 <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-amber-200">
                   <img
                     src="images/profile-accountant.jpg"
-                    alt="会計担当 山田さん"
+                    alt="会計担当 -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
@@ -383,7 +383,7 @@
                   />
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-primary">山田 えり</h3>
+                  <h3 class="text-lg font-semibold text-primary">-</h3>
                   <span class="mt-1 inline-flex items-center rounded-full bg-amber-200 px-2 py-0.5 text-xs font-semibold text-amber-700">
                     会計
                   </span>
@@ -403,7 +403,7 @@
                 <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-rose-200">
                   <img
                     src="images/profile-pr.jpg"
-                    alt="広報担当 田中さん"
+                    alt="広報担当 -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
@@ -411,7 +411,7 @@
                   />
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-primary">田中 さや</h3>
+                  <h3 class="text-lg font-semibold text-primary">-</h3>
                   <span class="mt-1 inline-flex items-center rounded-full bg-rose-200 px-2 py-0.5 text-xs font-semibold text-rose-700">
                     広報
                   </span>
@@ -441,14 +441,14 @@
                 <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-member1.jpg"
-                    alt="メンバー 山本健さん"
+                    alt="メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                    
                   />
                 </div>
-                <h3 class="mt-4 text-lg font-semibold text-primary">山本 健</h3>
+                <h3 class="mt-4 text-lg font-semibold text-primary">-</h3>
                 <p class="mt-1 text-xs text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
                   農学部 1年
@@ -467,14 +467,14 @@
                 <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-member2.jpg"
-                    alt="メンバー 中村美優さん"
+                    alt="メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                    
                   />
                 </div>
-                <h3 class="mt-4 text-lg font-semibold text-primary">中村 美優</h3>
+                <h3 class="mt-4 text-lg font-semibold text-primary">-</h3>
                 <p class="mt-1 text-xs text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
                   理学部 2年
@@ -493,14 +493,14 @@
                 <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-member3.jpg"
-                    alt="メンバー 小林陽菜さん"
+                    alt="メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                    
                   />
                 </div>
-                <h3 class="mt-4 text-lg font-semibold text-primary">小林 陽菜</h3>
+                <h3 class="mt-4 text-lg font-semibold text-primary">-</h3>
                 <p class="mt-1 text-xs text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
                   教育学部 1年
@@ -519,14 +519,14 @@
                 <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-member4.jpg"
-                    alt="メンバー 藤井悠斗さん"
+                    alt="メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                    
                   />
                 </div>
-                <h3 class="mt-4 text-lg font-semibold text-primary">藤井 悠斗</h3>
+                <h3 class="mt-4 text-lg font-semibold text-primary">-</h3>
                 <p class="mt-1 text-xs text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
                   工学部 2年
@@ -545,14 +545,14 @@
                 <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-member5.jpg"
-                    alt="メンバー 松本彩さん"
+                    alt="メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                    
                   />
                 </div>
-                <h3 class="mt-4 text-lg font-semibold text-primary">松本 彩</h3>
+                <h3 class="mt-4 text-lg font-semibold text-primary">-</h3>
                 <p class="mt-1 text-xs text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
                   経済学部 3年
@@ -571,14 +571,14 @@
                 <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-member6.jpg"
-                    alt="メンバー 伊藤奏さん"
+                    alt="メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                    
                   />
                 </div>
-                <h3 class="mt-4 text-lg font-semibold text-primary">伊藤 奏</h3>
+                <h3 class="mt-4 text-lg font-semibold text-primary">-</h3>
                 <p class="mt-1 text-xs text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
                   法学部 1年
@@ -597,14 +597,14 @@
                 <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-member7.jpg"
-                    alt="メンバー 渡辺優さん"
+                    alt="メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                    
                   />
                 </div>
-                <h3 class="mt-4 text-lg font-semibold text-primary">渡辺 優</h3>
+                <h3 class="mt-4 text-lg font-semibold text-primary">-</h3>
                 <p class="mt-1 text-xs text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
                   医学部 2年
@@ -623,14 +623,14 @@
                 <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
                   <img
                     src="images/profile-member8.jpg"
-                    alt="メンバー 西村海斗さん"
+                    alt="メンバー -"
                     loading="lazy"
                     decoding="async"
                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                    
                   />
                 </div>
-                <h3 class="mt-4 text-lg font-semibold text-primary">西村 海斗</h3>
+                <h3 class="mt-4 text-lg font-semibold text-primary">-</h3>
                 <p class="mt-1 text-xs text-muted">
                   <i class="fa-solid fa-book" aria-hidden="true"></i>
                   情報学部 3年
@@ -658,19 +658,19 @@
               <p class="text-sm leading-6 text-muted">
                 「コーヒーの知識がゼロでしたが、みんな優しく教えてくれます！」
               </p>
-              <p class="mt-4 text-xs font-semibold text-primary">農学部 1年 / 山本さん</p>
+              <p class="mt-4 text-xs font-semibold text-primary">農学部 1年 / -</p>
             </article>
             <article class="stagger-item fade-section rounded-3xl bg-background/70 p-6 shadow">
               <p class="text-sm leading-6 text-muted">
                 「毎週のゆげが楽しみで、土曜日が待ち遠しいです。」
               </p>
-              <p class="mt-4 text-xs font-semibold text-primary">理学部 2年 / 中村さん</p>
+              <p class="mt-4 text-xs font-semibold text-primary">理学部 2年 / -</p>
             </article>
             <article class="stagger-item fade-section rounded-3xl bg-background/70 p-6 shadow">
               <p class="text-sm leading-6 text-muted">
                 「カフェ巡りで新しいお店をたくさん発見できました！」
               </p>
-              <p class="mt-4 text-xs font-semibold text-primary">経済学部 3年 / 松本さん</p>
+              <p class="mt-4 text-xs font-semibold text-primary">経済学部 3年 / -</p>
             </article>
           </div>
         </div>
@@ -850,7 +850,7 @@
       </section>
     </main>
 
-    <!-- フッター -->
+    <!- フッター ->
     <footer class="bg-primary text-white">
       <div class="mx-auto flex max-w-screen-2xl flex-col gap-6 px-6 py-12 md:flex-row md:items-center md:justify-between">
         <div>
