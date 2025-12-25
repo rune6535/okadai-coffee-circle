@@ -37,10 +37,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 岡山駅周辺を初期表示の中心に設定
   const stationCenter = [34.6617, 133.9183];
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
   // 地図の初期化
   function initMap() {
-    const mapInstance = L.map("map", { scrollWheelZoom: false }).setView(stationCenter, 14);
+    const mapInstance = L.map("map", {
+      scrollWheelZoom: !isMobile && !isTouchDevice,
+      touchZoom: true,
+      zoomSnap: 0.5,
+      zoomDelta: 0.25,
+      wheelPxPerZoomLevel: 120,
+      wheelDebounceTime: 40,
+      minZoom: 10,
+      maxZoom: 18,
+      zoomAnimation: true,
+      fadeAnimation: true,
+    }).setView(stationCenter, 14);
 
     L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       attribution:
@@ -53,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const map = initMap();
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   console.log("モバイルデバイス:", isMobile);
 
   // ズームコントロールの配置調整
@@ -287,9 +299,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentFiltered = cafes;
 
   let autoScrollInterval = null;
-  let isAutoScrolling = false;
+  let autoScrollResumeTimer = null;
   let currentCarouselIndex = 0;
   let carouselItemCount = 0;
+  let isListMinimized = false;
   const AUTO_SCROLL_SPEED = 3000;
   const AUTO_SCROLL_AMOUNT = 300;
 
@@ -360,8 +373,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebarCafeList = document.getElementById("sidebar-cafe-list");
   const sidebarSortSelect = document.getElementById("sidebar-sort");
   const bottomList = document.getElementById("fullscreen-bottom-list");
-  const autoScrollToggle = document.getElementById("auto-scroll-toggle");
-  const mobileAutoScrollToggle = document.getElementById("mobile-auto-scroll-toggle");
+  const listHandle = document.getElementById("list-handle");
+  const handleButton = document.getElementById("handle-button");
   const bottomCarousel = document.getElementById("bottom-cafe-carousel");
   const carouselTrack = document.getElementById("carousel-track");
   const carouselIndicators = document.getElementById("carousel-indicators");
@@ -444,33 +457,31 @@ document.addEventListener("DOMContentLoaded", () => {
       clearInterval(autoScrollInterval);
       autoScrollInterval = null;
     }
+    if (autoScrollResumeTimer) {
+      clearTimeout(autoScrollResumeTimer);
+      autoScrollResumeTimer = null;
+    }
   };
 
-  const resetAutoScrollState = () => {
-    stopAutoScroll();
-    isAutoScrolling = false;
-    if (autoScrollToggle) {
-      autoScrollToggle.classList.remove("active");
-      const playIcon = autoScrollToggle.querySelector(".play-icon");
-      const pauseIcon = autoScrollToggle.querySelector(".pause-icon");
-      if (playIcon && pauseIcon) {
-        playIcon.style.display = "inline";
-        pauseIcon.style.display = "none";
-      }
+  const scheduleAutoScrollResume = (platform, delay = 3000) => {
+    if (autoScrollResumeTimer) {
+      clearTimeout(autoScrollResumeTimer);
     }
-    if (mobileAutoScrollToggle) {
-      mobileAutoScrollToggle.classList.remove("active");
-      const playIcon = mobileAutoScrollToggle.querySelector(".play-icon");
-      const pauseIcon = mobileAutoScrollToggle.querySelector(".pause-icon");
-      if (playIcon && pauseIcon) {
-        playIcon.style.display = "inline";
-        pauseIcon.style.display = "none";
+    autoScrollResumeTimer = setTimeout(() => {
+      if (!isMapFullscreen) {
+        return;
       }
-    }
+      if (platform === "pc" && window.innerWidth > 768) {
+        startAutoScrollPC(sidebarCafeList);
+      }
+      if (platform === "mobile" && window.innerWidth <= 768 && !isListMinimized) {
+        startAutoScrollMobile();
+      }
+    }, delay);
   };
 
   const startAutoScrollPC = (list) => {
-    if (!list) {
+    if (!list || autoScrollInterval) {
       return;
     }
     autoScrollInterval = setInterval(() => {
@@ -485,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const startAutoScrollMobile = () => {
-    if (!carouselTrack || !bottomCarousel || !carouselItemCount) {
+    if (!carouselTrack || !bottomCarousel || !carouselItemCount || autoScrollInterval) {
       return;
     }
     autoScrollInterval = setInterval(() => {
@@ -494,59 +505,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }, AUTO_SCROLL_SPEED);
   };
 
-  const toggleAutoScroll = (platform) => {
-    if (platform === "pc") {
-      if (!autoScrollToggle || !sidebarCafeList) {
-        return;
-      }
-      isAutoScrolling = !isAutoScrolling;
-      if (isAutoScrolling) {
-        autoScrollToggle.classList.add("active");
-        const playIcon = autoScrollToggle.querySelector(".play-icon");
-        const pauseIcon = autoScrollToggle.querySelector(".pause-icon");
-        if (playIcon && pauseIcon) {
-          playIcon.style.display = "none";
-          pauseIcon.style.display = "inline";
-        }
-        startAutoScrollPC(sidebarCafeList);
-      } else {
-        autoScrollToggle.classList.remove("active");
-        const playIcon = autoScrollToggle.querySelector(".play-icon");
-        const pauseIcon = autoScrollToggle.querySelector(".pause-icon");
-        if (playIcon && pauseIcon) {
-          playIcon.style.display = "inline";
-          pauseIcon.style.display = "none";
-        }
-        stopAutoScroll();
-      }
+  const toggleListMinimize = () => {
+    if (!bottomList || !mapSection) {
       return;
     }
-
-    if (!mobileAutoScrollToggle) {
-      return;
-    }
-    if (!carouselItemCount) {
-      return;
-    }
-    isAutoScrolling = !isAutoScrolling;
-    if (isAutoScrolling) {
-      mobileAutoScrollToggle.classList.add("active");
-      const playIcon = mobileAutoScrollToggle.querySelector(".play-icon");
-      const pauseIcon = mobileAutoScrollToggle.querySelector(".pause-icon");
-      if (playIcon && pauseIcon) {
-        playIcon.style.display = "none";
-        pauseIcon.style.display = "inline";
-      }
-      startAutoScrollMobile();
-    } else {
-      mobileAutoScrollToggle.classList.remove("active");
-      const playIcon = mobileAutoScrollToggle.querySelector(".play-icon");
-      const pauseIcon = mobileAutoScrollToggle.querySelector(".pause-icon");
-      if (playIcon && pauseIcon) {
-        playIcon.style.display = "inline";
-        pauseIcon.style.display = "none";
-      }
+    isListMinimized = !isListMinimized;
+    bottomList.classList.toggle("minimized", isListMinimized);
+    mapSection.classList.toggle("list-minimized", isListMinimized);
+    if (isListMinimized) {
       stopAutoScroll();
+    } else if (isMapFullscreen && window.innerWidth <= 768) {
+      startAutoScrollMobile();
     }
   };
 
@@ -668,8 +637,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (window.innerWidth > 768) {
       renderSidebarList(list);
       syncSidebarSort();
+      stopAutoScroll();
+      startAutoScrollPC(sidebarCafeList);
     } else {
       renderCarousel(list);
+      stopAutoScroll();
+      if (!isListMinimized) {
+        startAutoScrollMobile();
+      }
     }
   };
 
@@ -1079,7 +1054,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     isMapFullscreen = true;
     isSidebarOpen = true;
-    resetAutoScrollState();
+    isListMinimized = false;
+    stopAutoScroll();
     document.body.classList.add("map-fullscreen-mode");
     mapSection.classList.add("fullscreen");
     expandBtn.style.display = "none";
@@ -1090,12 +1066,17 @@ document.addEventListener("DOMContentLoaded", () => {
       fullscreenSidebar.style.display = "flex";
       fullscreenSidebar.classList.remove("collapsed");
       mapSection.classList.add("sidebar-open");
+      mapSection.classList.remove("list-minimized");
       renderSidebarList(currentFiltered);
       syncSidebarSort();
+      startAutoScrollPC(sidebarCafeList);
     } else if (bottomList) {
       bottomList.style.display = "block";
+      bottomList.classList.remove("minimized");
       mapSection.classList.add("mobile-list-visible");
+      mapSection.classList.remove("list-minimized");
       renderCarousel(currentFiltered);
+      startAutoScrollMobile();
     }
 
     setTimeout(() => {
@@ -1108,9 +1089,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     isMapFullscreen = false;
-    resetAutoScrollState();
+    isListMinimized = false;
+    stopAutoScroll();
     document.body.classList.remove("map-fullscreen-mode");
-    mapSection.classList.remove("fullscreen", "sidebar-open", "mobile-list-visible");
+    mapSection.classList.remove("fullscreen", "sidebar-open", "mobile-list-visible", "list-minimized");
     expandBtn.style.display = "flex";
     collapseBtn.style.display = "none";
     if (fullscreenSidebar) {
@@ -1118,6 +1100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (bottomList) {
       bottomList.style.display = "none";
+      bottomList.classList.remove("minimized");
     }
     setTimeout(() => {
       map.invalidateSize();
@@ -1148,12 +1131,6 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebarToggle.addEventListener("click", toggleSidebar);
   }
 
-  if (autoScrollToggle) {
-    autoScrollToggle.addEventListener("click", () => {
-      toggleAutoScroll("pc");
-    });
-  }
-
   if (sidebarSortSelect && sortSelect) {
     sidebarSortSelect.addEventListener("change", (event) => {
       sortSelect.value = event.target.value;
@@ -1170,19 +1147,91 @@ document.addEventListener("DOMContentLoaded", () => {
       const id = Number(card.dataset.cafeId);
       focusCafe(id);
     });
+    sidebarCafeList.addEventListener("scroll", (event) => {
+      if (!event.isTrusted) {
+        return;
+      }
+      if (isMapFullscreen && window.innerWidth > 768) {
+        stopAutoScroll();
+        scheduleAutoScrollResume("pc", 3000);
+      }
+    });
   }
 
-  if (mobileAutoScrollToggle) {
-    mobileAutoScrollToggle.addEventListener("click", () => {
-      toggleAutoScroll("mobile");
-    });
+  const handleListToggle = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (window.innerWidth <= 768) {
+      toggleListMinimize();
+    }
+  };
+
+  if (listHandle) {
+    listHandle.addEventListener("click", handleListToggle);
+  }
+
+  if (handleButton) {
+    handleButton.addEventListener("click", handleListToggle);
+  }
+
+  if (listHandle && bottomList) {
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+
+    listHandle.addEventListener(
+      "touchstart",
+      (event) => {
+        isDragging = true;
+        startY = event.touches[0].clientY;
+        currentY = startY;
+      },
+      { passive: true }
+    );
+
+    listHandle.addEventListener(
+      "touchmove",
+      (event) => {
+        if (!isDragging) {
+          return;
+        }
+        currentY = event.touches[0].clientY;
+      },
+      { passive: true }
+    );
+
+    listHandle.addEventListener(
+      "touchend",
+      () => {
+        if (!isDragging) {
+          return;
+        }
+        const diff = currentY - startY;
+        const threshold = 30;
+        if (Math.abs(diff) > threshold) {
+          if (diff > 0 && !isListMinimized) {
+            toggleListMinimize();
+          } else if (diff < 0 && isListMinimized) {
+            toggleListMinimize();
+          }
+        }
+        isDragging = false;
+        startY = 0;
+        currentY = 0;
+      },
+      { passive: true }
+    );
   }
 
   if (bottomCarousel) {
     let scrollTimeout;
     bottomCarousel.addEventListener("scroll", (event) => {
-      if (isAutoScrolling) {
-        resetAutoScrollState();
+      if (!event.isTrusted) {
+        return;
+      }
+      if (isMapFullscreen && window.innerWidth <= 768) {
+        stopAutoScroll();
+        scheduleAutoScrollResume("mobile", 3000);
       }
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
@@ -1214,18 +1263,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isMapFullscreen || !mapSection) {
       return;
     }
-    resetAutoScrollState();
+    stopAutoScroll();
     const isDesktop = window.innerWidth > 768;
     if (isDesktop && fullscreenSidebar) {
       fullscreenSidebar.style.display = "flex";
       mapSection.classList.add("sidebar-open");
-      mapSection.classList.remove("mobile-list-visible");
+      mapSection.classList.remove("mobile-list-visible", "list-minimized");
       fullscreenSidebar.classList.toggle("collapsed", !isSidebarOpen);
       if (bottomList) {
         bottomList.style.display = "none";
+        bottomList.classList.remove("minimized");
       }
+      isListMinimized = false;
       renderSidebarList(currentFiltered);
       syncSidebarSort();
+      startAutoScrollPC(sidebarCafeList);
     } else {
       if (fullscreenSidebar) {
         fullscreenSidebar.style.display = "none";
@@ -1234,8 +1286,13 @@ document.addEventListener("DOMContentLoaded", () => {
       mapSection.classList.add("mobile-list-visible");
       if (bottomList) {
         bottomList.style.display = "block";
+        bottomList.classList.toggle("minimized", isListMinimized);
       }
+      mapSection.classList.toggle("list-minimized", isListMinimized);
       renderCarousel(currentFiltered);
+      if (!isListMinimized) {
+        startAutoScrollMobile();
+      }
     }
     setTimeout(() => {
       map.invalidateSize();

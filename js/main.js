@@ -388,55 +388,111 @@ document.addEventListener("DOMContentLoaded", () => {
     const track = document.querySelector(`.slider-track[data-activity="${activityId}"]`);
     const prevBtn = document.querySelector(`.slider-nav.prev[data-activity="${activityId}"]`);
     const nextBtn = document.querySelector(`.slider-nav.next[data-activity="${activityId}"]`);
-    const indicators = document.querySelectorAll(
-      `.slider-indicators[data-activity="${activityId}"] .indicator`
+    const indicatorsContainer = document.querySelector(
+      `.slider-indicators[data-activity="${activityId}"]`
     );
-    const slides = track ? track.querySelectorAll(".slide") : [];
 
     if (track && track.closest(".flow-slider")) {
       return;
     }
 
-    if (!track || !prevBtn || !nextBtn) {
+    if (!track || !prevBtn || !nextBtn || !indicatorsContainer) {
       return;
     }
 
-    let currentIndex = 0;
-    const totalSlides = slides.length;
+    const originalSlides = Array.from(track.querySelectorAll(".slide"));
+    const totalSlides = originalSlides.length;
+
+    if (!totalSlides) {
+      return;
+    }
+
+    const firstClone = originalSlides[0].cloneNode(true);
+    const lastClone = originalSlides[totalSlides - 1].cloneNode(true);
+
+    track.appendChild(firstClone);
+    track.insertBefore(lastClone, track.firstChild);
+
+    const indicators = Array.from(indicatorsContainer.querySelectorAll(".indicator"));
+    const sliderWrapper = track.closest(".slider-wrapper");
+
+    let currentIndex = 1;
+    let isTransitioning = false;
 
     let startX = 0;
     let currentX = 0;
     let isDragging = false;
     let hasMoved = false;
+    let pressTimer = null;
+    let allowDrag = false;
+    let startTransform = -currentIndex * 100;
 
-    const goToSlide = (index, animate = true) => {
-      let nextIndex = index;
-      if (nextIndex < 0) {
-        nextIndex = totalSlides - 1;
+    const allSlides = Array.from(track.querySelectorAll(".slide"));
+
+    allSlides.forEach((slide) => {
+      const image = slide.querySelector("img");
+      if (image) {
+        image.setAttribute("draggable", "false");
       }
-      if (nextIndex >= totalSlides) {
-        nextIndex = 0;
+    });
+
+    const updateIndicators = () => {
+      if (!indicators.length) {
+        return;
       }
-
-      currentIndex = nextIndex;
-      const offset = -currentIndex * 100;
-
-      if (animate) {
-        track.style.transition = "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
-      } else {
-        track.style.transition = "none";
+      let realIndex = currentIndex - 1;
+      if (realIndex < 0) {
+        realIndex = totalSlides - 1;
       }
-
-      track.style.transform = `translateX(${offset}%)`;
-
+      if (realIndex >= totalSlides) {
+        realIndex = 0;
+      }
       indicators.forEach((indicator, i) => {
-        if (i === currentIndex) {
-          indicator.classList.add("active");
-        } else {
-          indicator.classList.remove("active");
-        }
+        indicator.classList.toggle("active", i === realIndex);
       });
     };
+
+    const setTransition = (enabled) => {
+      track.style.transition = enabled
+        ? "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)"
+        : "none";
+    };
+
+    const goToSlide = (index, animate = true) => {
+      if (isTransitioning) {
+        return;
+      }
+      currentIndex = index;
+      if (animate) {
+        setTransition(true);
+        isTransitioning = true;
+      } else {
+        setTransition(false);
+      }
+      track.style.transform = `translateX(${-currentIndex * 100}%)`;
+      if (!animate) {
+        updateIndicators();
+      }
+    };
+
+    const handleTransitionEnd = () => {
+      if (!isTransitioning) {
+        return;
+      }
+      if (currentIndex === 0) {
+        setTransition(false);
+        currentIndex = totalSlides;
+        track.style.transform = `translateX(${-currentIndex * 100}%)`;
+      } else if (currentIndex === totalSlides + 1) {
+        setTransition(false);
+        currentIndex = 1;
+        track.style.transform = `translateX(${-currentIndex * 100}%)`;
+      }
+      updateIndicators();
+      isTransitioning = false;
+    };
+
+    track.addEventListener("transitionend", handleTransitionEnd);
 
     prevBtn.addEventListener("click", (event) => {
       event.preventDefault();
@@ -454,25 +510,41 @@ document.addEventListener("DOMContentLoaded", () => {
       indicator.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
-        goToSlide(index);
+        goToSlide(index + 1);
       });
     });
 
     const handleStart = (event) => {
-      isDragging = true;
-      hasMoved = false;
-      startX = event.type.includes("mouse") ? event.pageX : event.touches[0].pageX;
-      currentX = startX;
-      track.style.transition = "none";
+      if (isTransitioning) {
+        return;
+      }
+      const isMouse = event.type.includes("mouse");
 
-      if (event.type.includes("mouse")) {
+      hasMoved = false;
+      startX = isMouse ? event.pageX : event.touches[0].pageX;
+      currentX = startX;
+      startTransform = -currentIndex * 100;
+      setTransition(false);
+
+      if (isMouse) {
+        allowDrag = false;
+        if (pressTimer) {
+          clearTimeout(pressTimer);
+        }
+        pressTimer = window.setTimeout(() => {
+          allowDrag = true;
+          isDragging = true;
+        }, 200);
         document.addEventListener("mousemove", handleMove);
         document.addEventListener("mouseup", handleEnd);
+      } else {
+        allowDrag = true;
+        isDragging = true;
       }
     };
 
     const handleMove = (event) => {
-      if (!isDragging) {
+      if (!isDragging || !allowDrag) {
         return;
       }
 
@@ -481,25 +553,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
       currentX = event.type.includes("mouse") ? event.pageX : event.touches[0].pageX;
       const diff = currentX - startX;
-      const currentTransform = -currentIndex * 100;
-      const dragPercent = (diff / track.offsetWidth) * 100;
+      const wrapperWidth = sliderWrapper ? sliderWrapper.offsetWidth : track.offsetWidth;
+      const dragPercent = (diff / wrapperWidth) * 100;
 
-      track.style.transform = `translateX(${currentTransform + dragPercent}%)`;
+      track.style.transform = `translateX(${startTransform + dragPercent}%)`;
     };
 
     const handleEnd = (event) => {
-      if (!isDragging) {
+      if (!isDragging && !pressTimer) {
         return;
       }
 
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+
       isDragging = false;
+      allowDrag = false;
 
       if (event.type.includes("mouse")) {
         document.removeEventListener("mousemove", handleMove);
         document.removeEventListener("mouseup", handleEnd);
       }
-
-      track.style.transition = "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
 
       if (!hasMoved) {
         goToSlide(currentIndex, false);
@@ -507,7 +583,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const diff = currentX - startX;
-      const threshold = track.offsetWidth * 0.15;
+      const wrapperWidth = sliderWrapper ? sliderWrapper.offsetWidth : track.offsetWidth;
+      const threshold = wrapperWidth * 0.15;
 
       if (Math.abs(diff) > threshold) {
         if (diff > 0) {
@@ -532,14 +609,14 @@ document.addEventListener("DOMContentLoaded", () => {
     track.addEventListener("touchcancel", handleEnd, { passive: true });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowLeft") {
+      if (event.key === "ArrowLeft" && !isTransitioning) {
         goToSlide(currentIndex - 1);
-      } else if (event.key === "ArrowRight") {
+      } else if (event.key === "ArrowRight" && !isTransitioning) {
         goToSlide(currentIndex + 1);
       }
     });
 
-    goToSlide(0, false);
+    goToSlide(currentIndex, false);
   };
 
   initializeAllSliders();
