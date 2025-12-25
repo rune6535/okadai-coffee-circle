@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>岡山大学 珈琲サークル「ゆげ」</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3E2A1E",
+              secondary: "#B98A62",
+              accent: "#E3C5A4",
+              background: "#F7F2EC",
+              textbase: "#231B17",
+              muted: "#6D5B4C",
+            },
+            fontFamily: {
+              sans: ["Zen Kaku Gothic New", "sans-serif"],
+              display: ["Playfair Display", "serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (max-width: 640px) {
+        html {
+          font-size: 15px;
+        }
+      }
+      @media (min-width: 1024px) {
+        html {
+          font-size: 18px;
+        }
+      }
+      .fade-section {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
+      .fade-section.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .hover-lift:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 40px rgba(35, 27, 23, 0.16);
+      }
+      .hero-reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: heroRise 0.8s ease-out forwards;
+      }
+      @keyframes heroRise {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .hero-reveal {
+          animation: none;
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .steam {
+        position: absolute;
+        bottom: 12%;
+        left: 12%;
+        width: 220px;
+        height: 220px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), transparent 60%);
+        filter: blur(12px);
+        animation: steamFloat 8s ease-in-out infinite;
+      }
+      .steam.steam-two {
+        left: 55%;
+        bottom: 18%;
+        width: 260px;
+        height: 260px;
+        animation-delay: 1.5s;
+      }
+      .steam.steam-three {
+        left: 75%;
+        bottom: 8%;
+        width: 180px;
+        height: 180px;
+        animation-delay: 3s;
+      }
+      @keyframes steamFloat {
+        0% {
+          opacity: 0.2;
+          transform: translateY(30px) scale(0.9);
+        }
+        50% {
+          opacity: 0.6;
+          transform: translateY(-10px) scale(1);
+        }
+        100% {
+          opacity: 0.2;
+          transform: translateY(-40px) scale(1.05);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .steam {
+          animation: none;
+        }
+      }
+      /* ===== 活動のハイライトセクション ===== */
+      .highlights-section {
+        padding: 80px 0;
+        background: #F7F2EC;
+      }
+      .highlights-section .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+      .section-title {
+        font-size: 36px;
+        font-weight: 700;
+        color: #2D2424;
+        text-align: center;
+        margin: 0 0 60px 0;
+        letter-spacing: 2px;
+      }
+      .highlights-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 40px 32px;
+      }
+      .highlight-item {
+        display: flex;
+        flex-direction: column;
+      }
+      .highlight-image {
+        width: 100%;
+        margin-bottom: 20px;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        aspect-ratio: 4 / 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f0ebe3;
+      }
+      .highlight-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        transition: transform 0.3s;
+      }
+      .highlight-image img.zoom-slight {
+        transform: scale(1.06);
+      }
+      .highlight-image:hover img {
+        transform: scale(1.05);
+      }
+      .highlight-image:hover img.zoom-slight {
+        transform: scale(1.1);
+      }
+      .highlight-content {
+        flex: 1;
+      }
+      .highlight-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: #2D2424;
+        margin: 0 0 12px 0;
+        letter-spacing: 0.5px;
+        text-align: center;
+      }
+      .highlight-description {
+        font-size: 14px;
+        line-height: 1.8;
+        color: #666;
+        margin: 0;
+        text-align: left;
+      }
+      @media (max-width: 768px) {
+        .highlights-section {
+          padding: 60px 0;
+        }
+        .section-title {
+          font-size: 24px;
+          margin-bottom: 40px;
+          letter-spacing: 1px;
+        }
+        .highlights-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 32px 16px;
+        }
+        .highlight-image {
+          margin-bottom: 12px;
+          border-radius: 8px;
+        }
+        .highlight-title {
+          font-size: 18px;
+          margin-bottom: 8px;
+          letter-spacing: 0.3px;
+        }
+        .highlight-description {
+          font-size: 12px;
+          line-height: 1.7;
+        }
+      }
+      @media (max-width: 480px) {
+        .highlights-section .container {
+          padding: 0 12px;
+        }
+        .highlights-grid {
+          gap: 24px 12px;
+        }
+        .highlight-title {
+          font-size: 17px;
+        }
+        .highlight-description {
+          font-size: 11px;
+          line-height: 1.6;
+        }
+      }
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .section-title {
+          font-size: 32px;
+          margin-bottom: 50px;
+        }
+        .highlights-grid {
+          gap: 36px 28px;
+        }
+        .highlight-title {
+          font-size: 24px;
+        }
+        .highlight-description {
+          font-size: 14px;
+        }
+      }
+      @media (min-width: 1025px) {
+        .highlights-section {
+          padding: 100px 0;
+        }
+        .section-title {
+          font-size: 40px;
+          margin-bottom: 70px;
+        }
+        .highlights-grid {
+          gap: 48px 40px;
+        }
+        .highlight-image {
+          margin-bottom: 24px;
+        }
+        .highlight-title {
+          font-size: 28px;
+          margin-bottom: 16px;
+        }
+        .highlight-description {
+          font-size: 15px;
+          line-height: 1.9;
+        }
+      }
+    </style>
+    <script src="js/cafe-data.js" defer></script>
+    <script src="js/main.js" defer></script>
+  </head>
+  <body class="bg-background text-textbase font-sans">
+    <!-- グローバルナビゲーション -->
+    <nav
+      id="site-nav"
+      class="fixed inset-x-0 top-0 z-50 bg-background/80 text-textbase transition duration-300"
+      aria-label="メインナビゲーション"
+    >
+      <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
+        <a href="#home" class="text-lg font-semibold transition hover:text-secondary md:text-2xl">
+          岡山大学 珈琲サークル「ゆげ」
+        </a>
+        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-xl">
+          <a href="#home" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a
+            href="join.html"
+            class="rounded-full bg-secondary px-5 py-2.5 text-base text-primary transition hover:bg-accent md:text-lg"
+          >
+            入会案内
+          </a>
+        </div>
+        <button
+          id="menu-toggle"
+          class="md:hidden"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <span class="sr-only">メニューを開く</span>
+          <svg
+            class="h-7 w-7"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18" />
+            <path d="M3 12h18" />
+            <path d="M3 18h18" />
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden border-t border-primary/20 bg-background/95 text-textbase md:hidden">
+        <div class="flex flex-col gap-4 px-6 py-4 text-sm font-semibold">
+          <a href="#home" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a href="join.html" class="text-current hover:text-secondary md:px-2 md:py-1">入会案内</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ヒーローセクション -->
+    <header id="home" class="relative min-h-screen" data-bg-image="images/hero.jpg">
+      <div
+        class="absolute inset-0 bg-cover bg-center"
+        style="background-image: url('images/hero.jpg');"
+        role="img"
+        aria-label="ゆったりとしたカフェ空間のイメージ"
+      ></div>
+      <div
+        class="hidden absolute right-6 top-24 rounded-full bg-secondary/90 px-4 py-2 text-xs font-semibold text-primary shadow"
+        data-bg-badge
+      >
+        Coming Soon
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-background/80"></div>
+      <div class="steam" aria-hidden="true"></div>
+      <div class="steam steam-two" aria-hidden="true"></div>
+      <div class="steam steam-three" aria-hidden="true"></div>
+      <div class="relative flex min-h-screen items-center">
+        <div class="mx-auto w-full max-w-screen-2xl px-6 py-32">
+          <p class="hero-reveal text-sm uppercase tracking-[0.35em] text-accent" style="animation-delay: 0.3s;">
+            Okayama Coffee Circle
+          </p>
+          <h1
+            class="hero-reveal mt-6 max-w-3xl text-4xl font-semibold text-white md:text-6xl lg:text-7xl"
+            style="letter-spacing: 0.02em"
+          >
+            岡山大学<br />
+            珈琲サークル「ゆげ」
+          </h1>
+          <p class="hero-reveal mt-6 max-w-2xl text-base text-white/90 md:text-xl" style="animation-delay: 0.9s;">
+            一杯のコーヒーから始まる、温かくて心地よい時間をつくっています。
+          </p>
+          <p class="hero-reveal mt-3 max-w-2xl text-base text-white/80 md:text-xl" style="animation-delay: 1.2s;">
+            2025年8月1日に立ち上げた新しいコミュニティです。
+          </p>
+          <div class="mt-10 flex flex-wrap gap-4">
+            <a
+              href="join.html"
+              class="hero-reveal hover-lift inline-flex items-center rounded-full bg-secondary px-8 py-3 text-sm font-semibold text-primary shadow-lg transition hover:bg-accent"
+              style="animation-delay: 1.5s;"
+            >
+              入会案内を見る
+            </a>
+            <a
+              href="activities.html"
+              class="hero-reveal inline-flex items-center rounded-full border border-white/50 px-8 py-3 text-sm font-semibold text-white transition hover:border-white"
+              style="animation-delay: 1.7s;"
+            >
+              活動をチェック
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main>
+      <section class="fade-section mx-auto max-w-screen-2xl px-6 py-16 md:py-24">
+        <div>
+          <p class="text-2xl uppercase tracking-[0.35em] text-secondary md:text-3xl text-center">
+            〜「ゆげ」に込められた意味〜
+          </p>
+          <p class="mt-6 text-lg leading-8 text-textbase text-center">
+            温かい場所に立ち昇るゆげのように、常に温かさと活気に満ちたサークルにしたいです。<br />
+            また、人と人とが集まり、自然にその交流の輪が広がっていってほしいという思いを込めました。<br />
+            そんな温度感を大切に、みんなで心地よい時間をつくっています。
+          </p>
+        </div>
+      </section>
+
+      <section class="fade-section mx-auto max-w-screen-2xl px-6 py-12 md:py-20">
+        <div class="grid gap-12 md:grid-cols-[1.1fr_1fr]">
+          <div>
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">サークルのこと</h2>
+            <p class="mt-6 text-base leading-7 text-muted md:text-lg">
+              ゆげは「コーヒーを楽しみたい」という気持ちから集まった仲間のサークルです。
+              ゆったりした空気の中で、コーヒーの香りや味わいをみんなで共有します。
+              初心者でも安心して参加できるよう、道具の扱い方から丁寧にお伝えしています。
+            </p>
+          </div>
+          <div class="grid gap-4">
+            <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+              <h3 class="text-lg font-semibold text-primary">初心者でも安心です</h3>
+              <p class="mt-2 text-sm leading-6 text-muted">
+                初めての方でもリラックスして楽しめる雰囲気を大切にしています。
+              </p>
+            </div>
+            <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+              <h3 class="text-lg font-semibold text-primary">ゆったり週末活動</h3>
+              <p class="mt-2 text-sm leading-6 text-muted">
+                授業やアルバイトと両立しやすいペースで活動しています。
+              </p>
+            </div>
+            <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+              <h3 class="text-lg font-semibold text-primary">交流の輪が広がります</h3>
+              <p class="mt-2 text-sm leading-6 text-muted">
+                コーヒーをきっかけに学部を越えたつながりが生まれます。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 活動のハイライトセクション -->
+      <section class="highlights-section">
+        <div class="container">
+          <h2 class="section-title">活動のハイライト</h2>
+
+          <!-- 2列グリッド -->
+          <div class="highlights-grid">
+            <!-- アイテム1 -->
+            <div class="highlight-item">
+              <div class="highlight-image">
+                <a
+                  href="https://www.instagram.com/okadai_coffee_circle/p/DPTBY9Lkyh1/"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="定期活動のInstagram投稿へ移動"
+                >
+                  <img src="images/定期活動/定期活動1.jpg" alt="定期活動の様子" class="zoom-slight" />
+                </a>
+              </div>
+              <div class="highlight-content">
+                <h3 class="highlight-title">
+                  <a
+                    href="https://www.instagram.com/okadai_coffee_circle/p/DPTBY9Lkyh1/"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="hover:text-secondary"
+                  >
+                    定期活動
+                  </a>
+                </h3>
+                <p class="highlight-description">
+                  日常の中で、コーヒーと交流を気軽に楽しむスタイルです。
+                </p>
+              </div>
+            </div>
+
+            <!-- アイテム2 -->
+            <div class="highlight-item">
+              <div class="highlight-image">
+                <a
+                  href="https://www.instagram.com/p/DSRnIZqk2yU/"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="カッピング会のInstagram投稿へ移動"
+                >
+                  <img src="images/カッピング会/カッピング会1.jpg" alt="カッピング会の様子" />
+                </a>
+              </div>
+              <div class="highlight-content">
+                <h3 class="highlight-title">
+                  <a
+                    href="https://www.instagram.com/p/DSRnIZqk2yU/"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="hover:text-secondary"
+                  >
+                    カッピング会
+                  </a>
+                </h3>
+                <p class="highlight-description">
+                  豆の個性を味わいながら香りや酸味の違いを学びます。
+                </p>
+              </div>
+            </div>
+
+            <!-- アイテム3 -->
+            <div class="highlight-item">
+              <div class="highlight-image">
+                <a
+                  href="https://www.instagram.com/p/DR3t0qkkxAR/"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="カフェ巡りのInstagram投稿へ移動"
+                >
+                  <img src="images/カフェ巡り/カフェ巡り_vol1.jpg" alt="カフェ巡りの様子" />
+                </a>
+              </div>
+              <div class="highlight-content">
+                <h3 class="highlight-title">
+                  <a
+                    href="https://www.instagram.com/p/DR3t0qkkxAR/"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="hover:text-secondary"
+                  >
+                    カフェ巡り
+                  </a>
+                </h3>
+                <p class="highlight-description">
+                  街のカフェで新しい味や空間に触れて感性を磨きます。
+                </p>
+              </div>
+            </div>
+
+            <!-- アイテム4 -->
+            <div class="highlight-item">
+              <div class="highlight-image">
+                <a
+                  href="https://www.instagram.com/p/DSaDJeyk4RP/"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="焙煎見学のInstagram投稿へ移動"
+                >
+                  <img src="images/焙煎見学/焙煎見学1.jpg" alt="焙煎見学の様子" />
+                </a>
+              </div>
+              <div class="highlight-content">
+                <h3 class="highlight-title">
+                  <a
+                    href="https://www.instagram.com/p/DSaDJeyk4RP/"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="hover:text-secondary"
+                  >
+                    焙煎見学
+                  </a>
+                </h3>
+                <p class="highlight-description">
+                  プロの焙煎を見学し、豆が香り立つ瞬間を体感します。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cafe-map" class="fade-section mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
+        <div class="grid gap-10 md:grid-cols-[1.05fr_0.95fr] md:items-center">
+          <div>
+            <p class="text-xs uppercase tracking-[0.35em] text-secondary">Okayama Cafe Map</p>
+            <h2 class="mt-4 text-2xl font-semibold text-primary md:text-3xl">岡山カフェマップ</h2>
+            <p class="mt-5 text-base leading-7 text-muted md:text-lg">
+              サークルメンバーおすすめのカフェを、雰囲気や焙煎の特徴ごとにまとめています。
+              初めての人でも入りやすいお店を中心にピックアップしました。
+            </p>
+            <div class="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-primary">
+              <span class="rounded-full bg-accent/40 px-4 py-2">落ち着いた読書カフェ</span>
+              <span class="rounded-full bg-accent/40 px-4 py-2">ラテアート自慢</span>
+              <span class="rounded-full bg-accent/40 px-4 py-2">テイクアウトOK</span>
+            </div>
+          </div>
+          <div class="hover-lift rounded-3xl bg-gradient-to-br from-secondary/30 via-accent/30 to-background p-8 shadow">
+            <div class="rounded-2xl bg-white/80 p-6">
+              <p class="text-sm font-semibold text-primary">現在の掲載数</p>
+              <p id="cafe-count" class="mt-2 text-3xl font-semibold text-primary">0店舗</p>
+              <p class="mt-4 text-sm text-muted">
+                新しいお店を随時追加中です。おすすめがあれば教えてください。
+              </p>
+              <a
+                href="cafe-map.html"
+                class="mt-6 inline-flex items-center text-sm font-semibold text-primary"
+              >
+                カフェマップ詳細を見る →
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
+        <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">新着情報</h2>
+            <p class="mt-3 text-sm text-muted md:text-base">
+              ゆげのイベントや最新の予定をお知らせします。
+            </p>
+          </div>
+          <a href="events.html" class="text-sm font-semibold text-primary">
+            イベント一覧を見る →
+          </a>
+        </div>
+        <div class="mt-10 grid gap-6 md:grid-cols-3">
+          <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm">
+            <p class="text-xs uppercase tracking-widest text-secondary">Event</p>
+            <h3 class="mt-3 text-lg font-semibold text-primary">
+              新歓カフェツアー開催
+            </h3>
+            <p class="mt-3 text-sm leading-6 text-muted">
+              4/20(土)に人気カフェを巡ります。初参加の方も安心です。
+            </p>
+          </article>
+          <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm">
+            <p class="text-xs uppercase tracking-widest text-secondary">Workshop</p>
+            <h3 class="mt-3 text-lg font-semibold text-primary">
+              手網焙煎ワークショップ
+            </h3>
+            <p class="mt-3 text-sm leading-6 text-muted">
+              5/11(土)に焙煎の基礎を学びます。参加費は500円です。
+            </p>
+          </article>
+          <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm">
+            <p class="text-xs uppercase tracking-widest text-secondary">Meetup</p>
+            <h3 class="mt-3 text-lg font-semibold text-primary">
+              週末カッピング会
+            </h3>
+            <p class="mt-3 text-sm leading-6 text-muted">
+              5/25(土)に新豆のテイスティングを行います。
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="fade-section bg-white/70">
+        <div class="mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
+          <div class="grid gap-8 rounded-3xl bg-primary px-8 py-12 text-white md:grid-cols-[1.3fr_0.7fr] md:items-center">
+            <div>
+              <h2 class="text-2xl font-semibold md:text-3xl">新しい仲間を募集中です</h2>
+              <p class="mt-4 text-sm text-white/80 md:text-base">
+                初心者でも大丈夫です。見学だけでも歓迎していますので、気軽にご連絡ください。
+              </p>
+            </div>
+            <div class="flex md:justify-end">
+              <a
+                href="join.html"
+                class="hover-lift inline-flex items-center rounded-full bg-secondary px-8 py-3 text-sm font-semibold text-primary shadow-lg transition hover:bg-accent"
+              >
+                入会案内へ
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-primary text-white">
+      <div class="mx-auto flex max-w-screen-2xl flex-col gap-6 px-6 py-12 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-lg font-semibold">岡山大学 珈琲サークル「ゆげ」</p>
+          <p class="mt-2 text-sm text-white/80">
+            温かさと活気が広がる場所で、コーヒーの時間を一緒に楽しみませんか。
+          </p>
+        </div>
+        <div class="flex flex-col gap-4 text-sm">
+          <a
+            href="https://www.instagram.com/okadai_coffee_circle/"
+            class="inline-flex items-center gap-2 font-semibold text-secondary hover:text-accent"
+            aria-label="Instagram"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <svg
+              aria-hidden="true"
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37a4 4 0 1 1-7.87 1.44"></path>
+              <line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line>
+            </svg>
+            Instagram
+          </a>
+          <a href="join.html" class="font-semibold text-white/80 hover:text-accent">
+            お問い合わせはこちら
+          </a>
+        </div>
+      </div>
+      <div class="border-t border-white/20 py-4 text-center text-xs text-white/70">
+        © 2025 岡山大学 珈琲サークル「ゆげ」
+      </div>
+    </footer>
+
+    <button
+      id="back-to-top"
+      class="fixed bottom-6 right-6 rounded-full bg-secondary px-4 py-3 text-sm font-semibold text-primary shadow-lg opacity-0 pointer-events-none transition hover:bg-accent"
+      type="button"
+      aria-label="トップへ戻る"
+    >
+      ↑ Top
+    </button>
+
+    <script>
+      const nav = document.getElementById("site-nav");
+      const menuToggle = document.getElementById("menu-toggle");
+      const mobileMenu = document.getElementById("mobile-menu");
+
+      const setNavStyle = () => {
+        if (window.scrollY > 10) {
+          nav.classList.add("bg-background/95", "shadow-lg", "backdrop-blur");
+        } else {
+          nav.classList.remove("bg-background/95", "shadow-lg", "backdrop-blur");
+        }
+      };
+
+      menuToggle.addEventListener("click", () => {
+        const isOpen = mobileMenu.classList.toggle("hidden") === false;
+        menuToggle.setAttribute("aria-expanded", isOpen);
+      });
+
+      window.addEventListener("scroll", setNavStyle);
+      window.addEventListener("load", setNavStyle);
+
+      if (window.CAFE_DATA) {
+        const stats = window.CAFE_DATA.getStats();
+        const cafeCount = document.getElementById("cafe-count");
+        if (cafeCount) {
+          cafeCount.textContent = `${stats.totalCafes}店舗`;
+        }
+      }
+    </script>
+  </body>
+</html>

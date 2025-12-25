@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>岡山カフェマップ | 岡山大学 珈琲サークル「ゆげ」</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3E2A1E",
+              secondary: "#B98A62",
+              accent: "#E3C5A4",
+              background: "#F7F2EC",
+              textbase: "#231B17",
+              muted: "#6D5B4C",
+            },
+            fontFamily: {
+              sans: ["Zen Kaku Gothic New", "sans-serif"],
+              display: ["Playfair Display", "serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (max-width: 640px) {
+        html {
+          font-size: 15px;
+        }
+      }
+      @media (min-width: 1024px) {
+        html {
+          font-size: 18px;
+        }
+      }
+      .fade-section {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+      .fade-section.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .hover-lift:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 40px rgba(35, 27, 23, 0.16);
+      }
+      .hero-reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: heroRise 0.7s ease-out forwards;
+      }
+      @keyframes heroRise {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .hero-reveal {
+          animation: none;
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+    <script src="js/main.js" defer></script>
+  </head>
+  <body class="bg-background text-textbase font-sans">
+    <!-- グローバルナビゲーション -->
+    <nav
+      id="site-nav"
+      class="fixed inset-x-0 top-0 z-50 bg-background/80 text-textbase transition duration-300"
+      aria-label="メインナビゲーション"
+    >
+      <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
+        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-2xl">
+          岡山大学 珈琲サークル「ゆげ」
+        </a>
+        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-xl">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a
+            href="join.html"
+            class="rounded-full bg-secondary px-5 py-2.5 text-base text-primary transition hover:bg-accent md:text-lg"
+          >
+            入会案内
+          </a>
+        </div>
+        <button
+          id="menu-toggle"
+          class="md:hidden"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <span class="sr-only">メニューを開く</span>
+          <svg
+            class="h-7 w-7"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18" />
+            <path d="M3 12h18" />
+            <path d="M3 18h18" />
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden border-t border-primary/20 bg-background/95 text-textbase md:hidden">
+        <div class="flex flex-col gap-4 px-6 py-4 text-sm font-semibold">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a href="join.html" class="text-current hover:text-secondary md:px-2 md:py-1">入会案内</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ページヘッダー -->
+    <header class="relative pt-24">
+      <div class="mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
+        <p class="hero-reveal text-xs uppercase tracking-[0.35em] text-secondary" style="animation-delay: 0.2s;">
+          Okayama Cafe Map
+        </p>
+        <h1 class="hero-reveal mt-4 text-4xl font-semibold text-primary md:text-5xl" style="animation-delay: 0.4s;">
+          岡山カフェマップ
+        </h1>
+        <p class="hero-reveal mt-4 text-base text-muted md:text-lg" style="animation-delay: 0.6s;">
+          メンバーのおすすめカフェをまとめた特集ページです。
+        </p>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main>
+      <section class="fade-section mx-auto max-w-screen-2xl px-6 pb-20">
+        <div class="rounded-3xl bg-white/80 p-10 text-center shadow md:p-14">
+          <p class="text-xs uppercase tracking-[0.35em] text-secondary">Coming Soon</p>
+          <h2 class="mt-4 text-2xl font-semibold text-primary md:text-3xl">準備中です</h2>
+          <p class="mt-4 text-sm leading-7 text-muted md:text-base">
+            岡山の素敵なカフェ情報を集めています。掲載内容は後日追加予定です。
+          </p>
+          <a
+            href="index.html#cafe-map"
+            class="hover-lift mt-8 inline-flex items-center rounded-full bg-secondary px-6 py-2 text-sm font-semibold text-primary transition hover:bg-accent"
+          >
+            トップページに戻る
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-primary text-white">
+      <div class="mx-auto flex max-w-screen-2xl flex-col gap-6 px-6 py-12 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-lg font-semibold">岡山大学 珈琲サークル「ゆげ」</p>
+          <p class="mt-2 text-sm text-white/80">
+            温かさと活気が広がる場所で、コーヒーの時間を一緒に楽しみませんか。
+          </p>
+        </div>
+        <div class="flex flex-col gap-4 text-sm">
+          <a
+            href="https://www.instagram.com/okadai_coffee_circle/"
+            class="inline-flex items-center gap-2 font-semibold text-secondary hover:text-accent"
+            aria-label="Instagram"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <svg
+              aria-hidden="true"
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37a4 4 0 1 1-7.87 1.44"></path>
+              <line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line>
+            </svg>
+            Instagram
+          </a>
+          <a href="join.html" class="font-semibold text-white/80 hover:text-accent">
+            お問い合わせはこちら
+          </a>
+        </div>
+      </div>
+      <div class="border-t border-white/20 py-4 text-center text-xs text-white/70">
+        © 2025 岡山大学 珈琲サークル「ゆげ」
+      </div>
+    </footer>
+
+    <button
+      id="back-to-top"
+      class="fixed bottom-6 right-6 rounded-full bg-secondary px-4 py-3 text-sm font-semibold text-primary shadow-lg opacity-0 pointer-events-none transition hover:bg-accent"
+      type="button"
+      aria-label="トップへ戻る"
+    >
+      ↑ Top
+    </button>
+
+    <script>
+      const nav = document.getElementById("site-nav");
+      const menuToggle = document.getElementById("menu-toggle");
+      const mobileMenu = document.getElementById("mobile-menu");
+
+      const setNavStyle = () => {
+        if (window.scrollY > 10) {
+          nav.classList.add("bg-background/95", "shadow-lg", "backdrop-blur");
+        } else {
+          nav.classList.remove("bg-background/95", "shadow-lg", "backdrop-blur");
+        }
+      };
+
+      menuToggle.addEventListener("click", () => {
+        const isOpen = mobileMenu.classList.toggle("hidden") === false;
+        menuToggle.setAttribute("aria-expanded", isOpen);
+      });
+
+      window.addEventListener("scroll", setNavStyle);
+      window.addEventListener("load", setNavStyle);
+    </script>
+  </body>
+</html>

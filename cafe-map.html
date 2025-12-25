@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>岡山カフェマップ | 岡山大学 珈琲サークル「ゆげ」</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3E2A1E",
+              secondary: "#B98A62",
+              accent: "#E3C5A4",
+              background: "#F7F2EC",
+              textbase: "#231B17",
+              muted: "#6D5B4C",
+            },
+            fontFamily: {
+              sans: ["Zen Kaku Gothic New", "sans-serif"],
+              display: ["Playfair Display", "serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (max-width: 640px) {
+        html {
+          font-size: 15px;
+        }
+      }
+      @media (min-width: 1024px) {
+        html {
+          font-size: 18px;
+        }
+      }
+
+      /* ===== 基本レイアウト ===== */
+      .cafe-map-page {
+        max-width: 100%;
+        margin: 0 auto;
+        background: #fafafa;
+      }
+
+      /* ===== 1. ページヘッダー ===== */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .page-header {
+        background: #faf8f3;
+        padding: 60px 20px 50px 20px;
+        text-align: center;
+        border-bottom: 1px solid #e0e0e0;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      .page-header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #6b4423 50%, transparent 100%);
+        opacity: 0.2;
+        pointer-events: none;
+      }
+
+      .page-header::after {
+        display: none;
+      }
+
+      .page-label {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        color: #6b4423;
+        background: transparent;
+        padding: 6px 20px;
+        border: 2px solid #6b4423;
+        border-radius: 0;
+        margin-bottom: 20px;
+        box-shadow: none;
+        position: relative;
+        z-index: 1;
+        font-family: "Arial", "Helvetica", sans-serif;
+        animation: fadeInUp 0.6s ease-out 0.1s backwards;
+      }
+
+      .page-title {
+        font-size: 48px;
+        font-weight: 900;
+        color: #2d2424;
+        margin: 0 0 24px 0;
+        letter-spacing: 4px;
+        line-height: 1.3;
+        position: relative;
+        z-index: 1;
+        font-family: "Noto Serif JP", serif;
+        animation: fadeInUp 0.6s ease-out 0.2s backwards;
+      }
+
+      .cafe-count-display {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
+        background: white;
+        padding: 10px 32px;
+        border-radius: 25px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 1;
+        border: 1px solid #e0e0e0;
+        animation: fadeInUp 0.6s ease-out 0.3s backwards;
+      }
+
+      .count-number {
+        font-size: 32px;
+        font-weight: 900;
+        color: #6b4423;
+        font-family: "Arial", "Helvetica", sans-serif;
+        line-height: 1;
+      }
+
+      .count-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: #666;
+        letter-spacing: 0.5px;
+      }
+
+      .page-subtitle {
+        font-size: 16px;
+        font-weight: 500;
+        color: #6b4423;
+        margin: 0 0 20px 0;
+        position: relative;
+        z-index: 1;
+        letter-spacing: 2px;
+        animation: fadeInUp 0.6s ease-out 0.4s backwards;
+      }
+
+      .page-description {
+        font-size: 14px;
+        line-height: 2;
+        color: #666;
+        max-width: 700px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+        font-weight: 400;
+        animation: fadeInUp 0.6s ease-out 0.5s backwards;
+      }
+
+      /* ===== 2. フィルターセクション ===== */
+      .filters-section {
+        background: white;
+        padding: 20px;
+        border-bottom: 2px solid #e0e0e0;
+      }
+
+      .filter-row {
+        margin-bottom: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .filter-row:last-of-type {
+        margin-bottom: 12px;
+      }
+
+      .filter-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        min-width: 60px;
+      }
+
+      .filter-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        flex: 1;
+      }
+
+      /* フィルターボタン */
+      .filter-btn,
+      .feature-btn,
+      .price-btn {
+        padding: 8px 16px;
+        border: 2px solid #ddd;
+        background: white;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+
+      .filter-btn:hover,
+      .feature-btn:hover,
+      .price-btn:hover {
+        border-color: #6b4423;
+      }
+
+      .filter-btn.active,
+      .price-btn.active {
+        background: #6b4423;
+        color: white;
+        border-color: #6b4423;
+      }
+
+      .feature-btn.active {
+        background: #d4a574;
+        color: white;
+        border-color: #d4a574;
+      }
+
+      .price-detail {
+        font-size: 12px;
+      }
+
+      /* お気に入りボタン */
+      .favorite-btn {
+        padding: 8px 16px;
+        border: 2px solid #ddd;
+        background: white;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+      }
+
+      .favorite-btn .heart-icon {
+        color: #ea4335;
+        font-size: 16px;
+      }
+
+      .favorite-btn.active {
+        background: #ea4335;
+        color: white;
+        border-color: #ea4335;
+      }
+
+      .favorite-btn.active .heart-icon {
+        color: white;
+      }
+
+      .favorite-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        border: 1px solid rgba(62, 42, 30, 0.2);
+        color: #b98a62;
+        transition: all 0.2s ease;
+        background: #fff;
+      }
+
+      .favorite-icon-btn.is-active {
+        background: #b98a62;
+        color: #fff;
+        border-color: #b98a62;
+      }
+
+      /* 結果とリセット */
+      .filter-result-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .result-count {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+      }
+
+      .reset-btn {
+        background: none;
+        border: none;
+        color: #333;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: underline;
+        padding: 0;
+        transition: color 0.2s;
+      }
+
+      .reset-btn:hover {
+        color: #ea4335;
+      }
+
+      /* ===== 3. タブ切り替え（スマホのみ） ===== */
+      .view-tabs {
+        display: none;
+      }
+
+      /* ===== 4. コンテンツエリア ===== */
+      .content-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        min-height: 600px;
+        background: white;
+      }
+
+      /* マップセクション */
+      .map-section {
+        position: relative;
+        height: 600px;
+        border-right: 2px solid #e0e0e0;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* ===== マップコントロール ===== */
+      .map-controls {
+        position: absolute;
+        bottom: 20px;
+        left: auto;
+        right: 20px;
+        z-index: 10002;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .expand-btn,
+      .collapse-btn {
+        width: 44px;
+        height: 44px;
+        background: white;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: #333;
+      }
+
+      .expand-btn:hover,
+      .collapse-btn:hover {
+        background: #f5f5f5;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transform: scale(1.05);
+      }
+
+      .expand-btn:active,
+      .collapse-btn:active {
+        transform: scale(0.98);
+      }
+
+      /* ===== 拡大モード ===== */
+      .map-section.fullscreen {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9998;
+        margin: 0;
+        border: none;
+      }
+
+      .map-section.fullscreen #map {
+        width: 100%;
+        height: 100%;
+      }
+
+      @media (min-width: 769px) {
+        .map-section.fullscreen.sidebar-open {
+          right: 400px;
+        }
+
+        /* サイドバー表示時は縮小ボタンをリスト横へ */
+        .map-section.fullscreen.sidebar-open .map-controls {
+          top: 50%;
+          bottom: auto;
+          transform: translateY(-50%);
+        }
+      }
+
+      /* ===== フルスクリーンサイドバー（PC用） ===== */
+      .fullscreen-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease;
+      }
+
+      .fullscreen-sidebar.collapsed {
+        transform: translateX(400px);
+      }
+
+      .sidebar-toggle {
+        position: absolute;
+        left: -44px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 44px;
+        height: 80px;
+        background: white;
+        border: none;
+        border-radius: 8px 0 0 8px;
+        box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: #333;
+      }
+
+      .sidebar-toggle:hover {
+        background: #f5f5f5;
+        left: -48px;
+      }
+
+      .sidebar-toggle svg {
+        transition: transform 0.3s;
+      }
+
+      .fullscreen-sidebar.collapsed .toggle-icon-open {
+        display: none;
+      }
+
+      .fullscreen-sidebar.collapsed .toggle-icon-close {
+        display: block;
+      }
+
+      .sidebar-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .sidebar-sort-bar {
+        padding: 16px 20px;
+        background: #fafafa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      /* 自動スクロールコントロール */
+      .auto-scroll-control {
+        padding: 12px 20px;
+        background: #f9f9f9;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .auto-scroll-toggle {
+        width: 100%;
+        padding: 10px;
+        background: white;
+        border: 2px solid #6b4423;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        color: #6b4423;
+        transition: all 0.2s;
+      }
+
+      .auto-scroll-toggle:hover {
+        background: #6b4423;
+        color: white;
+      }
+
+      .auto-scroll-toggle.active {
+        background: #6b4423;
+        color: white;
+      }
+
+      .auto-scroll-toggle .play-icon,
+      .auto-scroll-toggle .pause-icon {
+        font-size: 12px;
+      }
+
+      .sidebar-cafe-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+      }
+
+      /* ===== PC版：写真強調カード ===== */
+      .sidebar-cafe-list.photo-emphasized {
+        padding: 12px;
+        scroll-behavior: smooth;
+      }
+
+      .photo-emphasized .cafe-card {
+        margin-bottom: 16px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.3s;
+        background: white;
+      }
+
+      .photo-emphasized .cafe-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      }
+
+      .photo-emphasized .cafe-card-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .photo-emphasized .cafe-card-content {
+        padding: 16px;
+      }
+
+      .photo-emphasized .cafe-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2d2424;
+        margin: 0 0 8px 0;
+      }
+
+      .photo-emphasized .cafe-rating {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .photo-emphasized .stars {
+        color: #ffb800;
+        font-size: 14px;
+      }
+
+      .photo-emphasized .rating-number {
+        font-size: 14px;
+        color: #666;
+        font-weight: 600;
+      }
+
+      .photo-emphasized .cafe-area {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 8px;
+      }
+
+      .photo-emphasized .cafe-comment {
+        font-size: 13px;
+        color: #666;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* ===== スマホ版：下部カルーセル ===== */
+      .fullscreen-bottom-list {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        padding: 12px 0;
+      }
+
+      .mobile-auto-scroll-control {
+        position: absolute;
+        top: -50px;
+        right: 16px;
+        z-index: 10001;
+      }
+
+      .mobile-auto-scroll-toggle {
+        width: 44px;
+        height: 44px;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        color: #6b4423;
+        transition: all 0.2s;
+      }
+
+      .mobile-auto-scroll-toggle:hover {
+        background: #6b4423;
+        color: white;
+      }
+
+      .mobile-auto-scroll-toggle.active {
+        background: #6b4423;
+        color: white;
+      }
+
+      .bottom-cafe-carousel {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-behavior: smooth;
+      }
+
+      .bottom-cafe-carousel::-webkit-scrollbar {
+        display: none;
+      }
+
+      .carousel-track {
+        display: flex;
+        gap: 12px;
+        padding: 0 16px 10px 16px;
+      }
+
+      .carousel-track .cafe-card {
+        flex: 0 0 280px;
+        width: 280px;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      .carousel-track .cafe-card:active {
+        transform: scale(0.98);
+      }
+
+      .carousel-track .cafe-card-image {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .carousel-track .cafe-card-content {
+        padding: 12px;
+      }
+
+      .carousel-track .cafe-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2d2424;
+        margin: 0 0 6px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .carousel-track .cafe-rating {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 6px;
+      }
+
+      .carousel-track .stars {
+        color: #ffb800;
+        font-size: 12px;
+      }
+
+      .carousel-track .rating-number {
+        font-size: 12px;
+        color: #666;
+        font-weight: 600;
+      }
+
+      .carousel-track .cafe-area {
+        font-size: 12px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .carousel-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 0 4px 0;
+      }
+
+      .carousel-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ddd;
+        transition: all 0.3s;
+      }
+
+      .carousel-indicator.active {
+        background: #6b4423;
+        width: 24px;
+        border-radius: 4px;
+      }
+
+      .map-section.fullscreen.mobile-list-visible {
+        padding-bottom: 240px;
+      }
+
+      .map-section.fullscreen.mobile-list-visible #map {
+        height: 100%;
+      }
+
+      @media (max-width: 768px) {
+        .map-controls {
+          bottom: 24px;
+        }
+
+        .fullscreen-sidebar {
+          display: none !important;
+        }
+
+        .map-section.fullscreen {
+          right: 0 !important;
+        }
+
+        .fullscreen-bottom-list {
+          display: none;
+        }
+
+        body.map-fullscreen-mode .fullscreen-bottom-list {
+          display: block;
+        }
+      }
+
+      body.map-fullscreen-mode .page-header,
+      body.map-fullscreen-mode .filters-section,
+      body.map-fullscreen-mode .view-tabs,
+      body.map-fullscreen-mode .list-section,
+      body.map-fullscreen-mode .recommend-section {
+        display: none;
+      }
+
+      body.map-fullscreen-mode {
+        overflow: hidden;
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+
+      .fullscreen-sidebar {
+        animation: slideInRight 0.3s ease-out;
+      }
+
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .fullscreen-sidebar {
+          width: 350px;
+        }
+
+        .fullscreen-sidebar.collapsed {
+          transform: translateX(350px);
+        }
+
+        .map-section.fullscreen.sidebar-open {
+          right: 350px;
+        }
+      }
+
+      .map-section.fullscreen .map-search-overlay {
+        top: 20px;
+        left: 20px;
+        transform: none;
+        max-width: 400px;
+      }
+
+      @media (max-width: 768px) {
+        .map-section.fullscreen .map-search-overlay {
+          left: 50%;
+          transform: translateX(-50%);
+        }
+      }
+
+      /* 検索バー（マップ内上部） */
+      .map-search-overlay {
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 32px);
+        max-width: 500px;
+        z-index: 1000;
+      }
+
+      .search-bar-container {
+        position: relative;
+      }
+
+      .map-search-input {
+        width: 100%;
+        height: 48px;
+        padding: 0 48px 0 16px;
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        font-size: 15px;
+        outline: none;
+      }
+
+      .map-search-input:focus {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .search-clear-btn {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: #e0e0e0;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        display: none;
+      }
+
+      .search-suggestions {
+        margin-top: 8px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        list-style: none;
+        padding: 0;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      }
+
+      .search-suggestions.active {
+        display: block;
+      }
+
+      /* リストセクション */
+      .list-section {
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* 並び替えバー（リスト内上部） */
+      .sort-bar {
+        padding: 16px 20px;
+        background: #fafafa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .sort-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #666;
+      }
+
+      .sort-dropdown {
+        padding: 8px 32px 8px 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+      }
+
+      .sort-dropdown:focus {
+        outline: none;
+        border-color: #6b4423;
+      }
+
+      /* カフェリスト */
+      .cafe-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+      }
+
+      /* ===== 5. おすすめセクション ===== */
+      .recommend-section {
+        background: white;
+        padding: 40px 20px;
+        border-top: 2px solid #e0e0e0;
+      }
+
+      .recommend-card {
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 32px;
+        background: linear-gradient(135deg, #6b4423 0%, #8b6b47 100%);
+        border-radius: 16px;
+        color: white;
+      }
+
+      .recommend-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 16px 0;
+      }
+
+      .recommend-text {
+        font-size: 15px;
+        line-height: 1.6;
+        margin: 0 0 24px 0;
+        opacity: 0.95;
+      }
+
+      .recommend-btn {
+        display: inline-block;
+        padding: 14px 32px;
+        background: white;
+        color: #6b4423;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .recommend-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      /* ===== スマホ用レスポンシブ ===== */
+      @media (max-width: 768px) {
+        .mobile-only {
+          display: block;
+        }
+
+        /* ページヘッダー */
+        .page-header {
+          padding: 40px 20px 35px 20px;
+        }
+
+        .page-label {
+          font-size: 10px;
+          padding: 5px 16px;
+          letter-spacing: 2px;
+        }
+
+        .page-title {
+          font-size: 28px;
+          margin-bottom: 20px;
+          letter-spacing: 4px;
+        }
+
+        .cafe-count-display {
+          padding: 8px 24px;
+          margin-bottom: 20px;
+        }
+
+        .count-number {
+          font-size: 24px;
+        }
+
+        .count-label {
+          font-size: 13px;
+        }
+
+        .page-subtitle {
+          font-size: 14px;
+          margin-bottom: 16px;
+          letter-spacing: 1.5px;
+        }
+
+        .page-description {
+          font-size: 13px;
+          line-height: 1.8;
+        }
+
+        .page-description br {
+          display: none;
+        }
+
+        /* フィルター */
+        .filters-section {
+          padding: 16px;
+        }
+
+        .filter-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .filter-label {
+          margin-bottom: 8px;
+        }
+
+        .filter-buttons {
+          width: 100%;
+        }
+
+        .price-detail {
+          display: none;
+        }
+
+        .favorite-btn {
+          width: 100%;
+          justify-content: center;
+          margin-left: 0;
+          margin-top: 8px;
+        }
+
+        /* タブ */
+        .view-tabs {
+          display: flex;
+          background: white;
+          border-bottom: 2px solid #e0e0e0;
+        }
+
+        .view-tab {
+          flex: 1;
+          padding: 14px;
+          border: none;
+          background: white;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          border-bottom: 3px solid transparent;
+          transition: all 0.2s;
+        }
+
+        .view-tab.active {
+          border-bottom-color: #6b4423;
+          color: #6b4423;
+        }
+
+        /* コンテンツエリア */
+        .content-area {
+          grid-template-columns: 1fr;
+        }
+
+        .map-section {
+          height: 500px;
+          border-right: none;
+        }
+
+        .list-section {
+          height: auto;
+          min-height: 500px;
+        }
+
+        /* デフォルトはマップ表示 */
+        .cafe-map-page .list-section {
+          display: none;
+        }
+
+        /* リスト表示モード */
+        .cafe-map-page.view-list .map-section {
+          display: none;
+        }
+
+        .cafe-map-page.view-list .list-section {
+          display: flex;
+        }
+
+        /* おすすめセクション */
+        .recommend-section {
+          padding: 32px 16px;
+        }
+
+        .recommend-card {
+          padding: 24px 20px;
+        }
+
+        .recommend-title {
+          font-size: 20px;
+        }
+      }
+
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .page-title {
+          font-size: 40px;
+        }
+
+        .count-number {
+          font-size: 32px;
+        }
+      }
+
+      .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(35, 27, 23, 0.16);
+      }
+
+      .cafe-card.expanded {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .cafe-card-details {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s;
+      }
+
+      .cafe-card.expanded .cafe-card-details {
+        max-height: 500px;
+      }
+
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .suggestion-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background 0.2s;
+      }
+
+      .suggestion-item:hover {
+        background: #f5f5f5;
+      }
+
+      .suggestion-icon {
+        font-size: 18px;
+        width: 22px;
+        text-align: center;
+      }
+
+      .suggestion-text {
+        flex: 1;
+        font-size: 14px;
+      }
+
+      .suggestion-text strong {
+        color: #6b4423;
+        font-weight: 600;
+      }
+
+      .suggestion-type {
+        font-size: 12px;
+        color: #757575;
+        background: #f0f0f0;
+        padding: 2px 8px;
+        border-radius: 12px;
+      }
+
+      .no-results {
+        padding: 12px 16px;
+        color: #6d5b4c;
+        font-size: 13px;
+      }
+
+      .custom-cafe-marker {
+        background: none;
+        border: none;
+      }
+
+      .custom-cafe-marker i {
+        font-size: 42px;
+        color: #ea4335;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        transition: transform 0.2s;
+      }
+
+      .custom-cafe-marker:hover i {
+        transform: scale(1.1);
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+      }
+
+      .cafe-popup-persistent .leaflet-popup-content-wrapper {
+        padding: 0;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 24px 50px rgba(35, 27, 23, 0.2);
+      }
+
+      .cafe-popup-persistent .leaflet-popup-content {
+        margin: 0;
+        width: 300px;
+      }
+
+      .popup-image {
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+      }
+    </style>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="js/cafe-data.js" defer></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/cafe-map.js" defer></script>
+  </head>
+  <body class="bg-background text-textbase font-sans">
+    <!-- グローバルナビゲーション -->
+    <nav
+      id="site-nav"
+      class="fixed inset-x-0 top-0 z-50 bg-background/80 text-textbase transition duration-300"
+      aria-label="メインナビゲーション"
+    >
+      <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
+        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-2xl">
+          岡山大学 珈琲サークル「ゆげ」
+        </a>
+        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-xl">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a
+            href="join.html"
+            class="rounded-full bg-secondary px-5 py-2.5 text-base text-primary transition hover:bg-accent md:text-lg"
+          >
+            入会案内
+          </a>
+        </div>
+        <button
+          id="menu-toggle"
+          class="md:hidden"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <span class="sr-only">メニューを開く</span>
+          <svg
+            class="h-7 w-7"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18" />
+            <path d="M3 12h18" />
+            <path d="M3 18h18" />
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden border-t border-primary/20 bg-background/95 text-textbase md:hidden">
+        <div class="flex flex-col gap-4 px-6 py-4 text-sm font-semibold">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a href="join.html" class="text-current hover:text-secondary md:px-2 md:py-1">入会案内</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- メインコンテンツ -->
+    <main class="pt-28">
+      <div class="cafe-map-page">
+    <!-- ページヘッダー -->
+    <section class="page-header">
+          <div class="page-label">CAFE MAP</div>
+          <h1 class="page-title">岡山カフェマップ</h1>
+          <div class="cafe-count-display">
+            <span class="count-number" id="cafe-count">0</span>
+            <span class="count-label">軒のカフェを掲載</span>
+          </div>
+          <p class="page-subtitle">私たちのカフェ巡りの記録</p>
+          <p class="page-description">
+            「ゆげ」のメンバーが3-4人の班を組んで、岡山市内の様々なカフェを訪問しています。<br />
+            実際に訪れたからこそわかる、コーヒーの味わい、お店の雰囲気、居心地の良さなど、<br />
+            リアルな情報をこのマップにまとめました。あなたのお気に入りのカフェを見つけてください！
+          </p>
+        </section>
+
+        <section class="filters-section">
+          <div class="filter-row">
+            <span class="filter-label">エリア:</span>
+            <div class="filter-buttons">
+              <button class="filter-btn active" data-type="area" data-value="all" type="button">
+                すべて
+              </button>
+              <button class="filter-btn" data-type="area" data-value="岡山駅周辺" type="button">
+                岡山駅周辺
+              </button>
+              <button class="filter-btn" data-type="area" data-value="表町・柳川" type="button">
+                表町・柳川
+              </button>
+              <button class="filter-btn" data-type="area" data-value="奉還町" type="button">
+                奉還町
+              </button>
+              <button class="filter-btn" data-type="area" data-value="大学周辺" type="button">
+                大学周辺
+              </button>
+              <button class="filter-btn" data-type="area" data-value="その他" type="button">
+                その他のエリア
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <span class="filter-label">特徴:</span>
+            <div class="filter-buttons">
+              <button class="feature-btn" data-feature="おしゃれな空間" type="button">
+                おしゃれな空間
+              </button>
+              <button class="feature-btn" data-feature="静かで落ち着く" type="button">
+                静かで落ち着く
+              </button>
+              <button class="feature-btn" data-feature="作業しやすい" type="button">
+                作業しやすい
+              </button>
+              <button class="feature-btn" data-feature="スイーツが美味しい" type="button">
+                スイーツが美味しい
+              </button>
+              <button class="feature-btn" data-feature="テラス席あり" type="button">
+                テラス席あり
+              </button>
+              <button class="feature-btn" data-feature="駐車場あり" type="button">
+                駐車場あり
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <span class="filter-label">価格帯:</span>
+            <div class="filter-buttons">
+              <button class="price-btn active" data-type="price" data-value="all" type="button">
+                すべて
+              </button>
+              <button class="price-btn" data-type="price" data-value="1" type="button">
+                ￥<span class="price-detail">（〜500円）</span>
+              </button>
+              <button class="price-btn" data-type="price" data-value="2" type="button">
+                ￥￥<span class="price-detail">（500-800円）</span>
+              </button>
+              <button class="price-btn" data-type="price" data-value="3" type="button">
+                ￥￥￥<span class="price-detail">（800円〜）</span>
+              </button>
+            </div>
+            <button class="favorite-btn" id="favorite-filter" type="button" aria-pressed="false">
+              <span class="heart-icon">♡</span> お気に入りのみ
+            </button>
+          </div>
+
+          <div class="filter-result-row">
+            <span class="result-count" id="result-count">15件のカフェが見つかりました。</span>
+            <button class="reset-btn" id="reset-filters" type="button">フィルターリセット</button>
+          </div>
+        </section>
+
+        <div class="view-tabs mobile-only">
+          <button class="view-tab active" id="map-tab" type="button" aria-pressed="true">マップ</button>
+          <button class="view-tab" id="list-tab" type="button" aria-pressed="false">リスト</button>
+        </div>
+
+        <div class="content-area">
+          <div class="map-section" id="map-section">
+            <div class="map-search-overlay">
+              <div class="search-bar-container">
+                <input
+                  type="text"
+                  id="cafe-search"
+                  class="map-search-input"
+                  placeholder="🔍 カフェ名やエリアで検索..."
+                  autocomplete="off"
+                  aria-label="カフェ検索"
+                />
+                <button class="search-clear-btn" id="clear-search" type="button" aria-label="検索をクリア">
+                  ×
+                </button>
+              </div>
+              <ul class="search-suggestions" id="search-suggestions"></ul>
+            </div>
+
+            <div id="map"></div>
+            <div class="map-controls">
+              <button class="expand-btn" id="expand-map-btn" type="button" title="マップを拡大">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                </svg>
+              </button>
+              <button
+                class="collapse-btn"
+                id="collapse-map-btn"
+                type="button"
+                title="元に戻す"
+                style="display: none;"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="list-section" id="list-section">
+            <div class="sort-bar">
+              <label class="sort-label" for="sort-select">並び替え:</label>
+              <select id="sort-select" class="sort-dropdown">
+                <option value="recommended">おすすめ順</option>
+                <option value="newest">訪問日が新しい順</option>
+                <option value="rating">評価が高い順</option>
+                <option value="distance">岡山駅からの距離順</option>
+              </select>
+            </div>
+
+            <div class="cafe-list" id="cafe-list"></div>
+          </div>
+        </div>
+
+        <div class="fullscreen-sidebar" id="fullscreen-sidebar" style="display: none;">
+          <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="サイドバーを開閉">
+            <svg class="toggle-icon-open" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <polyline points="15 18 9 12 15 6" stroke="currentColor" stroke-width="2" />
+            </svg>
+            <svg
+              class="toggle-icon-close"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              style="display: none;"
+            >
+              <polyline points="9 18 15 12 9 6" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+          <div class="sidebar-content">
+            <div class="sidebar-sort-bar">
+              <label class="sort-label" for="sidebar-sort">並び替え:</label>
+              <select class="sort-dropdown" id="sidebar-sort">
+                <option value="recommended">おすすめ順</option>
+                <option value="newest">訪問日が新しい順</option>
+                <option value="rating">評価が高い順</option>
+                <option value="distance">岡山駅からの距離順</option>
+              </select>
+            </div>
+            <div class="auto-scroll-control">
+              <button class="auto-scroll-toggle" id="auto-scroll-toggle" type="button">
+                <span class="play-icon">▶</span>
+                <span class="pause-icon" style="display: none;">⏸</span>
+                <span class="control-text">自動スクロール</span>
+              </button>
+            </div>
+            <div class="sidebar-cafe-list photo-emphasized" id="sidebar-cafe-list"></div>
+          </div>
+        </div>
+
+        <div class="fullscreen-bottom-list" id="fullscreen-bottom-list" style="display: none;">
+          <div class="mobile-auto-scroll-control">
+            <button class="mobile-auto-scroll-toggle" id="mobile-auto-scroll-toggle" type="button">
+              <span class="play-icon">▶</span>
+              <span class="pause-icon" style="display: none;">⏸</span>
+            </button>
+          </div>
+          <div class="bottom-cafe-carousel" id="bottom-cafe-carousel">
+            <div class="carousel-track" id="carousel-track"></div>
+          </div>
+          <div class="carousel-indicators" id="carousel-indicators"></div>
+        </div>
+
+        <section class="recommend-section">
+          <div class="recommend-card">
+            <h3 class="recommend-title">おすすめのカフェを教えて！</h3>
+            <p class="recommend-text">
+              あなたのおすすめカフェ情報をお待ちしています。<br />
+              InstagramのDMでお気軽にご連絡ください！
+            </p>
+            <a
+              href="https://www.instagram.com/okadai_coffee_circle/"
+              target="_blank"
+              rel="noreferrer"
+              class="recommend-btn"
+            >
+              📷 InstagramでDMを送る
+            </a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-primary text-white">
+      <div class="mx-auto flex max-w-screen-2xl flex-col gap-6 px-6 py-12 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-lg font-semibold">岡山大学 珈琲サークル「ゆげ」</p>
+          <p class="mt-2 text-sm text-white/80">
+            温かさと活気が広がる場所で、コーヒーの時間を一緒に楽しみませんか。
+          </p>
+        </div>
+        <div class="flex flex-col gap-4 text-sm">
+          <a
+            href="https://www.instagram.com/okadai_coffee_circle/"
+            class="inline-flex items-center gap-2 font-semibold text-secondary hover:text-accent"
+            aria-label="Instagram"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+            Instagram
+          </a>
+          <a href="join.html" class="font-semibold text-white/80 hover:text-accent">
+            お問い合わせはこちら
+          </a>
+        </div>
+      </div>
+      <div class="border-t border-white/20 py-4 text-center text-xs text-white/70">
+        © 2025 岡山大学 珈琲サークル「ゆげ」
+      </div>
+    </footer>
+
+    <button
+      id="back-to-top"
+      class="fixed bottom-6 right-6 rounded-full bg-secondary px-4 py-3 text-sm font-semibold text-primary shadow-lg opacity-0 pointer-events-none transition hover:bg-accent"
+      type="button"
+      aria-label="トップへ戻る"
+    >
+      ↑ Top
+    </button>
+
+    <div
+      id="cafe-lightbox"
+      class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 p-6"
+      aria-hidden="true"
+    >
+      <div class="relative max-w-3xl">
+        <button
+          id="cafe-lightbox-close"
+          type="button"
+          class="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-primary"
+        >
+          閉じる
+        </button>
+        <img id="cafe-lightbox-image" src="" alt="" class="max-h-[80vh] w-full rounded-2xl object-cover" />
+      </div>
+    </div>
+
+    <div id="share-status" class="sr-only" aria-live="polite"></div>
+
+    <script>
+      const nav = document.getElementById("site-nav");
+      const menuToggle = document.getElementById("menu-toggle");
+      const mobileMenu = document.getElementById("mobile-menu");
+
+      const setNavStyle = () => {
+        if (window.scrollY > 10) {
+          nav.classList.add("bg-background/95", "shadow-lg", "backdrop-blur");
+        } else {
+          nav.classList.remove("bg-background/95", "shadow-lg", "backdrop-blur");
+        }
+      };
+
+      menuToggle.addEventListener("click", () => {
+        const isOpen = mobileMenu.classList.toggle("hidden") === false;
+        menuToggle.setAttribute("aria-expanded", isOpen);
+      });
+
+      window.addEventListener("scroll", setNavStyle);
+      window.addEventListener("load", setNavStyle);
+    </script>
+  </body>
+</html>

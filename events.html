@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>イベント・スケジュール | 岡山大学 珈琲サークル「ゆげ」</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3E2A1E",
+              secondary: "#B98A62",
+              accent: "#E3C5A4",
+              background: "#F7F2EC",
+              textbase: "#231B17",
+              muted: "#6D5B4C",
+            },
+            fontFamily: {
+              sans: ["Zen Kaku Gothic New", "sans-serif"],
+              display: ["Playfair Display", "serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (max-width: 640px) {
+        html {
+          font-size: 15px;
+        }
+      }
+      @media (min-width: 1024px) {
+        html {
+          font-size: 18px;
+        }
+      }
+      .fade-section {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+      }
+      .fade-section.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .hover-lift:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 40px rgba(35, 27, 23, 0.16);
+      }
+      .hero-reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: heroRise 0.8s ease-out forwards;
+      }
+      @keyframes heroRise {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .hero-reveal {
+          animation: none;
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 1px;
+        background: rgba(62, 42, 30, 0.12);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .calendar-cell {
+        background: rgba(255, 255, 255, 0.9);
+        min-height: 92px;
+      }
+      .calendar-cell button {
+        min-height: 92px;
+      }
+      .calendar-fade {
+        transition: opacity 0.25s ease;
+      }
+      .calendar-fade.is-changing {
+        opacity: 0.4;
+      }
+    </style>
+    <script src="js/main.js" defer></script>
+  </head>
+  <body class="bg-background text-textbase font-sans">
+    <!-- グローバルナビゲーション -->
+    <nav
+      id="site-nav"
+      class="fixed inset-x-0 top-0 z-50 bg-background/80 text-textbase transition duration-300"
+      aria-label="メインナビゲーション"
+    >
+      <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
+        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-2xl">
+          岡山大学 珈琲サークル「ゆげ」
+        </a>
+        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-xl">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a
+            href="join.html"
+            class="rounded-full bg-secondary px-5 py-2.5 text-base text-primary transition hover:bg-accent md:text-lg"
+          >
+            入会案内
+          </a>
+        </div>
+        <button
+          id="menu-toggle"
+          class="md:hidden"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <span class="sr-only">メニューを開く</span>
+          <svg
+            class="h-7 w-7"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18" />
+            <path d="M3 12h18" />
+            <path d="M3 18h18" />
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden border-t border-primary/20 bg-background/95 text-textbase md:hidden">
+        <div class="flex flex-col gap-4 px-6 py-4 text-sm font-semibold">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a href="join.html" class="text-current hover:text-secondary md:px-2 md:py-1">入会案内</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ページヘッダー -->
+    <header class="relative pt-24">
+      <div class="mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
+        <p class="hero-reveal text-xs uppercase tracking-[0.35em] text-secondary" style="animation-delay: 0.2s;">
+          Events
+        </p>
+        <h1 class="hero-reveal mt-4 text-4xl font-semibold text-primary md:text-5xl" style="animation-delay: 0.4s;">
+          イベント・スケジュール
+        </h1>
+        <p class="hero-reveal mt-4 text-base text-muted md:text-lg" style="animation-delay: 0.6s;">
+          ゆげの活動予定をチェック
+        </p>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="mx-auto max-w-screen-2xl px-6 pb-20">
+      <section class="rounded-3xl bg-white/80 p-6 shadow md:p-10">
+        <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="hero-reveal flex items-center gap-3" style="animation-delay: 0.8s;">
+                <button
+                  type="button"
+                  class="rounded-full border border-primary/20 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-secondary"
+                  id="prev-month"
+                >
+                  <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                  前月
+                </button>
+                <h2 id="current-month" class="text-2xl font-semibold text-primary md:text-3xl"></h2>
+                <button
+                  type="button"
+                  class="rounded-full border border-primary/20 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-secondary"
+                  id="next-month"
+                >
+                  次月
+                  <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="hero-reveal flex items-center gap-2" style="animation-delay: 0.8s;">
+                  <button
+                    type="button"
+                    class="view-toggle rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary"
+                    data-view="calendar"
+                  >
+                    カレンダー表示
+                  </button>
+                  <button
+                    type="button"
+                    class="view-toggle rounded-full border border-primary/20 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-secondary"
+                    data-view="list"
+                  >
+                    リスト表示
+                  </button>
+                </div>
+                <div class="hero-reveal flex flex-wrap items-center gap-2" style="animation-delay: 0.8s;">
+                  <span class="text-xs font-semibold text-muted">絞り込み</span>
+                  <button
+                    type="button"
+                    class="filter-button rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white"
+                    data-filter="all"
+                  >
+                    すべて
+                  </button>
+                  <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="regular">
+                    定期開催
+                  </button>
+                  <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="learn">
+                    学ぶ会
+                  </button>
+                  <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="booth">
+                    出店
+                  </button>
+                  <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="cafe">
+                    カフェ巡り
+                  </button>
+                  <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="special">
+                    特別
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-reveal mt-6 calendar-fade" style="animation-delay: 1s;" id="calendar-wrapper">
+              <div class="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-muted">
+                <span class="text-red-500">日</span>
+                <span>月</span>
+                <span>火</span>
+                <span>水</span>
+                <span>木</span>
+                <span>金</span>
+                <span class="text-blue-500">土</span>
+              </div>
+              <div id="calendar-grid" class="calendar-grid mt-3"></div>
+              <a
+                href="#event-details"
+                class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-secondary transition hover:text-primary"
+              >
+                詳細を見る
+                <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+              </a>
+            </div>
+
+            <div id="list-view" class="mt-6 hidden"></div>
+
+            <div class="hero-reveal mt-6 rounded-2xl bg-background/70 p-4" style="animation-delay: 1.2s;">
+              <h3 class="text-sm font-semibold text-primary">イベント凡例</h3>
+              <p class="mt-2 text-xs text-muted">
+                定期開催は毎月第二木曜日のカレンダー内にバッジで表示しています。
+              </p>
+              <div class="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
+                <span class="group inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-primary transition hover:bg-background/70">
+                  <span class="h-2.5 w-2.5 rounded-full bg-[#D2691E] transition group-hover:scale-110"></span>
+                  珈琲を学ぶ会
+                </span>
+                <span class="group inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-primary transition hover:bg-background/70">
+                  <span class="h-2.5 w-2.5 rounded-full bg-[#FF8C42] transition group-hover:scale-110"></span>
+                  出店・外部イベント
+                </span>
+                <span class="group inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-primary transition hover:bg-background/70">
+                  <span class="h-2.5 w-2.5 rounded-full bg-[#E8B4A8] transition group-hover:scale-110"></span>
+                  カフェ巡り
+                </span>
+                <span class="group inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-primary transition hover:bg-background/70">
+                  <span class="h-2.5 w-2.5 rounded-full bg-[#8B3A3A] transition group-hover:scale-110"></span>
+                  特別イベント
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div id="event-details" class="rounded-3xl bg-background/60 p-6 md:p-8">
+            <div class="hero-reveal" style="animation-delay: 1.4s;">
+              <h2 class="text-2xl font-semibold text-primary md:text-3xl">イベント詳細</h2>
+              <p class="mt-2 text-sm text-muted">気になる日付をクリックして詳細をチェックできます。</p>
+            </div>
+            <div class="mt-6 grid gap-6 md:grid-cols-2" id="event-cards" data-stagger></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div class="rounded-3xl bg-primary px-8 py-12 text-white md:px-12">
+          <div class="grid gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-center">
+            <div>
+              <h2 class="text-2xl font-semibold md:text-3xl">イベントは随時追加されます！</h2>
+              <p class="mt-4 text-sm text-white/80 md:text-base">
+                最新情報はInstagramでお知らせしています。ゆげの活動を一緒に追いかけましょう！
+              </p>
+            </div>
+            <div class="flex flex-col gap-3 md:items-end">
+              <a
+                href="https://www.instagram.com/okadai_coffee_circle/"
+                class="hover-lift inline-flex items-center gap-2 rounded-full bg-secondary px-8 py-3 text-sm font-semibold text-primary shadow-lg transition hover:bg-accent"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+                Instagramを見る
+              </a>
+              <button
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full border border-white/40 px-8 py-3 text-sm font-semibold text-white/90 transition hover:border-white"
+                aria-label="Googleカレンダーに追加"
+              >
+                <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+                カレンダーに追加（準備中）
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-primary text-white">
+      <div class="mx-auto flex max-w-screen-2xl flex-col gap-6 px-6 py-12 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-lg font-semibold">岡山大学 珈琲サークル「ゆげ」</p>
+          <p class="mt-2 text-sm text-white/80">
+            温かさと活気が広がる場所で、コーヒーの時間を一緒に楽しみませんか。
+          </p>
+        </div>
+        <div class="flex flex-col gap-4 text-sm">
+          <a
+            href="https://www.instagram.com/okadai_coffee_circle/"
+            class="inline-flex items-center gap-2 font-semibold text-secondary hover:text-accent"
+            aria-label="Instagram"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+            Instagram
+          </a>
+          <a href="join.html" class="font-semibold text-white/80 hover:text-accent">
+            お問い合わせはこちら
+          </a>
+        </div>
+      </div>
+      <div class="border-t border-white/20 py-4 text-center text-xs text-white/70">
+        © 2025 岡山大学 珈琲サークル「ゆげ」
+      </div>
+    </footer>
+
+    <button
+      id="back-to-top"
+      class="fixed bottom-6 right-6 rounded-full bg-secondary px-4 py-3 text-sm font-semibold text-primary shadow-lg opacity-0 pointer-events-none transition hover:bg-accent"
+      type="button"
+      aria-label="トップへ戻る"
+    >
+      ↑ Top
+    </button>
+
+    <script>
+      const nav = document.getElementById("site-nav");
+      const menuToggle = document.getElementById("menu-toggle");
+      const mobileMenu = document.getElementById("mobile-menu");
+
+      const setNavStyle = () => {
+        if (window.scrollY > 10) {
+          nav.classList.add("bg-background/95", "shadow-lg", "backdrop-blur");
+        } else {
+          nav.classList.remove("bg-background/95", "shadow-lg", "backdrop-blur");
+        }
+      };
+
+      menuToggle.addEventListener("click", () => {
+        const isOpen = mobileMenu.classList.toggle("hidden") === false;
+        menuToggle.setAttribute("aria-expanded", isOpen);
+      });
+
+      window.addEventListener("scroll", setNavStyle);
+      window.addEventListener("load", setNavStyle);
+
+      const eventTypes = {
+        regular: {
+          label: "定期開催",
+          color: "#4A3728",
+          badge: "bg-[#4A3728] text-white transition hover:bg-[#3B2C22]",
+        },
+        learn: {
+          label: "珈琲を学ぶ会",
+          color: "#D2691E",
+          badge: "bg-[#D2691E] text-white transition hover:bg-[#B85A1A]",
+        },
+        booth: {
+          label: "出店・外部イベント",
+          color: "#FF8C42",
+          badge: "bg-[#FF8C42] text-white transition hover:bg-[#E67833]",
+        },
+        cafe: {
+          label: "カフェ巡り",
+          color: "#E8B4A8",
+          badge: "bg-[#E8B4A8] text-primary transition hover:bg-[#DCA197]",
+        },
+        special: {
+          label: "特別イベント",
+          color: "#8B3A3A",
+          badge: "bg-[#8B3A3A] text-white transition hover:bg-[#7A3030]",
+        },
+      };
+
+      const events = [
+        {
+          date: "2026-01-18",
+          type: "learn",
+          title: "コーヒーの産地を知ろう",
+          time: "14:00-16:00",
+          location: "岡山大学〇〇棟",
+          description:
+            "中南米、アフリカ、アジア...世界のコーヒー産地について学びます。飲み比べも予定しています。",
+          signup: "参加希望はInstagramのDMでもOKです。",
+          image: "images/event-jan-2.jpg",
+        },
+        {
+          date: "2026-01-25",
+          type: "cafe",
+          title: "岡山駅周辺のカフェ探訪",
+          time: "13:00-17:00",
+          location: "岡山駅東口",
+          description:
+            "岡山駅周辺の人気カフェを巡ります！新しいお気に入りを一緒に見つけましょう。",
+          signup: "集合場所は前日までに共有します。",
+          image: "images/event-jan-3.jpg",
+        },
+        {
+          date: "2026-02-13",
+          type: "regular",
+          title: "バレンタイン特別企画",
+          time: "18:00-20:00",
+          location: "岡山大学〇〇棟",
+          description:
+            "コーヒーとチョコレートのペアリングを楽しもう！甘い香りに包まれる回です。",
+          signup: "参加希望はLINEでご連絡ください。",
+          image: "images/event-feb-1.jpg",
+        },
+        {
+          date: "2026-02-15",
+          type: "learn",
+          title: "焙煎度による味の違い",
+          time: "14:00-16:00",
+          location: "岡山大学〇〇棟",
+          description:
+            "浅煎り、中煎り、深煎り...焙煎度の違いを体験します。初心者向けの解説付きです。",
+          signup: "定員制のため、早めの申込みがおすすめです。",
+          image: "images/event-feb-2.jpg",
+        },
+        {
+          date: "2026-02-22",
+          type: "booth",
+          title: "学祭でコーヒー販売！",
+          time: "10:00-16:00",
+          location: "岡山大学キャンパス",
+          description:
+            "学内イベントでドリップコーヒーを販売します。お手伝い大歓迎！",
+          signup: "スタッフ希望はフォームから受付予定です。",
+          image: "images/event-feb-3.jpg",
+        },
+        {
+          date: "2026-03-13",
+          type: "regular",
+          title: "春休み前の交流会",
+          time: "18:00-20:00",
+          location: "岡山大学〇〇棟",
+          description:
+            "春休みの計画を語りながら、コーヒーでリラックス。新メンバー歓迎です。",
+          signup: "飛び入り参加もOKです。",
+          image: "images/event-mar-1.jpg",
+        },
+        {
+          date: "2026-03-21",
+          type: "special",
+          title: "プロの焙煎士による焙煎ワークショップ",
+          time: "13:00-17:00",
+          location: "〇〇焙煎所（岡山市内）",
+          description:
+            "プロから直接学ぶ、本格的な焙煎体験！※要事前申込・参加費別途",
+          signup: "応募フォームはInstagramで告知します。",
+          image: "images/event-mar-2.jpg",
+        },
+        {
+          date: "2026-03-28",
+          type: "cafe",
+          title: "倉敷美観地区カフェツアー",
+          time: "11:00-17:00",
+          location: "倉敷駅",
+          description:
+            "美観地区の雰囲気あるカフェを巡ります。写真好きの方にもおすすめ！",
+          signup: "参加希望はLINEでご連絡ください。",
+          image: "images/event-mar-3.jpg",
+        },
+      ];
+
+      const calendarGrid = document.getElementById("calendar-grid");
+      const currentMonthLabel = document.getElementById("current-month");
+      const calendarWrapper = document.getElementById("calendar-wrapper");
+      const listView = document.getElementById("list-view");
+      const eventCards = document.getElementById("event-cards");
+
+      let currentMonth = new Date(2026, 0, 1);
+      let activeFilter = "all";
+      let activeView = "calendar";
+
+      const formatMonth = (date) => `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+      const formatDateLabel = (date) =>
+        `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+
+      const toDateKey = (date) => date.toISOString().split("T")[0];
+
+      const getEventsForDate = (dateKey) =>
+        events.filter((event) => event.date === dateKey && (activeFilter === "all" || event.type === activeFilter));
+
+      const renderCalendar = () => {
+        calendarWrapper.classList.add("is-changing");
+        setTimeout(() => calendarWrapper.classList.remove("is-changing"), 200);
+
+        currentMonthLabel.textContent = formatMonth(currentMonth);
+        calendarGrid.innerHTML = "";
+
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstThursday = ((4 - firstDay + 7) % 7) + 1;
+        const secondThursday = firstThursday + 7;
+        const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+        const today = new Date();
+
+        for (let i = 0; i < totalCells; i += 1) {
+          const dayNumber = i - firstDay + 1;
+          const cell = document.createElement("div");
+          cell.className = "calendar-cell";
+
+          if (dayNumber > 0 && dayNumber <= daysInMonth) {
+            const date = new Date(year, month, dayNumber);
+            const dateKey = toDateKey(date);
+            const dayEvents = getEventsForDate(dateKey);
+            const isSecondThursday = dayNumber === secondThursday;
+            const isToday =
+              today.getFullYear() === year &&
+              today.getMonth() === month &&
+              today.getDate() === dayNumber;
+
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `group relative flex h-full w-full flex-col items-start gap-2 px-3 py-2 text-left text-sm font-semibold transition hover:bg-background/80 ${
+              isToday ? "ring-2 ring-secondary" : ""
+            } ${isSecondThursday ? "bg-[#4A3728]/10" : ""}`;
+
+            const dayLabel = document.createElement("span");
+            const dayOfWeek = date.getDay();
+            if (dayOfWeek === 0) {
+              dayLabel.className = "text-red-500";
+            } else if (dayOfWeek === 6) {
+              dayLabel.className = "text-blue-500";
+            } else {
+              dayLabel.className = "text-textbase";
+            }
+            dayLabel.textContent = dayNumber.toString();
+
+            button.appendChild(dayLabel);
+
+            const tooltipParts = [];
+
+            if (isSecondThursday) {
+              const badge = document.createElement("span");
+              badge.className =
+                "mt-1 inline-flex items-center rounded-full bg-[#4A3728] px-2 py-0.5 text-xs font-semibold text-white";
+              badge.textContent = "定期開催";
+              button.appendChild(badge);
+              tooltipParts.push("毎月第二木曜日は定期開催日です");
+            }
+
+            if (dayEvents.length) {
+              const dots = document.createElement("div");
+              dots.className = "mt-auto flex flex-wrap gap-1";
+              dayEvents.forEach((event) => {
+                const dot = document.createElement("span");
+                dot.className = "h-2 w-2 rounded-full transition group-hover:scale-110";
+                dot.style.backgroundColor = eventTypes[event.type].color;
+                dots.appendChild(dot);
+              });
+              button.appendChild(dots);
+
+              tooltipParts.push(dayEvents.map((event) => event.title).join(" / "));
+
+              button.addEventListener("click", () => {
+                const target = document.getElementById(`event-${dateKey}`);
+                if (target) {
+                  target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              });
+            }
+
+            if (tooltipParts.length) {
+              const tooltip = document.createElement("div");
+              tooltip.className =
+                "pointer-events-none absolute bottom-2 left-1/2 z-10 w-max -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100";
+              tooltip.textContent = tooltipParts.join(" / ");
+              button.appendChild(tooltip);
+            }
+
+            cell.appendChild(button);
+          } else {
+            cell.innerHTML = "<div class=\"h-full w-full\"></div>";
+          }
+
+          calendarGrid.appendChild(cell);
+        }
+      };
+
+      const renderEventCards = () => {
+        eventCards.innerHTML = "";
+        const sortedEvents = [...events].sort((a, b) => a.date.localeCompare(b.date));
+        const filteredEvents = sortedEvents.filter(
+          (event) => activeFilter === "all" || event.type === activeFilter
+        );
+        const firstMonthKey = filteredEvents.length ? filteredEvents[0].date.slice(0, 7) : "";
+        let initialCardIndex = 0;
+        let staggerIndex = 0;
+
+        filteredEvents.forEach((event) => {
+          const date = new Date(event.date);
+          const card = document.createElement("article");
+          const isFirstMonth = event.date.startsWith(firstMonthKey);
+          if (isFirstMonth) {
+            card.className = "hero-reveal hover-lift rounded-3xl bg-background/70 p-6 shadow";
+            card.style.animationDelay = `${(1.6 + initialCardIndex * 0.1).toFixed(1)}s`;
+            initialCardIndex += 1;
+          } else {
+            card.className = "stagger-item fade-section hover-lift rounded-3xl bg-background/70 p-6 shadow";
+            card.style.transitionDelay = `${(staggerIndex * 0.1).toFixed(1)}s`;
+            staggerIndex += 1;
+          }
+          card.id = `event-${event.date}`;
+          card.dataset.type = event.type;
+
+          card.innerHTML = `
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-lg font-semibold text-primary">${formatDateLabel(date)}</p>
+                <p class="mt-1 text-sm font-semibold text-muted">${event.title}</p>
+              </div>
+              <span class="rounded-full px-3 py-1 text-xs font-semibold ${eventTypes[event.type].badge}">
+                ${eventTypes[event.type].label}
+              </span>
+            </div>
+            <div class="mt-4 space-y-2 text-sm text-muted">
+              <p class="flex items-center gap-2"><i class="fa-regular fa-clock" aria-hidden="true"></i>${event.time}</p>
+              <p class="flex items-center gap-2"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>${event.location}</p>
+            </div>
+            <p class="mt-4 text-sm leading-6 text-muted">${event.description}</p>
+            <p class="mt-4 text-sm font-semibold text-primary">参加方法：<span class="text-muted">${event.signup}</span></p>
+            <div class="mt-4 overflow-hidden rounded-2xl">
+              <img
+                src="${event.image}"
+                alt="${event.title}のイメージ"
+                loading="lazy"
+                decoding="async"
+                class="h-40 w-full object-cover"
+               
+              />
+            </div>
+          `;
+
+          eventCards.appendChild(card);
+        });
+      };
+
+      const cardObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              cardObserver.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.2 }
+      );
+
+      const observeEventCards = () => {
+        eventCards.querySelectorAll(".fade-section").forEach((card) => {
+          cardObserver.observe(card);
+        });
+      };
+
+      const renderListView = () => {
+        listView.innerHTML = "";
+        const list = document.createElement("div");
+        list.className = "space-y-3";
+
+        const sortedEvents = [...events].sort((a, b) => a.date.localeCompare(b.date));
+        sortedEvents.forEach((event) => {
+          if (activeFilter !== "all" && event.type !== activeFilter) {
+            return;
+          }
+          const date = new Date(event.date);
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "flex w-full items-center justify-between rounded-2xl bg-background/70 px-4 py-3 text-left text-sm transition hover:bg-background";
+          item.innerHTML = `
+            <div>
+              <p class="font-semibold text-primary">${formatDateLabel(date)}</p>
+              <p class="text-muted">${event.title}</p>
+            </div>
+            <span class="rounded-full px-3 py-1 text-xs font-semibold ${eventTypes[event.type].badge}">
+              ${eventTypes[event.type].label}
+            </span>
+          `;
+          item.addEventListener("click", () => {
+            const target = document.getElementById(`event-${event.date}`);
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          });
+          list.appendChild(item);
+        });
+
+        listView.appendChild(list);
+      };
+
+      const syncView = () => {
+        if (activeView === "calendar") {
+          calendarWrapper.classList.remove("hidden");
+          listView.classList.add("hidden");
+        } else {
+          calendarWrapper.classList.add("hidden");
+          listView.classList.remove("hidden");
+        }
+      };
+
+      const updateFilterButtons = () => {
+        document.querySelectorAll(".filter-button").forEach((button) => {
+          const isActive = button.dataset.filter === activeFilter;
+          button.classList.toggle("bg-primary", isActive);
+          button.classList.toggle("text-white", isActive);
+          button.classList.toggle("bg-white", !isActive);
+          button.classList.toggle("text-primary", !isActive);
+        });
+      };
+
+      const updateViewButtons = () => {
+        document.querySelectorAll(".view-toggle").forEach((button) => {
+          const isActive = button.dataset.view === activeView;
+          button.classList.toggle("bg-primary", isActive);
+          button.classList.toggle("text-white", isActive);
+          button.classList.toggle("border", !isActive);
+          button.classList.toggle("border-primary/20", !isActive);
+          button.classList.toggle("bg-white", !isActive);
+          button.classList.toggle("text-primary", !isActive);
+        });
+      };
+
+      document.getElementById("prev-month").addEventListener("click", () => {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+        renderCalendar();
+      });
+
+      document.getElementById("next-month").addEventListener("click", () => {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+        renderCalendar();
+      });
+
+      document.querySelectorAll(".filter-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeFilter = button.dataset.filter || "all";
+          updateFilterButtons();
+          renderCalendar();
+          renderEventCards();
+          observeEventCards();
+          renderListView();
+        });
+      });
+
+      document.querySelectorAll(".view-toggle").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeView = button.dataset.view || "calendar";
+          updateViewButtons();
+          syncView();
+        });
+      });
+
+      renderCalendar();
+      renderEventCards();
+      observeEventCards();
+      renderListView();
+      updateFilterButtons();
+      updateViewButtons();
+      syncView();
+    </script>
+  </body>
+</html>

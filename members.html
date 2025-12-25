@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>メンバー紹介 | 岡山大学 珈琲サークル「ゆげ」</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3E2A1E",
+              secondary: "#B98A62",
+              accent: "#E3C5A4",
+              background: "#F7F2EC",
+              textbase: "#231B17",
+              muted: "#6D5B4C",
+            },
+            fontFamily: {
+              sans: ["Zen Kaku Gothic New", "sans-serif"],
+              display: ["Playfair Display", "serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (max-width: 640px) {
+        html {
+          font-size: 15px;
+        }
+      }
+      @media (min-width: 1024px) {
+        html {
+          font-size: 18px;
+        }
+      }
+      .fade-section {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+      }
+      .fade-section.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .hover-lift:hover {
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: 0 16px 40px rgba(35, 27, 23, 0.16);
+      }
+      .hero-reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: heroRise 0.6s ease-out forwards;
+      }
+      @keyframes heroRise {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .hero-reveal {
+          animation: none;
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+    <script src="js/main.js" defer></script>
+  </head>
+  <body class="bg-background text-textbase font-sans">
+    <!-- グローバルナビゲーション -->
+    <nav
+      id="site-nav"
+      class="fixed inset-x-0 top-0 z-50 bg-background/80 text-textbase transition duration-300"
+      aria-label="メインナビゲーション"
+    >
+      <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
+        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-2xl">
+          岡山大学 珈琲サークル「ゆげ」
+        </a>
+        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-xl">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a
+            href="join.html"
+            class="rounded-full bg-secondary px-5 py-2.5 text-base text-primary transition hover:bg-accent md:text-lg"
+          >
+            入会案内
+          </a>
+        </div>
+        <button
+          id="menu-toggle"
+          class="md:hidden"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <span class="sr-only">メニューを開く</span>
+          <svg
+            class="h-7 w-7"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18" />
+            <path d="M3 12h18" />
+            <path d="M3 18h18" />
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden border-t border-primary/20 bg-background/95 text-textbase md:hidden">
+        <div class="flex flex-col gap-4 px-6 py-4 text-sm font-semibold">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a href="join.html" class="text-current hover:text-secondary md:px-2 md:py-1">入会案内</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ページヘッダー -->
+    <header class="relative pt-24">
+      <div class="mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
+        <p class="hero-reveal text-xs uppercase tracking-[0.35em] text-secondary" style="animation-delay: 0.2s;">
+          Members
+        </p>
+        <h1 class="hero-reveal mt-4 text-4xl font-semibold text-primary md:text-5xl" style="animation-delay: 0.4s;">
+          メンバー紹介
+        </h1>
+        <p class="hero-reveal mt-4 text-base text-muted md:text-lg" style="animation-delay: 0.6s;">
+          ゆげを支えるメンバーたち
+        </p>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="mx-auto max-w-screen-2xl px-6 pb-20">
+      <section class="hero-reveal" style="animation-delay: 0.8s;">
+        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+          <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">ゆげの統計情報</h2>
+            <p class="text-sm text-muted">2026年4月時点</p>
+          </div>
+          <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4" data-countup-group>
+            <article class="flex flex-col gap-3 rounded-2xl bg-background/70 p-6">
+              <div class="flex items-center gap-3 text-primary">
+                <i class="fa-solid fa-users text-xl" aria-hidden="true"></i>
+                <p class="text-sm font-semibold">メンバー数</p>
+              </div>
+              <p class="text-3xl font-semibold text-primary">
+                <span data-countup data-target="17" data-suffix="名">0</span>
+              </p>
+              <p class="text-sm text-muted">学部・学年を越えて集まっています。</p>
+            </article>
+            <article class="flex flex-col gap-3 rounded-2xl bg-background/70 p-6">
+              <div class="flex items-center gap-3 text-primary">
+                <i class="fa-solid fa-people-group text-xl" aria-hidden="true"></i>
+                <p class="text-sm font-semibold">男女比</p>
+              </div>
+              <p class="text-2xl font-semibold text-primary">
+                <span class="text-base text-muted">男性</span>
+                <span data-countup data-target="9" data-suffix="名">0</span>
+                <span class="mx-2 text-muted">/</span>
+                <span class="text-base text-muted">女性</span>
+                <span data-countup data-target="8" data-suffix="名">0</span>
+              </p>
+              <p class="text-sm text-muted">落ち着いた雰囲気で交流しています。</p>
+            </article>
+            <article class="flex flex-col gap-3 rounded-2xl bg-background/70 p-6">
+              <div class="flex items-center gap-3 text-primary">
+                <i class="fa-solid fa-graduation-cap text-xl" aria-hidden="true"></i>
+                <p class="text-sm font-semibold">学年構成</p>
+              </div>
+              <div class="text-sm font-semibold text-primary">
+                <div class="flex flex-wrap gap-x-2 gap-y-1">
+                  <span class="text-muted">学部生：</span>
+                  <span>1年生 <span data-countup data-target="4" data-suffix="名">0</span></span>
+                  <span>2年生 <span data-countup data-target="5" data-suffix="名">0</span></span>
+                  <span>3年生 <span data-countup data-target="4" data-suffix="名">0</span></span>
+                  <span>4年生 <span data-countup data-target="2" data-suffix="名">0</span></span>
+                </div>
+                <div class="mt-2 flex flex-wrap gap-x-2 gap-y-1">
+                  <span class="text-muted">大学院生：</span>
+                  <span>修士1年 <span data-countup data-target="1" data-suffix="名">0</span></span>
+                  <span>修士2年 <span data-countup data-target="1" data-suffix="名">0</span></span>
+                </div>
+              </div>
+              <p class="text-sm text-muted">幅広い学年で活動しています。</p>
+            </article>
+            <article class="flex flex-col gap-3 rounded-2xl bg-background/70 p-6">
+              <div class="flex items-center gap-3 text-primary">
+                <i class="fa-solid fa-building-columns text-xl" aria-hidden="true"></i>
+                <p class="text-sm font-semibold">所属学部数</p>
+              </div>
+              <p class="text-3xl font-semibold text-primary">
+                <span data-countup data-target="7" data-suffix="学部">0</span>
+              </p>
+              <p class="text-sm text-muted">多彩な視点が集まるコミュニティです。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-16">
+        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+          <div class="hero-reveal flex items-center justify-between" style="animation-delay: 1s;">
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">代表</h2>
+            <p class="text-sm text-muted">共同代表 2名</p>
+          </div>
+          <div class="mt-8 grid gap-6 md:grid-cols-2">
+            <article class="hero-reveal group hover-lift rounded-3xl border border-secondary/30 bg-gradient-to-br from-white via-background/70 to-accent/30 p-8 shadow" style="animation-delay: 1.2s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="relative h-36 w-36 overflow-hidden rounded-full border-4 border-secondary/60">
+                  <img
+                    src="images/profile-leader1.jpg"
+                    alt="共同代表 石井さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                  <span class="absolute bottom-1 right-1 rounded-full bg-primary px-2 py-1 text-xs font-semibold text-white">
+                    代表
+                  </span>
+                </div>
+                <h3 class="mt-4 text-2xl font-semibold text-primary">石井 さくら</h3>
+                <p class="mt-1 text-sm font-semibold text-secondary">共同代表</p>
+                <p class="mt-2 text-sm text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  文学部 3年
+                </p>
+                <p class="mt-4 text-sm leading-6 text-muted">
+                  はじめての一杯が、今の私を作りました。ゆげで一緒にコーヒーの世界を
+                  ひらきましょう。
+                </p>
+                <p class="mt-4 text-sm font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  好きなコーヒー：<span class="text-muted">エチオピア イルガチェフェ</span>
+                </p>
+              </div>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl border border-secondary/30 bg-gradient-to-br from-white via-background/70 to-accent/30 p-8 shadow" style="animation-delay: 1.3s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="relative h-36 w-36 overflow-hidden rounded-full border-4 border-secondary/60">
+                  <img
+                    src="images/profile-leader2.jpg"
+                    alt="共同代表 高橋さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                  <span class="absolute bottom-1 right-1 rounded-full bg-primary px-2 py-1 text-xs font-semibold text-white">
+                    代表
+                  </span>
+                </div>
+                <h3 class="mt-4 text-2xl font-semibold text-primary">高橋 優斗</h3>
+                <p class="mt-1 text-sm font-semibold text-secondary">共同代表</p>
+                <p class="mt-2 text-sm text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  工学部 4年
+                </p>
+                <p class="mt-4 text-sm leading-6 text-muted">
+                  豆選びから抽出まで、奥深い時間をみんなと共有できるのが嬉しいです。
+                  初心者の方も大歓迎です。
+                </p>
+                <p class="mt-4 text-sm font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  好きなコーヒー：<span class="text-muted">グアテマラ アンティグア</span>
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-16">
+        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+          <div class="hero-reveal flex items-center justify-between" style="animation-delay: 1.5s;">
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">運営メンバー</h2>
+            <p class="text-sm text-muted">運営・会計・広報</p>
+          </div>
+          <div class="mt-8 grid gap-6 md:grid-cols-2">
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 1.7s;">
+              <div class="flex items-center gap-4">
+                <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-staff1.jpg"
+                    alt="運営メンバー 佐藤さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-primary">佐藤 みお</h3>
+                  <span class="mt-1 inline-flex items-center rounded-full bg-secondary/20 px-2 py-0.5 text-xs font-semibold text-primary">
+                    運営
+                  </span>
+                  <p class="mt-1 text-xs text-muted">
+                    <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
+                    教育学部 2年
+                  </p>
+                </div>
+              </div>
+              <p class="mt-4 text-sm leading-6 text-muted">
+                みんなが気軽に参加できる雰囲気づくりを担当しています。
+              </p>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 1.8s;">
+              <div class="flex items-center gap-4">
+                <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-staff2.jpg"
+                    alt="運営メンバー 中村さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-primary">中村 颯太</h3>
+                  <span class="mt-1 inline-flex items-center rounded-full bg-secondary/20 px-2 py-0.5 text-xs font-semibold text-primary">
+                    運営
+                  </span>
+                  <p class="mt-1 text-xs text-muted">
+                    <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
+                    理学部 3年
+                  </p>
+                </div>
+              </div>
+              <p class="mt-4 text-sm leading-6 text-muted">
+                新しい器具の試し淹れやイベント企画をサポートしています。
+              </p>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 1.9s;">
+              <div class="flex items-center gap-4">
+                <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-amber-200">
+                  <img
+                    src="images/profile-accountant.jpg"
+                    alt="会計担当 山田さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-primary">山田 えり</h3>
+                  <span class="mt-1 inline-flex items-center rounded-full bg-amber-200 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                    会計
+                  </span>
+                  <p class="mt-1 text-xs text-muted">
+                    <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
+                    経済学部 2年
+                  </p>
+                </div>
+              </div>
+              <p class="mt-4 text-sm leading-6 text-muted">
+                会費や備品の管理を担当。コーヒー豆の在庫チェックも得意です。
+              </p>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 2s;">
+              <div class="flex items-center gap-4">
+                <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-rose-200">
+                  <img
+                    src="images/profile-pr.jpg"
+                    alt="広報担当 田中さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-primary">田中 さや</h3>
+                  <span class="mt-1 inline-flex items-center rounded-full bg-rose-200 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                    広報
+                  </span>
+                  <p class="mt-1 text-xs text-muted">
+                    <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
+                    法学部 1年
+                  </p>
+                </div>
+              </div>
+              <p class="mt-4 text-sm leading-6 text-muted">
+                写真撮影やSNS投稿を担当。ゆげの魅力を伝える役目です。
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-16">
+        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+          <div class="hero-reveal flex flex-col gap-2" style="animation-delay: 2.1s;">
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">メンバー紹介</h2>
+            <p class="text-sm text-muted">ゆげを一緒に盛り上げる仲間たち</p>
+          </div>
+          <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 2.3s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-member1.jpg"
+                    alt="メンバー 山本健さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-primary">山本 健</h3>
+                <p class="mt-1 text-xs text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  農学部 1年
+                </p>
+                <p class="mt-2 text-xs text-muted">入会：2025年9月〜</p>
+                <p class="mt-3 text-sm text-muted">コーヒーの奥深さにハマりました！</p>
+                <p class="mt-3 text-xs font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  ブラック派
+                </p>
+              </div>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 2.4s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-member2.jpg"
+                    alt="メンバー 中村美優さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-primary">中村 美優</h3>
+                <p class="mt-1 text-xs text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  理学部 2年
+                </p>
+                <p class="mt-2 text-xs text-muted">入会：2025年8月〜</p>
+                <p class="mt-3 text-sm text-muted">毎週のゆげが楽しみです♪</p>
+                <p class="mt-3 text-xs font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  カフェラテ派
+                </p>
+              </div>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 2.5s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-member3.jpg"
+                    alt="メンバー 小林陽菜さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-primary">小林 陽菜</h3>
+                <p class="mt-1 text-xs text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  教育学部 1年
+                </p>
+                <p class="mt-2 text-xs text-muted">入会：2025年10月〜</p>
+                <p class="mt-3 text-sm text-muted">豆の香りに癒やされます。</p>
+                <p class="mt-3 text-xs font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  ハンドドリップ派
+                </p>
+              </div>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 2.6s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-member4.jpg"
+                    alt="メンバー 藤井悠斗さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-primary">藤井 悠斗</h3>
+                <p class="mt-1 text-xs text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  工学部 2年
+                </p>
+                <p class="mt-2 text-xs text-muted">入会：2025年9月〜</p>
+                <p class="mt-3 text-sm text-muted">焙煎の違いが面白いです。</p>
+                <p class="mt-3 text-xs font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  アメリカーノ派
+                </p>
+              </div>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 2.7s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-member5.jpg"
+                    alt="メンバー 松本彩さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-primary">松本 彩</h3>
+                <p class="mt-1 text-xs text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  経済学部 3年
+                </p>
+                <p class="mt-2 text-xs text-muted">入会：2025年8月〜</p>
+                <p class="mt-3 text-sm text-muted">休日のカフェ巡りが楽しみ！</p>
+                <p class="mt-3 text-xs font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  ラテ派
+                </p>
+              </div>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 2.8s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-member6.jpg"
+                    alt="メンバー 伊藤奏さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-primary">伊藤 奏</h3>
+                <p class="mt-1 text-xs text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  法学部 1年
+                </p>
+                <p class="mt-2 text-xs text-muted">入会：2025年10月〜</p>
+                <p class="mt-3 text-sm text-muted">やさしい先輩ばかりで安心です。</p>
+                <p class="mt-3 text-xs font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  ミルク派
+                </p>
+              </div>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 2.9s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-member7.jpg"
+                    alt="メンバー 渡辺優さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-primary">渡辺 優</h3>
+                <p class="mt-1 text-xs text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  医学部 2年
+                </p>
+                <p class="mt-2 text-xs text-muted">入会：2025年9月〜</p>
+                <p class="mt-3 text-sm text-muted">毎回飲み比べできるのが嬉しいです。</p>
+                <p class="mt-3 text-xs font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  アイス派
+                </p>
+              </div>
+            </article>
+
+            <article class="hero-reveal group hover-lift rounded-3xl bg-background/70 p-6 shadow" style="animation-delay: 3s;">
+              <div class="flex flex-col items-center text-center">
+                <div class="h-28 w-28 overflow-hidden rounded-full border-4 border-primary/20">
+                  <img
+                    src="images/profile-member8.jpg"
+                    alt="メンバー 西村海斗さん"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                   
+                  />
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-primary">西村 海斗</h3>
+                <p class="mt-1 text-xs text-muted">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                  情報学部 3年
+                </p>
+                <p class="mt-2 text-xs text-muted">入会：2025年8月〜</p>
+                <p class="mt-3 text-sm text-muted">豆の香りでリフレッシュしています。</p>
+                <p class="mt-3 text-xs font-semibold text-primary">
+                  <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                  ブラック派
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+          <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">メンバーの声</h2>
+            <p class="text-sm text-muted">サークルの雰囲気が伝わる感想</p>
+          </div>
+          <div class="mt-8 grid gap-6 md:grid-cols-3" data-stagger>
+            <article class="stagger-item fade-section rounded-3xl bg-background/70 p-6 shadow">
+              <p class="text-sm leading-6 text-muted">
+                「コーヒーの知識がゼロでしたが、みんな優しく教えてくれます！」
+              </p>
+              <p class="mt-4 text-xs font-semibold text-primary">農学部 1年 / 山本さん</p>
+            </article>
+            <article class="stagger-item fade-section rounded-3xl bg-background/70 p-6 shadow">
+              <p class="text-sm leading-6 text-muted">
+                「毎週のゆげが楽しみで、土曜日が待ち遠しいです。」
+              </p>
+              <p class="mt-4 text-xs font-semibold text-primary">理学部 2年 / 中村さん</p>
+            </article>
+            <article class="stagger-item fade-section rounded-3xl bg-background/70 p-6 shadow">
+              <p class="text-sm leading-6 text-muted">
+                「カフェ巡りで新しいお店をたくさん発見できました！」
+              </p>
+              <p class="mt-4 text-xs font-semibold text-primary">経済学部 3年 / 松本さん</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+          <div class="flex flex-col gap-2">
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">フォトギャラリー</h2>
+            <p class="text-sm text-muted">みんなでコーヒーを楽しむ様子</p>
+          </div>
+          <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
+            <button type="button" class="stagger-item fade-section group overflow-hidden rounded-2xl" data-lightbox="images/member-gallery1.jpg">
+              <img
+                src="images/member-gallery1.jpg"
+                alt="ギャラリー写真1"
+                loading="lazy"
+                decoding="async"
+                class="h-48 w-full object-cover transition duration-300 group-hover:scale-105"
+               
+              />
+            </button>
+            <button type="button" class="stagger-item fade-section group overflow-hidden rounded-2xl" data-lightbox="images/member-gallery2.jpg">
+              <img
+                src="images/member-gallery2.jpg"
+                alt="ギャラリー写真2"
+                loading="lazy"
+                decoding="async"
+                class="h-48 w-full object-cover transition duration-300 group-hover:scale-105"
+               
+              />
+            </button>
+            <button type="button" class="stagger-item fade-section group overflow-hidden rounded-2xl" data-lightbox="images/member-gallery3.jpg">
+              <img
+                src="images/member-gallery3.jpg"
+                alt="ギャラリー写真3"
+                loading="lazy"
+                decoding="async"
+                class="h-48 w-full object-cover transition duration-300 group-hover:scale-105"
+               
+              />
+            </button>
+            <button type="button" class="stagger-item fade-section group overflow-hidden rounded-2xl" data-lightbox="images/member-gallery4.jpg">
+              <img
+                src="images/member-gallery4.jpg"
+                alt="ギャラリー写真4"
+                loading="lazy"
+                decoding="async"
+                class="h-48 w-full object-cover transition duration-300 group-hover:scale-105"
+               
+              />
+            </button>
+            <button type="button" class="stagger-item fade-section group overflow-hidden rounded-2xl" data-lightbox="images/member-gallery5.jpg">
+              <img
+                src="images/member-gallery5.jpg"
+                alt="ギャラリー写真5"
+                loading="lazy"
+                decoding="async"
+                class="h-48 w-full object-cover transition duration-300 group-hover:scale-105"
+               
+              />
+            </button>
+            <button type="button" class="stagger-item fade-section group overflow-hidden rounded-2xl" data-lightbox="images/member-gallery6.jpg">
+              <img
+                src="images/member-gallery6.jpg"
+                alt="ギャラリー写真6"
+                loading="lazy"
+                decoding="async"
+                class="h-48 w-full object-cover transition duration-300 group-hover:scale-105"
+               
+              />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+          <h2 class="text-2xl font-semibold text-primary md:text-3xl">役職・担当一覧</h2>
+          <div class="mt-6 grid gap-4 md:grid-cols-3">
+            <div class="rounded-2xl bg-background/70 p-6 text-center">
+              <p class="text-sm font-semibold text-muted">代表</p>
+              <p class="mt-2 text-lg font-semibold text-primary">共同代表 2名</p>
+              <p class="mt-2 text-xs text-muted">サークル全体の方針決定・運営統括</p>
+            </div>
+            <div class="rounded-2xl bg-background/70 p-6 text-center">
+              <p class="text-sm font-semibold text-muted">運営</p>
+              <p class="mt-2 text-lg font-semibold text-primary">企画・準備</p>
+              <p class="mt-2 text-xs text-muted">定例会やイベントの進行をサポート</p>
+            </div>
+            <div class="rounded-2xl bg-background/70 p-6 text-center">
+              <p class="text-sm font-semibold text-muted">会計 / 広報</p>
+              <p class="mt-2 text-lg font-semibold text-primary">管理・発信</p>
+              <p class="mt-2 text-xs text-muted">会費管理とSNSでの情報発信を担当</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+          <div class="flex flex-col gap-2">
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">SNSリンク集</h2>
+            <p class="text-sm text-muted">ゆげの最新情報をチェック！</p>
+          </div>
+          <div class="mt-6 grid gap-6 md:grid-cols-[1fr_0.6fr] md:items-center">
+            <div class="flex flex-col gap-4">
+              <a
+                href="https://www.instagram.com/okadai_coffee_circle/"
+                class="hover-lift inline-flex items-center gap-3 rounded-2xl bg-background/70 px-5 py-4 text-sm font-semibold text-primary"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <i class="fa-brands fa-instagram text-lg" aria-hidden="true"></i>
+                Instagramで最新の活動を見る
+              </a>
+              <a
+                href="join.html"
+                class="hover-lift inline-flex items-center gap-3 rounded-2xl bg-background/70 px-5 py-4 text-sm font-semibold text-primary"
+              >
+                <i class="fa-brands fa-line text-lg" aria-hidden="true"></i>
+                LINEで気軽にお問い合わせ
+              </a>
+            </div>
+            <div class="rounded-2xl bg-background/70 p-4 text-center">
+              <p class="text-xs font-semibold text-muted">LINE QRコード</p>
+              <img
+                src="images/line-qr-placeholder.jpg"
+                alt="LINE QRコードのプレースホルダー"
+                loading="lazy"
+                decoding="async"
+                class="mx-auto mt-3 h-32 w-32 rounded-lg object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div
+          class="rounded-3xl bg-cover bg-center px-8 py-12 text-white shadow md:px-12"
+          style="background-image: linear-gradient(120deg, rgba(62, 42, 30, 0.8), rgba(185, 138, 98, 0.7)), url('images/members-cta.jpg');"
+          data-bg-image="images/members-cta.jpg"
+        >
+          <div
+            class="hidden mb-6 inline-flex items-center rounded-full bg-secondary/90 px-4 py-1 text-xs font-semibold text-primary shadow"
+            data-bg-badge
+          >
+            Coming Soon
+          </div>
+          <div class="grid gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-center">
+            <div>
+              <h2 class="text-3xl font-semibold">新メンバー大募集中！</h2>
+              <p class="mt-4 text-sm text-white/90 md:text-base">
+                あなたも一緒にコーヒーを楽しみませんか？初心者でも大歓迎です。
+              </p>
+            </div>
+            <div class="flex flex-col gap-3 md:items-end">
+              <a
+                href="join.html"
+                class="hover-lift inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-8 py-3 text-sm font-semibold text-primary shadow-lg transition hover:bg-accent"
+              >
+                入会案内を見る
+              </a>
+              <a
+                href="https://www.instagram.com/okadai_coffee_circle/"
+                class="inline-flex items-center justify-center gap-2 rounded-full border border-white/60 px-8 py-3 text-sm font-semibold text-white/90 transition hover:border-white"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+                InstagramでDM
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-primary text-white">
+      <div class="mx-auto flex max-w-screen-2xl flex-col gap-6 px-6 py-12 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-lg font-semibold">岡山大学 珈琲サークル「ゆげ」</p>
+          <p class="mt-2 text-sm text-white/80">
+            温かさと活気が広がる場所で、コーヒーの時間を一緒に楽しみませんか。
+          </p>
+        </div>
+        <div class="flex flex-col gap-4 text-sm">
+          <a
+            href="https://www.instagram.com/okadai_coffee_circle/"
+            class="inline-flex items-center gap-2 font-semibold text-secondary hover:text-accent"
+            aria-label="Instagram"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+            Instagram
+          </a>
+          <a href="join.html" class="font-semibold text-white/80 hover:text-accent">
+            お問い合わせはこちら
+          </a>
+        </div>
+      </div>
+      <div class="border-t border-white/20 py-4 text-center text-xs text-white/70">
+        © 2025 岡山大学 珈琲サークル「ゆげ」
+      </div>
+    </footer>
+
+    <button
+      id="back-to-top"
+      class="fixed bottom-6 right-6 rounded-full bg-secondary px-4 py-3 text-sm font-semibold text-primary shadow-lg opacity-0 pointer-events-none transition hover:bg-accent"
+      type="button"
+      aria-label="トップへ戻る"
+    >
+      ↑ Top
+    </button>
+
+    <div
+      id="lightbox"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 px-6 py-12"
+      aria-hidden="true"
+    >
+      <button
+        type="button"
+        class="absolute right-6 top-6 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-primary"
+        id="lightbox-close"
+      >
+        閉じる
+      </button>
+      <img
+        src=""
+        alt="拡大画像"
+        class="max-h-full max-w-full rounded-2xl shadow-lg"
+        id="lightbox-image"
+      />
+    </div>
+
+    <script>
+      const nav = document.getElementById("site-nav");
+      const menuToggle = document.getElementById("menu-toggle");
+      const mobileMenu = document.getElementById("mobile-menu");
+
+      const setNavStyle = () => {
+        if (window.scrollY > 10) {
+          nav.classList.add("bg-background/95", "shadow-lg", "backdrop-blur");
+        } else {
+          nav.classList.remove("bg-background/95", "shadow-lg", "backdrop-blur");
+        }
+      };
+
+      menuToggle.addEventListener("click", () => {
+        const isOpen = mobileMenu.classList.toggle("hidden") === false;
+        menuToggle.setAttribute("aria-expanded", isOpen);
+      });
+
+      window.addEventListener("scroll", setNavStyle);
+      window.addEventListener("load", setNavStyle);
+    </script>
+  </body>
+</html>

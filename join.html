@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>入会案内 | 岡山大学 珈琲サークル「ゆげ」</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3E2A1E",
+              secondary: "#B98A62",
+              accent: "#E3C5A4",
+              background: "#F7F2EC",
+              textbase: "#231B17",
+              muted: "#6D5B4C",
+            },
+            fontFamily: {
+              sans: ["Zen Kaku Gothic New", "sans-serif"],
+              display: ["Playfair Display", "serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (max-width: 640px) {
+        html {
+          font-size: 15px;
+        }
+      }
+      @media (min-width: 1024px) {
+        html {
+          font-size: 18px;
+        }
+      }
+      .fade-section {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
+      .fade-section.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .hover-lift:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 40px rgba(35, 27, 23, 0.16);
+      }
+    </style>
+    <script src="js/main.js" defer></script>
+  </head>
+  <body class="bg-background text-textbase font-sans">
+    <!-- グローバルナビゲーション -->
+    <nav
+      id="site-nav"
+      class="fixed inset-x-0 top-0 z-50 bg-background/80 text-textbase transition duration-300"
+      aria-label="メインナビゲーション"
+    >
+      <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
+        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-2xl">
+          岡山大学 珈琲サークル「ゆげ」
+        </a>
+        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-xl">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a
+            href="join.html"
+            class="rounded-full bg-secondary px-5 py-2.5 text-base text-primary transition hover:bg-accent md:text-lg"
+          >
+            入会案内
+          </a>
+        </div>
+        <button
+          id="menu-toggle"
+          class="md:hidden"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <span class="sr-only">メニューを開く</span>
+          <svg
+            class="h-7 w-7"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18" />
+            <path d="M3 12h18" />
+            <path d="M3 18h18" />
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden border-t border-primary/20 bg-background/95 text-textbase md:hidden">
+        <div class="flex flex-col gap-4 px-6 py-4 text-sm font-semibold">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a href="join.html" class="text-current hover:text-secondary md:px-2 md:py-1">入会案内</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ページヘッダー -->
+    <header class="relative pt-24">
+      <div class="mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
+        <p class="text-xs uppercase tracking-[0.35em] text-secondary">Join Us</p>
+        <h1 class="mt-4 text-4xl font-semibold text-primary md:text-5xl">
+          入会案内
+        </h1>
+        <p class="mt-4 text-base text-muted md:text-lg">
+          一緒にコーヒーを楽しみませんか？
+        </p>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="mx-auto max-w-screen-2xl px-6 pb-20">
+      <section class="fade-section rounded-3xl bg-white/80 p-8 shadow md:p-12">
+        <div class="grid gap-6 md:grid-cols-[1.2fr_1fr]">
+          <div>
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">「ゆげ」について</h2>
+            <p class="mt-4 text-sm text-muted md:text-base">
+              立ち上げ：2025年8月1日
+            </p>
+            <p class="mt-4 text-base leading-7 text-textbase">
+              温かい場所に立ち昇るゆげのように、いつも温かさと活気があるサークルにしたいです。
+              人と人が自然に集まり、交流の輪が広がっていくことを願っています。
+            </p>
+          </div>
+          <div class="rounded-2xl bg-gradient-to-br from-primary/90 via-primary to-secondary/90 p-6 text-white">
+            <p class="text-sm uppercase tracking-[0.3em] text-white/70">Coffee Circle</p>
+            <p class="mt-4 text-lg font-semibold">岡山大学 珈琲サークル「ゆげ」</p>
+            <p class="mt-3 text-sm text-white/80">
+              初心者でも大歓迎です。あなたのペースで参加してください。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">入会までのステップ</h2>
+            <p class="mt-3 text-sm text-muted md:text-base">
+              4つのステップで、気軽にスタートできます。
+            </p>
+          </div>
+        </div>
+        <div class="mt-10 grid gap-6 md:grid-cols-2">
+          <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+            <div class="flex items-center gap-3">
+              <span class="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-primary">
+                <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+              </span>
+              <p class="text-sm font-semibold text-secondary">Step 1</p>
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-primary">Instagramをフォロー</h3>
+            <p class="mt-2 text-sm leading-6 text-muted">
+              <span class="font-semibold text-primary">@okadai_coffee_circle</span> をフォローしてください。
+            </p>
+          </div>
+          <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+            <div class="flex items-center gap-3">
+              <span class="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-primary">
+                <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+              </span>
+              <p class="text-sm font-semibold text-secondary">Step 2</p>
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-primary">DMまたはお問い合わせ</h3>
+            <p class="mt-2 text-sm leading-6 text-muted">
+              InstagramのDMでお気軽にご連絡ください。
+            </p>
+          </div>
+          <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+            <div class="flex items-center gap-3">
+              <span class="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-primary">
+                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+              </span>
+              <p class="text-sm font-semibold text-secondary">Step 3</p>
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-primary">体験参加</h3>
+            <p class="mt-2 text-sm leading-6 text-muted">
+              まずは見学・体験参加で雰囲気を感じてください。
+            </p>
+          </div>
+          <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+            <div class="flex items-center gap-3">
+              <span class="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-primary">
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+              </span>
+              <p class="text-sm font-semibold text-secondary">Step 4</p>
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-primary">正式入会</h3>
+            <p class="mt-2 text-sm leading-6 text-muted">
+              気に入っていただけたら、正式メンバーに！
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <h2 class="text-2xl font-semibold text-primary md:text-3xl">活動情報</h2>
+        <div class="mt-8 grid gap-6 md:grid-cols-2">
+          <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+            <h3 class="text-lg font-semibold text-primary">定例会</h3>
+            <p class="mt-3 text-sm leading-6 text-muted">毎週土曜日 午後</p>
+          </div>
+          <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+            <h3 class="text-lg font-semibold text-primary">場所</h3>
+            <p class="mt-3 text-sm leading-6 text-muted">
+              岡山大学内（詳細はお問い合わせください）
+            </p>
+          </div>
+          <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+            <h3 class="text-lg font-semibold text-primary">会費</h3>
+            <p class="mt-3 text-sm leading-6 text-muted">［後で記入可能なスペース］</p>
+          </div>
+          <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
+            <h3 class="text-lg font-semibold text-primary">必要なもの</h3>
+            <p class="mt-3 text-sm leading-6 text-muted">
+              特になし！コーヒーが好きな気持ちだけでOKです。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div>
+          <h2 class="text-2xl font-semibold text-primary md:text-3xl">よくある質問</h2>
+          <p class="mt-3 text-sm text-muted md:text-base">
+            初めての方が気になるポイントをまとめました。
+          </p>
+        </div>
+        <div class="mt-8 space-y-4">
+          <div class="hover-lift rounded-2xl border border-accent/40 bg-white/80 p-5 shadow">
+            <button
+              class="faq-toggle flex w-full items-center justify-between text-left"
+              type="button"
+              aria-expanded="false"
+              aria-controls="faq-answer-1"
+            >
+              <span class="text-base font-semibold text-primary">
+                コーヒーの知識がなくても大丈夫ですか？
+              </span>
+              <span class="text-secondary" aria-hidden="true">+</span>
+            </button>
+            <div id="faq-answer-1" class="faq-answer mt-3 hidden text-sm leading-6 text-muted">
+              もちろんです！初心者大歓迎。みんなで一緒に学んでいきましょう。
+            </div>
+          </div>
+          <div class="hover-lift rounded-2xl border border-accent/40 bg-white/80 p-5 shadow">
+            <button
+              class="faq-toggle flex w-full items-center justify-between text-left"
+              type="button"
+              aria-expanded="false"
+              aria-controls="faq-answer-2"
+            >
+              <span class="text-base font-semibold text-primary">途中参加は可能ですか？</span>
+              <span class="text-secondary" aria-hidden="true">+</span>
+            </button>
+            <div id="faq-answer-2" class="faq-answer mt-3 hidden text-sm leading-6 text-muted">
+              はい、いつでも大歓迎です！気軽にご連絡ください。
+            </div>
+          </div>
+          <div class="hover-lift rounded-2xl border border-accent/40 bg-white/80 p-5 shadow">
+            <button
+              class="faq-toggle flex w-full items-center justify-between text-left"
+              type="button"
+              aria-expanded="false"
+              aria-controls="faq-answer-3"
+            >
+              <span class="text-base font-semibold text-primary">
+                活動頻度はどのくらいですか？
+              </span>
+              <span class="text-secondary" aria-hidden="true">+</span>
+            </button>
+            <div id="faq-answer-3" class="faq-answer mt-3 hidden text-sm leading-6 text-muted">
+              定例会は毎週土曜日です。その他、不定期でカフェ巡りなどのイベントも開催しています。
+            </div>
+          </div>
+          <div class="hover-lift rounded-2xl border border-accent/40 bg-white/80 p-5 shadow">
+            <button
+              class="faq-toggle flex w-full items-center justify-between text-left"
+              type="button"
+              aria-expanded="false"
+              aria-controls="faq-answer-4"
+            >
+              <span class="text-base font-semibold text-primary">
+                学年や学部は関係ありますか？
+              </span>
+              <span class="text-secondary" aria-hidden="true">+</span>
+            </button>
+            <div id="faq-answer-4" class="faq-answer mt-3 hidden text-sm leading-6 text-muted">
+              全く関係ありません！全学年・全学部の学生が参加しています。
+            </div>
+          </div>
+          <div class="hover-lift rounded-2xl border border-accent/40 bg-white/80 p-5 shadow">
+            <button
+              class="faq-toggle flex w-full items-center justify-between text-left"
+              type="button"
+              aria-expanded="false"
+              aria-controls="faq-answer-5"
+            >
+              <span class="text-base font-semibold text-primary">見学だけでも大丈夫ですか？</span>
+              <span class="text-secondary" aria-hidden="true">+</span>
+            </button>
+            <div id="faq-answer-5" class="faq-answer mt-3 hidden text-sm leading-6 text-muted">
+              もちろんです！まずは雰囲気を見に来てください。コーヒー飲みながらお話ししましょう。
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div class="rounded-3xl bg-primary px-8 py-12 text-white md:px-12">
+          <div class="grid gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-center">
+            <div>
+              <h2 class="text-2xl font-semibold md:text-3xl">DMで気軽にご連絡ください</h2>
+              <p class="mt-4 text-sm text-white/80 md:text-base">
+                InstagramのDMが一番スムーズです。質問だけでも大丈夫です。
+              </p>
+              <div class="mt-6 flex items-center gap-3 text-sm">
+                <i class="fa-brands fa-instagram text-xl" aria-hidden="true"></i>
+                <span>@okadai_coffee_circle</span>
+              </div>
+            </div>
+            <div class="flex flex-col gap-4 md:items-end">
+              <a
+                href="https://www.instagram.com/okadai_coffee_circle/"
+                class="hover-lift inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-8 py-3 text-sm font-semibold text-primary shadow-lg transition hover:bg-accent"
+                aria-label="InstagramのDMはこちら"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+                DMはこちら
+              </a>
+              <p class="text-xs text-white/70">返信まで少しお時間をいただく場合があります。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-section mt-16">
+        <div>
+          <h2 class="text-2xl font-semibold text-primary md:text-3xl">簡易お問い合わせフォーム</h2>
+          <p class="mt-3 text-sm text-muted md:text-base">
+            Instagramが難しい場合はこちらをご利用ください。送信機能はありません。
+          </p>
+        </div>
+        <form
+          id="contact-form"
+          class="hover-lift mt-8 grid gap-6 rounded-2xl bg-white/80 p-6 shadow md:grid-cols-2"
+          novalidate
+        >
+          <div class="md:col-span-1">
+            <label class="text-sm font-semibold text-primary" for="name">お名前</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              class="mt-2 w-full rounded-xl border border-accent/40 bg-white px-4 py-3 text-sm focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
+              required
+            />
+            <p class="mt-2 text-xs text-red-600 hidden" data-error-for="name">
+              お名前を入力してください。
+            </p>
+          </div>
+          <div class="md:col-span-1">
+            <label class="text-sm font-semibold text-primary" for="email">メールアドレス</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              class="mt-2 w-full rounded-xl border border-accent/40 bg-white px-4 py-3 text-sm focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
+              required
+            />
+            <p class="mt-2 text-xs text-red-600 hidden" data-error-for="email">
+              正しいメールアドレスを入力してください。
+            </p>
+          </div>
+          <div class="md:col-span-1">
+            <label class="text-sm font-semibold text-primary" for="grade">学年</label>
+            <select
+              id="grade"
+              name="grade"
+              class="mt-2 w-full rounded-xl border border-accent/40 bg-white px-4 py-3 text-sm focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
+              required
+            >
+              <option value="">選択してください</option>
+              <option value="1">1年</option>
+              <option value="2">2年</option>
+              <option value="3">3年</option>
+              <option value="4">4年</option>
+              <option value="master">大学院</option>
+            </select>
+            <p class="mt-2 text-xs text-red-600 hidden" data-error-for="grade">
+              学年を選択してください。
+            </p>
+          </div>
+          <div class="md:col-span-2">
+            <label class="text-sm font-semibold text-primary" for="message">メッセージ</label>
+            <textarea
+              id="message"
+              name="message"
+              rows="5"
+              class="mt-2 w-full rounded-xl border border-accent/40 bg-white px-4 py-3 text-sm focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
+              required
+            ></textarea>
+            <p class="mt-2 text-xs text-red-600 hidden" data-error-for="message">
+              メッセージを入力してください。
+            </p>
+          </div>
+          <div class="md:col-span-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p id="form-status" class="text-sm text-secondary" aria-live="polite"></p>
+            <button
+              type="submit"
+              class="rounded-full bg-primary px-8 py-3 text-sm font-semibold text-white shadow transition hover:bg-secondary hover:text-primary"
+            >
+              送信する
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-primary text-white">
+      <div class="mx-auto flex max-w-screen-2xl flex-col gap-6 px-6 py-12 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-lg font-semibold">岡山大学 珈琲サークル「ゆげ」</p>
+          <p class="mt-2 text-sm text-white/80">
+            温かさと活気が広がる場所で、コーヒーの時間を一緒に楽しみませんか。
+          </p>
+        </div>
+        <div class="flex flex-col gap-4 text-sm">
+          <a
+            href="https://www.instagram.com/okadai_coffee_circle/"
+            class="inline-flex items-center gap-2 font-semibold text-secondary hover:text-accent"
+            aria-label="Instagram"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+            Instagram
+          </a>
+          <a href="join.html" class="font-semibold text-white/80 hover:text-accent">
+            お問い合わせはこちら
+          </a>
+        </div>
+      </div>
+      <div class="border-t border-white/20 py-4 text-center text-xs text-white/70">
+        © 2025 岡山大学 珈琲サークル「ゆげ」
+      </div>
+    </footer>
+
+    <button
+      id="back-to-top"
+      class="fixed bottom-6 right-6 rounded-full bg-secondary px-4 py-3 text-sm font-semibold text-primary shadow-lg opacity-0 pointer-events-none transition hover:bg-accent"
+      type="button"
+      aria-label="トップへ戻る"
+    >
+      ↑ Top
+    </button>
+
+    <script>
+      const nav = document.getElementById("site-nav");
+      const menuToggle = document.getElementById("menu-toggle");
+      const mobileMenu = document.getElementById("mobile-menu");
+
+      const setNavStyle = () => {
+        if (window.scrollY > 10) {
+          nav.classList.add("bg-background/95", "shadow-lg", "backdrop-blur");
+        } else {
+          nav.classList.remove("bg-background/95", "shadow-lg", "backdrop-blur");
+        }
+      };
+
+      menuToggle.addEventListener("click", () => {
+        const isOpen = mobileMenu.classList.toggle("hidden") === false;
+        menuToggle.setAttribute("aria-expanded", isOpen);
+      });
+
+      window.addEventListener("scroll", setNavStyle);
+      window.addEventListener("load", setNavStyle);
+
+      const faqToggles = document.querySelectorAll(".faq-toggle");
+      faqToggles.forEach((toggle) => {
+        toggle.addEventListener("click", () => {
+          const answerId = toggle.getAttribute("aria-controls");
+          const answer = document.getElementById(answerId);
+          const isOpen = !answer.classList.contains("hidden");
+          document.querySelectorAll(".faq-answer").forEach((item) => {
+            item.classList.add("hidden");
+            const button = item.previousElementSibling;
+            button.setAttribute("aria-expanded", "false");
+            button.querySelector("span:last-child").textContent = "+";
+          });
+          if (!isOpen) {
+            answer.classList.remove("hidden");
+            toggle.setAttribute("aria-expanded", "true");
+            toggle.querySelector("span:last-child").textContent = "-";
+          }
+        });
+      });
+
+      const form = document.getElementById("contact-form");
+      const status = document.getElementById("form-status");
+      const validators = {
+        name: (value) => value.trim().length > 0,
+        email: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+        grade: (value) => value.trim().length > 0,
+        message: (value) => value.trim().length > 0,
+      };
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        let isValid = true;
+        Object.keys(validators).forEach((field) => {
+          const input = form.querySelector(`[name="${field}"]`);
+          const error = form.querySelector(`[data-error-for="${field}"]`);
+          const valid = validators[field](input.value);
+          if (!valid) {
+            error.classList.remove("hidden");
+            input.classList.add("border-red-500");
+            isValid = false;
+          } else {
+            error.classList.add("hidden");
+            input.classList.remove("border-red-500");
+          }
+        });
+        if (isValid) {
+          status.textContent = "入力内容を確認しました。担当者からの連絡をお待ちください。";
+          form.reset();
+        } else {
+          status.textContent = "未入力の項目があります。内容をご確認ください。";
+        }
+      });
+    </script>
+  </body>
+</html>

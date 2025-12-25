@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>活動内容 | 岡山大学 珈琲サークル「ゆげ」</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3E2A1E",
+              secondary: "#B98A62",
+              accent: "#E3C5A4",
+              background: "#F7F2EC",
+              textbase: "#231B17",
+              muted: "#6D5B4C",
+            },
+            fontFamily: {
+              sans: ["Zen Kaku Gothic New", "sans-serif"],
+              display: ["Playfair Display", "serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (max-width: 640px) {
+        html {
+          font-size: 15px;
+        }
+      }
+      @media (min-width: 1024px) {
+        html {
+          font-size: 18px;
+        }
+      }
+      .fade-section {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+      }
+      .fade-section.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .hover-lift:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 40px rgba(35, 27, 23, 0.16);
+      }
+      .hero-reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: heroRise 0.6s ease-out forwards;
+      }
+      @keyframes heroRise {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .hero-reveal {
+          animation: none;
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .section-highlight {
+        animation: sectionFlash 1.2s ease;
+        box-shadow: 0 0 0 3px rgba(185, 138, 98, 0.5);
+      }
+      @keyframes sectionFlash {
+        0% {
+          box-shadow: 0 0 0 0 rgba(185, 138, 98, 0.6);
+        }
+        50% {
+          box-shadow: 0 0 0 6px rgba(185, 138, 98, 0.4);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(185, 138, 98, 0);
+        }
+      }
+      /* ===== 活動セクション ===== */
+      .activity-section {
+        margin-bottom: 80px;
+        animation: fadeInUp 0.8s ease-out;
+        background: none;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      /* ===== タイトル（上部） ===== */
+      .activity-title-top {
+        font-size: 36px;
+        font-weight: 700;
+        color: #2d2424;
+        text-align: center;
+        margin: 0 0 40px 0;
+        letter-spacing: 2px;
+      }
+
+      /* ===== スライダーコンテナ ===== */
+      .activity-slider-container {
+        position: relative;
+        width: 100%;
+        margin-bottom: 40px;
+      }
+
+      /* ===== スライダー本体 ===== */
+      .activity-slider {
+        position: relative;
+        width: 100%;
+      }
+
+      .slider-wrapper {
+        overflow: hidden;
+        border-radius: 0;
+      }
+
+      .slider-track {
+        display: flex;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: grab;
+        user-select: none;
+        touch-action: pan-y pinch-zoom;
+      }
+
+      .slider-track:active {
+        cursor: grabbing;
+      }
+
+      /* ===== スライド ===== */
+      .slide {
+        flex: 0 0 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 80px;
+      }
+
+      .slide img {
+        width: auto;
+        max-width: 100%;
+        height: 500px;
+        aspect-ratio: 4 / 5;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        transition: transform 0.3s;
+        display: block;
+      }
+
+      .slide img:hover {
+        transform: scale(1.01);
+      }
+
+      .slide img.cupping-ratio {
+        aspect-ratio: 6 / 5;
+      }
+
+      /* ===== ナビゲーションボタン ===== */
+      .slider-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 56px;
+        height: 56px;
+        background: rgba(45, 36, 36, 0.8);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 20;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        color: white;
+      }
+
+      .slider-nav:hover {
+        background: rgba(45, 36, 36, 0.95);
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+      }
+
+      .slider-nav:active {
+        transform: translateY(-50%) scale(0.95);
+      }
+
+      .slider-nav.prev {
+        left: 24px;
+      }
+
+      .slider-nav.next {
+        right: 24px;
+      }
+
+      /* ===== インジケーター ===== */
+      .slider-indicators {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ddd;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        padding: 0;
+      }
+
+      .indicator:hover {
+        background: #bbb;
+        transform: scale(1.2);
+      }
+
+      .indicator.active {
+        width: 32px;
+        border-radius: 5px;
+        background: #2d2424;
+      }
+
+      /* ===== 説明文エリア ===== */
+      .activity-description {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 20px;
+        text-align: center;
+      }
+
+      .activity-description p {
+        font-size: 18px;
+        line-height: 2;
+        color: #666;
+        margin-bottom: 32px;
+        text-align: left;
+      }
+
+      .instagram-btn {
+        display: inline-block;
+        padding: 0;
+        background: transparent;
+        color: #2d2424;
+        text-decoration: none;
+        border-radius: 0;
+        font-size: 17px;
+        font-weight: 600;
+        transition: color 0.3s, border-color 0.3s;
+        border-bottom: 2px solid currentColor;
+        box-shadow: none;
+      }
+
+      .instagram-btn:hover {
+        color: #b98a62;
+        border-color: #b98a62;
+      }
+
+      .instagram-btn:active {
+        opacity: 0.8;
+      }
+
+      /* ===== スマホ用レスポンシブ ===== */
+      @media (max-width: 768px) {
+        .activity-section {
+          margin-bottom: 60px;
+        }
+
+        .activity-title-top {
+          font-size: 22px;
+          margin-bottom: 24px;
+          padding: 0 16px;
+          letter-spacing: 1px;
+        }
+
+        .slide {
+          padding: 0 30px;
+        }
+
+        .slide img {
+          width: 100%;
+          height: auto;
+          aspect-ratio: 4 / 5;
+          max-height: 300px;
+          border-radius: 8px;
+        }
+
+        .slider-nav {
+          width: 44px;
+          height: 44px;
+        }
+
+        .slider-nav.prev {
+          left: 8px;
+        }
+
+        .slider-nav.next {
+          right: 8px;
+        }
+
+        .slider-indicators {
+          margin-top: 16px;
+          gap: 8px;
+        }
+
+        .indicator {
+          width: 8px;
+          height: 8px;
+        }
+
+        .indicator.active {
+          width: 24px;
+        }
+
+        .activity-description {
+          padding: 0 16px;
+        }
+
+        .activity-description p {
+          font-size: 15px;
+          line-height: 1.8;
+          margin-bottom: 24px;
+        }
+
+        .instagram-btn {
+          font-size: 15px;
+        }
+      }
+
+      /* ===== タブレット用 ===== */
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .activity-title-top {
+          font-size: 30px;
+          letter-spacing: 1.5px;
+        }
+
+        .slide {
+          padding: 0 60px;
+        }
+
+        .slide img {
+          height: 450px;
+        }
+
+        .activity-description p {
+          font-size: 17px;
+        }
+
+        .instagram-btn {
+          font-size: 16px;
+        }
+
+        .slider-nav {
+          width: 50px;
+          height: 50px;
+        }
+
+        .slider-nav.prev {
+          left: 16px;
+        }
+
+        .slider-nav.next {
+          right: 16px;
+        }
+      }
+
+      /* ===== デスクトップ用（大画面） ===== */
+      @media (min-width: 1025px) {
+        .activity-title-top {
+          font-size: 40px;
+          margin-bottom: 48px;
+          letter-spacing: 2px;
+        }
+
+        .slide {
+          padding: 0 100px;
+        }
+
+        .slide img {
+          height: 550px;
+        }
+
+        .activity-section.cafe-tour .slide img {
+          width: auto;
+          max-width: 100%;
+          aspect-ratio: 4 / 5;
+        }
+
+        .activity-description p {
+          font-size: 19px;
+          line-height: 2.1;
+        }
+
+        .instagram-btn {
+          font-size: 18px;
+        }
+
+        .slider-nav.prev {
+          left: 40px;
+        }
+
+        .slider-nav.next {
+          right: 40px;
+        }
+      }
+    </style>
+    <script src="js/main.js" defer></script>
+  </head>
+  <body class="bg-background text-textbase font-sans">
+    <!-- グローバルナビゲーション -->
+    <nav
+      id="site-nav"
+      class="fixed inset-x-0 top-0 z-50 bg-background/80 text-textbase transition duration-300"
+      aria-label="メインナビゲーション"
+    >
+      <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
+        <a href="index.html" class="text-lg font-semibold transition hover:text-secondary md:text-2xl">
+          岡山大学 珈琲サークル「ゆげ」
+        </a>
+        <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-xl">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a
+            href="join.html"
+            class="rounded-full bg-secondary px-5 py-2.5 text-base text-primary transition hover:bg-accent md:text-lg"
+          >
+            入会案内
+          </a>
+        </div>
+        <button
+          id="menu-toggle"
+          class="md:hidden"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <span class="sr-only">メニューを開く</span>
+          <svg
+            class="h-7 w-7"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18" />
+            <path d="M3 12h18" />
+            <path d="M3 18h18" />
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden border-t border-primary/20 bg-background/95 text-textbase md:hidden">
+        <div class="flex flex-col gap-4 px-6 py-4 text-sm font-semibold">
+          <a href="index.html" class="text-current hover:text-secondary md:px-2 md:py-1">ホーム</a>
+          <a href="activities.html" class="text-current hover:text-secondary md:px-2 md:py-1">活動内容</a>
+          <a href="cafe-map.html" class="text-current hover:text-secondary md:px-2 md:py-1">岡山カフェマップ</a>
+          <a href="members.html" class="text-current hover:text-secondary md:px-2 md:py-1">メンバー紹介</a>
+          <a href="events.html" class="text-current hover:text-secondary md:px-2 md:py-1">イベント</a>
+          <a href="join.html" class="text-current hover:text-secondary md:px-2 md:py-1">入会案内</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ページヘッダー -->
+    <header class="activities-header relative pt-24">
+      <div class="mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
+        <p class="hero-reveal text-xs uppercase tracking-[0.35em] text-secondary" style="animation-delay: 0.2s;">
+          Activities
+        </p>
+        <h1 class="hero-reveal mt-4 text-4xl font-semibold text-primary md:text-5xl" style="animation-delay: 0.4s;">
+          活動内容
+        </h1>
+        <p class="hero-reveal mt-4 text-base text-muted md:text-lg" style="animation-delay: 0.6s;">
+          ゆげで楽しむコーヒーライフ
+        </p>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="mx-auto max-w-screen-2xl px-6 pb-20">
+      <section class="mt-6">
+        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+          <div class="hero-reveal flex flex-col gap-2 text-center" style="animation-delay: 0.8s;">
+            <h2 class="text-2xl font-semibold text-primary md:text-3xl">活動方針</h2>
+            <p class="text-sm text-muted">〜自分にあった活動の仕方で〜</p>
+          </div>
+          <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <button
+              type="button"
+              class="hero-reveal hover-lift group w-full cursor-pointer rounded-3xl bg-gradient-to-br from-[#FFD700]/30 via-white to-[#FFA500]/30 p-6 text-left shadow"
+              style="animation-delay: 1s;"
+              data-scroll-target="#regular-activity"
+              aria-label="定期活動の詳細へスクロール"
+            >
+              <span class="sr-only">クリックして詳細を見る</span>
+              <div class="flex items-center justify-between">
+                <span class="text-4xl font-semibold text-primary">①</span>
+                <span class="rounded-full bg-[#FFA500]/20 px-3 py-1 text-xs font-semibold text-primary">緩</span>
+              </div>
+              <h3 class="mt-4 text-lg font-semibold text-primary">ゆるく皆んなで楽しむ</h3>
+              <p class="mt-2 text-sm text-muted">
+                日常の中で、コーヒーと交流を気軽に楽しむスタイルです。
+              </p>
+              <ul class="mt-4 space-y-2 text-sm text-muted">
+                <li><i class="fa-solid fa-mug-hot mr-2 text-secondary" aria-hidden="true"></i>毎月の活動</li>
+                <li><i class="fa-solid fa-people-group mr-2 text-secondary" aria-hidden="true"></i>メンバー同士の交流・カフェ巡り</li>
+                <li><i class="fa-solid fa-gamepad mr-2 text-secondary" aria-hidden="true"></i>ボードゲームなどの交流会</li>
+                <li><i class="fa-solid fa-filter mr-2 text-secondary" aria-hidden="true"></i>ハンドドリップ</li>
+                <li><i class="fa-solid fa-shop mr-2 text-secondary" aria-hidden="true"></i>カフェ巡り</li>
+              </ul>
+              <p class="mt-4 text-sm font-semibold text-primary">
+                活動頻度：<span class="text-muted">毎月第二週目の木曜日</span>
+              </p>
+              <div class="mt-4 flex items-center justify-between text-xs font-semibold text-primary">
+                <span class="opacity-0 transition group-hover:opacity-100">クリックして詳細を見る</span>
+                <span class="inline-flex items-center gap-1">詳しく見る <span aria-hidden="true">↓</span></span>
+              </div>
+            </button>
+            <button
+              type="button"
+              class="hero-reveal hover-lift group w-full cursor-pointer rounded-3xl bg-gradient-to-br from-[#2E7D32]/20 via-white to-[#66BB6A]/20 p-6 text-left shadow"
+              style="animation-delay: 1.2s;"
+              data-scroll-target="#cupping"
+              aria-label="カッピング会の詳細へスクロール"
+            >
+              <span class="sr-only">クリックして詳細を見る</span>
+              <div class="flex items-center justify-between">
+                <span class="text-4xl font-semibold text-primary">②</span>
+                <span class="rounded-full bg-[#2E7D32]/20 px-3 py-1 text-xs font-semibold text-primary">深</span>
+              </div>
+              <h3 class="mt-4 text-lg font-semibold text-primary">コーヒーを深く学ぶ・技術を磨く</h3>
+              <p class="mt-2 text-sm text-muted">
+                専門的な学びと体験で、スキルアップを目指す活動です。
+              </p>
+              <ul class="mt-4 space-y-2 text-sm text-muted">
+                <li><i class="fa-solid fa-seedling mr-2 text-secondary" aria-hidden="true"></i>焙煎見学・抽出講座</li>
+                <li><i class="fa-solid fa-user-tie mr-2 text-secondary" aria-hidden="true"></i>プロの焙煎士・オーナーによる指導</li>
+                <li><i class="fa-solid fa-kitchen-set mr-2 text-secondary" aria-hidden="true"></i>プロによるハンドドリップ講座</li>
+                <li><i class="fa-solid fa-warehouse mr-2 text-secondary" aria-hidden="true"></i>焙煎所での焙煎見学</li>
+              </ul>
+              <p class="mt-4 text-sm font-semibold text-primary">
+                活動頻度：<span class="text-muted">不定期開催</span>
+              </p>
+              <div class="mt-4 flex items-center justify-between text-xs font-semibold text-primary">
+                <span class="opacity-0 transition group-hover:opacity-100">クリックして詳細を見る</span>
+                <span class="inline-flex items-center gap-1">詳しく見る <span aria-hidden="true">↓</span></span>
+              </div>
+            </button>
+            <button
+              type="button"
+              class="hero-reveal hover-lift group w-full cursor-pointer rounded-3xl bg-gradient-to-br from-[#D32F2F]/20 via-white to-[#FF5722]/20 p-6 text-left shadow"
+              style="animation-delay: 1.4s;"
+              data-scroll-target="#event"
+              aria-label="出店・イベント開催の詳細へスクロール"
+            >
+              <span class="sr-only">クリックして詳細を見る</span>
+              <div class="flex items-center justify-between">
+                <span class="text-4xl font-semibold text-primary">③</span>
+                <span class="rounded-full bg-[#D32F2F]/20 px-3 py-1 text-xs font-semibold text-primary">深</span>
+              </div>
+              <h3 class="mt-4 text-lg font-semibold text-primary">コーヒーを提供する立場になる・活動の幅を広げる</h3>
+              <p class="mt-2 text-sm text-muted">
+                企画や出店を通じて、外に向けた活動に挑戦します。
+              </p>
+              <ul class="mt-4 space-y-2 text-sm text-muted">
+                <li><i class="fa-solid fa-store mr-2 text-secondary" aria-hidden="true"></i>マルシェ・学祭出店、ゆげイベントなど</li>
+                <li><i class="fa-solid fa-mug-saucer mr-2 text-secondary" aria-hidden="true"></i>外部の方にコーヒーを提供する</li>
+                <li><i class="fa-solid fa-list-check mr-2 text-secondary" aria-hidden="true"></i>学祭・マルシェ出店（メニュー考案、ゆげブレンド開発）</li>
+                <li><i class="fa-solid fa-lightbulb mr-2 text-secondary" aria-hidden="true"></i>イベント企画</li>
+              </ul>
+              <p class="mt-4 text-sm font-semibold text-primary">
+                活動頻度：<span class="text-muted">不定期開催</span>
+              </p>
+              <div class="mt-4 flex items-center justify-between text-xs font-semibold text-primary">
+                <span class="opacity-0 transition group-hover:opacity-100">クリックして詳細を見る</span>
+                <span class="inline-flex items-center gap-1">詳しく見る <span aria-hidden="true">↓</span></span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-10 mt-12">
+        <section class="activity-section hover-lift group" id="regular-activity">
+          <h2 class="activity-title-top">定期活動</h2>
+          <div class="activity-slider-container">
+            <div class="activity-slider">
+              <div class="slider-wrapper">
+                <div class="slider-track" data-activity="regular" data-slider-track>
+                  <div class="slide">
+                    <img src="images/定期活動/定期活動1.jpg" alt="定期活動の様子 1" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/定期活動/定期活動2.jpg" alt="定期活動の様子 2" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/定期活動/定期活動3.jpg" alt="定期活動の様子 3" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/定期活動/定期活動4.jpg" alt="定期活動の様子 4" />
+                  </div>
+                </div>
+              </div>
+              <button class="slider-nav prev" data-activity="regular" type="button" aria-label="前の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <button class="slider-nav next" data-activity="regular" type="button" aria-label="次の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+            <div class="slider-indicators" data-activity="regular">
+              <span class="indicator active"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+            </div>
+          </div>
+          <div class="activity-description">
+            <p>
+              毎月第二木曜日に集まって、コーヒーを淹れたり、飲み比べたり、おしゃべりしたり。
+              温かい雰囲気の中で、コーヒー好きな仲間と楽しい時間を過ごしています。
+              初心者でも気軽に参加できるアットホームな会です。
+            </p>
+            <a
+              href="https://www.instagram.com/okadai_coffee_circle/p/DPTBY9Lkyh1/"
+              target="_blank"
+              rel="noreferrer"
+              class="instagram-btn"
+            >
+              Instagramで詳しく見る
+            </a>
+          </div>
+        </section>
+
+        <section class="activity-section hover-lift group" id="cupping">
+          <h2 class="activity-title-top">カッピング会</h2>
+          <div class="activity-slider-container">
+            <div class="activity-slider">
+              <div class="slider-wrapper">
+                <div class="slider-track" data-activity="cupping" data-slider-track>
+                  <div class="slide">
+                    <img src="images/カッピング会/カッピング会1.jpg" alt="カッピング会の様子 1" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/カッピング会/カッピング会2.jpg" alt="カッピング会の様子 2" class="cupping-ratio" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/カッピング会/カッピング会3.jpg" alt="カッピング会の様子 3" class="cupping-ratio" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/カッピング会/カッピング会4.jpg" alt="カッピング会の様子 4" class="cupping-ratio" />
+                  </div>
+                </div>
+              </div>
+              <button class="slider-nav prev" data-activity="cupping" type="button" aria-label="前の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <button class="slider-nav next" data-activity="cupping" type="button" aria-label="次の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+            <div class="slider-indicators" data-activity="cupping">
+              <span class="indicator active"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+            </div>
+          </div>
+          <div class="activity-description">
+            <p>
+              プロのようにコーヒーをテイスティング！
+              様々な産地や焙煎度のコーヒーを飲み比べて、味の違いを楽しみます。
+              コーヒーの奥深さを体験できる、人気の活動です。
+            </p>
+            <a
+              href="https://www.instagram.com/p/DSRnIZqk2yU/"
+              target="_blank"
+              rel="noreferrer"
+              class="instagram-btn"
+            >
+              Instagramで詳しく見る
+            </a>
+          </div>
+        </section>
+
+        <section class="activity-section hover-lift group" id="roasting">
+          <h2 class="activity-title-top">焙煎見学</h2>
+          <div class="activity-slider-container">
+            <div class="activity-slider">
+              <div class="slider-wrapper">
+                <div class="slider-track" data-activity="roasting" data-slider-track>
+                  <div class="slide">
+                    <img src="images/焙煎見学/焙煎見学1.jpg" alt="焙煎見学の様子 1" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/焙煎見学/焙煎見学2.jpg" alt="焙煎見学の様子 2" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/焙煎見学/焙煎見学3.jpg" alt="焙煎見学の様子 3" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/焙煎見学/焙煎見学4.jpg" alt="焙煎見学の様子 4" />
+                  </div>
+                </div>
+              </div>
+              <button class="slider-nav prev" data-activity="roasting" type="button" aria-label="前の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <button class="slider-nav next" data-activity="roasting" type="button" aria-label="次の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+            <div class="slider-indicators" data-activity="roasting">
+              <span class="indicator active"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+            </div>
+          </div>
+          <div class="activity-description">
+            <p>
+              コーヒー豆が焙煎される過程を見学・体験できる貴重な機会！
+              生豆から香ばしいコーヒー豆へと変化する様子を間近で見られます。
+              自分で焙煎したコーヒーの味は格別です。
+            </p>
+            <a
+              href="https://www.instagram.com/p/DSaDJeyk4RP/"
+              target="_blank"
+              rel="noreferrer"
+              class="instagram-btn"
+            >
+              Instagramで詳しく見る
+            </a>
+          </div>
+        </section>
+
+        <section class="activity-section cafe-tour hover-lift group" id="cafe-tour">
+          <h2 class="activity-title-top">カフェ巡り</h2>
+          <div class="activity-slider-container">
+            <div class="activity-slider">
+              <div class="slider-wrapper">
+                <div class="slider-track" data-activity="cafe-tour" data-slider-track>
+                  <div class="slide">
+                    <img src="images/カフェ巡り/カフェ巡り_vol1.jpg" alt="カフェ巡りの様子 1" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/カフェ巡り/カフェ巡り_vol2.jpg" alt="カフェ巡りの様子 2" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/カフェ巡り/カフェ巡り_vol3.jpg" alt="カフェ巡りの様子 3" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/カフェ巡り/カフェ巡り_vol4.jpg" alt="カフェ巡りの様子 4" />
+                  </div>
+                </div>
+              </div>
+              <button class="slider-nav prev" data-activity="cafe-tour" type="button" aria-label="前の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <button class="slider-nav next" data-activity="cafe-tour" type="button" aria-label="次の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+            <div class="slider-indicators" data-activity="cafe-tour">
+              <span class="indicator active"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+            </div>
+          </div>
+          <div class="activity-description">
+            <p>
+              岡山市内のおしゃれなカフェを巡る人気イベント！
+              美味しいコーヒーを楽しみながら、カフェの雰囲気や個性を発見します。
+              メンバー同士の交流も深まる、楽しい時間です。
+            </p>
+            <a
+              href="https://www.instagram.com/p/DR3t0qkkxAR/"
+              target="_blank"
+              rel="noreferrer"
+              class="instagram-btn"
+            >
+              Instagramで詳しく見る
+            </a>
+          </div>
+        </section>
+
+        <section class="activity-section hover-lift group" id="event">
+          <h2 class="activity-title-top">出店・イベント開催</h2>
+          <div class="activity-slider-container">
+            <div class="activity-slider">
+              <div class="slider-wrapper">
+                <div class="slider-track" data-activity="event" data-slider-track>
+                  <div class="slide">
+                    <img src="images/event-1.jpg" alt="出店・イベント開催の様子 1" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/event-2.jpg" alt="出店・イベント開催の様子 2" />
+                  </div>
+                  <div class="slide">
+                    <img src="images/event-3.jpg" alt="出店・イベント開催の様子 3" />
+                  </div>
+                </div>
+              </div>
+              <button class="slider-nav prev" data-activity="event" type="button" aria-label="前の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <button class="slider-nav next" data-activity="event" type="button" aria-label="次の画像">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+            <div class="slider-indicators" data-activity="event">
+              <span class="indicator active"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+            </div>
+          </div>
+          <div class="activity-description">
+            <p>
+              学祭やマルシェに出店して、たくさんの方にコーヒーを提供しています！
+              メニュー開発やゆげオリジナルブレンドの企画など、
+              みんなでアイデアを出し合いながら楽しく準備。
+              サークルの枠を超えて、地域の方々とつながる貴重な機会です。
+            </p>
+            <a
+              href="https://www.instagram.com/okadai_coffee_circle/"
+              target="_blank"
+              rel="noreferrer"
+              class="instagram-btn"
+            >
+              Instagramで詳しく見る
+            </a>
+          </div>
+        </section>
+      </section>
+
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-primary text-white">
+      <div class="mx-auto flex max-w-screen-2xl flex-col gap-6 px-6 py-12 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-lg font-semibold">岡山大学 珈琲サークル「ゆげ」</p>
+          <p class="mt-2 text-sm text-white/80">
+            温かさと活気が広がる場所で、コーヒーの時間を一緒に楽しみませんか。
+          </p>
+        </div>
+        <div class="flex flex-col gap-4 text-sm">
+          <a
+            href="https://www.instagram.com/okadai_coffee_circle/"
+            class="inline-flex items-center gap-2 font-semibold text-secondary hover:text-accent"
+            aria-label="Instagram"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+            Instagram
+          </a>
+          <a href="join.html" class="font-semibold text-white/80 hover:text-accent">
+            お問い合わせはこちら
+          </a>
+        </div>
+      </div>
+      <div class="border-t border-white/20 py-4 text-center text-xs text-white/70">
+        © 2025 岡山大学 珈琲サークル「ゆげ」
+      </div>
+    </footer>
+
+    <button
+      id="back-to-top"
+      class="fixed bottom-6 right-6 rounded-full bg-secondary px-4 py-3 text-sm font-semibold text-primary shadow-lg opacity-0 pointer-events-none transition hover:bg-accent"
+      type="button"
+      aria-label="トップへ戻る"
+    >
+      ↑ Top
+    </button>
+
+    <script>
+      const nav = document.getElementById("site-nav");
+      const menuToggle = document.getElementById("menu-toggle");
+      const mobileMenu = document.getElementById("mobile-menu");
+
+      const setNavStyle = () => {
+        if (window.scrollY > 10) {
+          nav.classList.add("bg-background/95", "shadow-lg", "backdrop-blur");
+        } else {
+          nav.classList.remove("bg-background/95", "shadow-lg", "backdrop-blur");
+        }
+      };
+
+      menuToggle.addEventListener("click", () => {
+        const isOpen = mobileMenu.classList.toggle("hidden") === false;
+        menuToggle.setAttribute("aria-expanded", isOpen);
+      });
+
+      window.addEventListener("scroll", setNavStyle);
+      window.addEventListener("load", setNavStyle);
+    </script>
+  </body>
+</html>
