@@ -105,8 +105,18 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let currentDetailCafe = null;
-  let isMobileHandleReady = false;
-  let isMobileContentReady = false;
+  let currentUISize = 0;
+  let dragStartY = 0;
+  let currentDragY = 0;
+  let isDraggingUI = false;
+  let initialScrollTop = 0;
+  let isMobileUIReady = false;
+
+  const mobileDetailPanel = document.getElementById("mobile-cafe-detail");
+  const mobileDetailContent = document.getElementById("mobile-detail-content");
+  const detailHandle = document.querySelector(".detail-handle");
+  const detailCloseBtnMobile = document.getElementById("detail-close-btn-mobile");
+  const mapDetailOverlay = document.getElementById("map-detail-overlay");
 
   const createDetailHTML = (cafe, platform) => {
     const isMobileDetail = platform === "mobile";
@@ -120,6 +130,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const phoneLink =
       cafe.phone && cafe.phone !== "未登録" ? `<a href="tel:${cafe.phone}">${cafe.phone}</a>` : "未登録";
     const infoValue = (value) => (value && value !== "未登録" ? value : "未登録");
+    const accessValue = infoValue(cafe.access);
+    const accessHTML = isMobileDetail && accessValue !== "未登録" ? accessValue.split("\n").join("<br>") : accessValue;
+    const mobilePhoneRow =
+      cafe.phone && cafe.phone !== "未登録"
+        ? `
+        <div class="detail-info-row">
+          <span class="detail-info-label">電話番号☎️：</span>
+          <span class="detail-info-value"><a href="tel:${cafe.phone}">${cafe.phone}</a></span>
+        </div>
+      `
+        : "";
 
     const imagesHTML = isMobileDetail
       ? `
@@ -175,12 +196,14 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         <div class="detail-info-row">
           <span class="detail-info-label">アクセス🚶：</span>
-          <span class="detail-info-value">${infoValue(cafe.access)}</span>
+          <span class="detail-info-value">${accessHTML}</span>
         </div>
+        ${isMobileDetail ? mobilePhoneRow : `
         <div class="detail-info-row">
           <span class="detail-info-label">電話番号☎️：</span>
           <span class="detail-info-value">${phoneLink}</span>
         </div>
+        `}
         <div class="detail-info-row">
           <span class="detail-info-label">駐 車 場🅿️：</span>
           <span class="detail-info-value">${infoValue(cafe.parking)}</span>
@@ -206,12 +229,18 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const closeMobileCafeDetail = () => {
-    const panel = document.getElementById("mobile-cafe-detail");
-    if (panel) {
-      panel.classList.remove("active", "expanded");
-      panel.style.transform = "";
+    if (!mobileDetailPanel) {
+      return;
     }
-    document.body.classList.remove("cafe-detail-open");
+    mobileDetailPanel.classList.remove("active");
+    mobileDetailPanel.setAttribute("data-size", "0");
+    mobileDetailPanel.style.transform = "";
+    if (mapDetailOverlay) {
+      mapDetailOverlay.classList.remove("active");
+    }
+    document.body.style.overflow = "";
+    currentUISize = 0;
+    currentDetailCafe = null;
   };
 
   const closeDesktopCafeDetail = () => {
@@ -221,124 +250,140 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const setupMobileHandleDrag = (panel) => {
-    if (!panel || isMobileHandleReady) {
+  const setUISize = (size) => {
+    if (!mobileDetailPanel || !mobileDetailContent) {
       return;
     }
-    const handle = panel.querySelector(".detail-handle");
-    const content = panel.querySelector(".detail-content");
-    if (!handle) {
+    if (size < 0 || size > 3) {
       return;
     }
-    let startY = 0;
-    let currentY = 0;
-    let isDragging = false;
+    currentUISize = size;
+    if (size === 0) {
+      closeMobileCafeDetail();
+      return;
+    }
+    mobileDetailPanel.setAttribute("data-size", String(size));
+    if (mapDetailOverlay) {
+      mapDetailOverlay.classList.toggle("active", size > 1);
+    }
+    if (size === 3) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    mobileDetailContent.scrollTop = 0;
+  };
 
-    handle.addEventListener(
+  const handleDragStart = (event) => {
+    if (!mobileDetailPanel) {
+      return;
+    }
+    isDraggingUI = true;
+    dragStartY = event.touches[0].clientY;
+    currentDragY = dragStartY;
+    document.addEventListener("touchmove", handleDragMove, { passive: false });
+    document.addEventListener("touchend", handleDragEnd, { passive: true });
+  };
+
+  const handleDragMove = (event) => {
+    if (!isDraggingUI || !mobileDetailPanel || !mobileDetailContent) {
+      return;
+    }
+    currentDragY = event.touches[0].clientY;
+    const diff = currentDragY - dragStartY;
+    if (mobileDetailContent.scrollTop > 0) {
+      return;
+    }
+    event.preventDefault();
+    if (diff > 50) {
+      mobileDetailPanel.style.transform = `translateY(${Math.min(diff * 0.5, 50)}px)`;
+    } else if (diff < -50) {
+      mobileDetailPanel.style.transform = `translateY(${Math.max(diff * 0.5, -50)}px)`;
+    }
+  };
+
+  const handleDragEnd = () => {
+    if (!isDraggingUI || !mobileDetailPanel) {
+      return;
+    }
+    isDraggingUI = false;
+    document.removeEventListener("touchmove", handleDragMove);
+    document.removeEventListener("touchend", handleDragEnd);
+    mobileDetailPanel.style.transform = "";
+    const diff = currentDragY - dragStartY;
+    const threshold = 80;
+    if (diff > threshold) {
+      if (currentUISize === 3) {
+        setUISize(2);
+      } else if (currentUISize === 2) {
+        setUISize(1);
+      } else if (currentUISize === 1) {
+        setUISize(0);
+      }
+    } else if (diff < -threshold) {
+      if (currentUISize === 1) {
+        setUISize(2);
+      } else if (currentUISize === 2) {
+        setUISize(3);
+      }
+    }
+    dragStartY = 0;
+    currentDragY = 0;
+  };
+
+  const setupMobileUIInteraction = () => {
+    if (isMobileUIReady || !mobileDetailPanel || !mobileDetailContent || !detailHandle) {
+      return;
+    }
+    detailHandle.addEventListener("touchstart", handleDragStart, { passive: true });
+    mobileDetailContent.addEventListener(
       "touchstart",
-      (event) => {
-        isDragging = true;
-        startY = event.touches[0].clientY;
-        currentY = startY;
+      function (event) {
+        initialScrollTop = this.scrollTop;
+        dragStartY = event.touches[0].clientY;
       },
       { passive: true }
     );
-
-    document.addEventListener(
+    mobileDetailContent.addEventListener(
       "touchmove",
-      (event) => {
-        if (!isDragging) {
-          return;
-        }
-        currentY = event.touches[0].clientY;
-        const diff = currentY - startY;
-        if (content && content.scrollTop === 0) {
-          if (diff > 0) {
+      function (event) {
+        const scrollTop = this.scrollTop;
+        if (scrollTop === 0 && initialScrollTop === 0) {
+          const touch = event.touches[0];
+          if (touch.clientY > dragStartY) {
             event.preventDefault();
-            const translateY = Math.min(diff, 300);
-            panel.style.transform = `translateY(${translateY}px)`;
-          } else if (diff < -50) {
-            panel.classList.add("expanded");
           }
         }
       },
       { passive: false }
     );
-
-    document.addEventListener(
-      "touchend",
-      () => {
-        if (!isDragging) {
-          return;
+    if (mapDetailOverlay) {
+      mapDetailOverlay.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (currentUISize > 1) {
+          setUISize(1);
         }
-        const diff = currentY - startY;
-        if (diff > 150) {
-          closeMobileCafeDetail();
-        } else {
-          panel.style.transform = "";
-        }
-        isDragging = false;
-        startY = 0;
-        currentY = 0;
-      },
-      { passive: true }
-    );
-
-    isMobileHandleReady = true;
+      });
+    }
+    if (detailCloseBtnMobile) {
+      detailCloseBtnMobile.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeMobileCafeDetail();
+      });
+    }
+    isMobileUIReady = true;
   };
 
-  const setupMobileContentScroll = (panel) => {
-    if (!panel || isMobileContentReady) {
+  const showMobileCafeDetail = (cafe, size = 2) => {
+    if (!mobileDetailPanel || !mobileDetailContent) {
       return;
     }
-    const content = panel.querySelector(".detail-content");
-    if (!content) {
-      return;
-    }
-    let startY = 0;
-
-    content.addEventListener(
-      "touchstart",
-      (event) => {
-        startY = event.touches[0].clientY;
-      },
-      { passive: true }
-    );
-
-    content.addEventListener(
-      "touchmove",
-      (event) => {
-        const scrollTop = content.scrollTop;
-        const scrollHeight = content.scrollHeight;
-        const clientHeight = content.clientHeight;
-        const currentY = event.touches[0].clientY;
-
-        if (scrollTop === 0 && currentY - startY > 100) {
-          closeMobileCafeDetail();
-          return;
-        }
-
-        if (scrollTop > 0 || scrollTop + clientHeight < scrollHeight) {
-          event.stopPropagation();
-        }
-      },
-      { passive: false }
-    );
-
-    isMobileContentReady = true;
-  };
-
-  const showMobileCafeDetail = (cafe) => {
-    const panel = document.getElementById("mobile-cafe-detail");
-    const content = document.getElementById("mobile-detail-content");
-    if (!panel || !content) {
-      return;
-    }
-    content.innerHTML = createDetailHTML(cafe, "mobile");
-    panel.classList.add("active");
-    document.body.classList.add("cafe-detail-open");
-    setupMobileHandleDrag(panel);
-    setupMobileContentScroll(panel);
+    mobileDetailContent.innerHTML = createDetailHTML(cafe, "mobile");
+    mobileDetailPanel.classList.add("active");
+    setUISize(size);
+    setupMobileUIInteraction();
   };
 
   const openPhotoGallery = () => {
@@ -382,10 +427,14 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const onMarkerClick = (cafe) => {
+    const scrollY = window.scrollY || window.pageYOffset;
     currentDetailCafe = cafe;
     if (window.innerWidth <= 768) {
       closeDesktopCafeDetail();
-      showMobileCafeDetail(cafe);
+      showMobileCafeDetail(cafe, 2);
+      setTimeout(() => {
+        window.scrollTo(0, scrollY);
+      }, 0);
     } else {
       closeMobileCafeDetail();
       showDesktopCafeDetail(cafe);
@@ -409,7 +458,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // マーカーを生成
   cafes.forEach((cafe) => {
     const marker = L.marker(cafe.coordinates, { icon: customIcon });
-    marker.on("click", () => {
+    marker.on("click", (event) => {
+      L.DomEvent.preventDefault(event);
+      L.DomEvent.stopPropagation(event);
       onMarkerClick(cafe);
     });
     marker.cafeId = cafe.id;

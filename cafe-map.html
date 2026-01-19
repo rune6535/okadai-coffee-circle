@@ -766,12 +766,6 @@
       }
 
       /* ===== スマホ版：カフェ詳細パネル ===== */
-      body.cafe-detail-open {
-        overflow: hidden;
-        position: fixed;
-        width: 100%;
-      }
-
       .mobile-cafe-detail {
         position: fixed;
         bottom: 0;
@@ -781,11 +775,10 @@
         border-radius: 20px 20px 0 0;
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
         z-index: 10001;
-        max-height: 85vh;
         transform: translateY(100%);
         transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         display: none;
-        touch-action: none;
+        touch-action: pan-y;
       }
 
       .mobile-cafe-detail.active {
@@ -793,36 +786,111 @@
         transform: translateY(0);
       }
 
-      .mobile-cafe-detail.expanded {
-        transform: translateY(5vh);
+      /* UIサイズ1: 画面の1/8（12.5%） */
+      .mobile-cafe-detail[data-size="1"] {
+        height: 12.5vh;
       }
 
-      .mobile-cafe-detail .detail-handle {
+      /* UIサイズ2: 画面の2/5（40%） - デフォルト */
+      .mobile-cafe-detail[data-size="2"] {
+        height: 40vh;
+      }
+
+      /* UIサイズ3: 画面の7/8（87.5%） */
+      .mobile-cafe-detail[data-size="3"] {
+        height: 87.5vh;
+      }
+
+      /* ハンドル */
+      .detail-handle {
         padding: 12px 0 8px 0;
         display: flex;
         justify-content: center;
         cursor: grab;
+        flex-shrink: 0;
       }
 
-      .mobile-cafe-detail .detail-handle:active {
+      .detail-handle:active {
         cursor: grabbing;
       }
 
-      .mobile-cafe-detail .handle-bar {
+      .handle-bar {
         width: 40px;
         height: 4px;
         background: #ddd;
         border-radius: 2px;
+        transition: background 0.2s;
       }
 
-      .mobile-cafe-detail .detail-content {
+      .detail-handle:active .handle-bar {
+        background: #bbb;
+      }
+
+      /* ヘッダー（×ボタン） */
+      .detail-header {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 10;
+        flex-shrink: 0;
+      }
+
+      .detail-close-btn-mobile {
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 2px solid #ddd;
+        border-radius: 50%;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s;
+      }
+
+      .detail-close-btn-mobile:active {
+        background: #f0f0f0;
+        transform: scale(0.95);
+      }
+
+      /* コンテンツ */
+      .detail-content {
         overflow-y: auto;
-        max-height: calc(85vh - 40px);
+        height: calc(100% - 40px);
         -webkit-overflow-scrolling: touch;
         padding: 0 20px 20px 20px;
         overscroll-behavior: contain;
       }
 
+      /* サイズ1: コンテンツを非表示 */
+      .mobile-cafe-detail[data-size="1"] .detail-content {
+        opacity: 0.3;
+        pointer-events: none;
+      }
+
+      /* マップオーバーレイ */
+      .map-detail-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: transparent;
+        z-index: 10000;
+        display: none;
+        pointer-events: none;
+      }
+
+      .map-detail-overlay.active {
+        display: block;
+        pointer-events: auto;
+      }
+
+      /* 画像スライダー（Instagram比率 4:5） */
       .detail-images {
         width: 100%;
         margin-bottom: 20px;
@@ -855,6 +923,7 @@
         border-radius: 12px;
       }
 
+      /* カフェ情報 */
       .detail-cafe-name {
         font-size: 24px;
         font-weight: 700;
@@ -871,7 +940,7 @@
       .detail-cafe-comment {
         font-size: 14px;
         line-height: 1.7;
-        color: #4a3f3f;
+        color: #666;
         margin-bottom: 20px;
       }
 
@@ -898,6 +967,7 @@
         min-width: 100px;
         font-weight: 600;
         color: #666;
+        flex-shrink: 0;
       }
 
       .detail-info-value {
@@ -914,11 +984,13 @@
         text-decoration: underline;
       }
 
+      /* アクションボタン */
       .detail-actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 12px;
         margin-top: 20px;
+        padding-bottom: 20px;
       }
 
       .detail-action-btn {
@@ -1138,7 +1210,8 @@
       }
 
       @media (min-width: 769px) {
-        .mobile-cafe-detail {
+        .mobile-cafe-detail,
+        .map-detail-overlay {
           display: none !important;
         }
       }
@@ -2014,12 +2087,17 @@
       </div>
     </main>
 
-    <div class="mobile-cafe-detail" id="mobile-cafe-detail">
+    <div class="mobile-cafe-detail" id="mobile-cafe-detail" data-size="0">
       <div class="detail-handle">
         <div class="handle-bar"></div>
       </div>
+      <div class="detail-header">
+        <button class="detail-close-btn-mobile" id="detail-close-btn-mobile" type="button">×</button>
+      </div>
       <div class="detail-content" id="mobile-detail-content"></div>
     </div>
+
+    <div class="map-detail-overlay" id="map-detail-overlay"></div>
 
     <!-- フッター -->
     <footer class="bg-primary text-white">
