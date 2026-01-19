@@ -86,110 +86,223 @@ document.addEventListener("DOMContentLoaded", () => {
     className: "custom-cafe-marker",
   });
 
-  const popupOptions = {
-    closeOnClick: false,
-    closeButton: true,
-    autoClose: false,
-    closeOnEscapeKey: true,
-    maxWidth: 300,
-    minWidth: 250,
-    keepInView: true,
-    autoPan: true,
-    autoPanPadding: [10, 10],
-    className: "cafe-popup-persistent",
-  };
-
   const formatPrice = (price) => "￥".repeat(price);
+  const getPrimaryImage = (cafe) => cafe.images?.[0] || cafe.image || "images/coming-soon.svg";
 
-  // 星評価をHTMLに変換
-  const getRatingStars = (rating) => {
-    const full = Math.floor(rating);
-    const half = rating % 1 >= 0.5;
-    const empty = 5 - full - (half ? 1 : 0);
-    const stars = [];
-    for (let i = 0; i < full; i += 1) {
-      stars.push('<i class="fa-solid fa-star"></i>');
+  const getCafeFeatures = (cafe) => {
+    const cafeFeatures = [...(cafe.features || [])];
+    if (cafe.hasFood) {
+      cafeFeatures.push("ご飯あり");
     }
-    if (half) {
-      stars.push('<i class="fa-solid fa-star-half-stroke"></i>');
+    if (cafe.nightOpen) {
+      cafeFeatures.push("夜営業あり");
     }
-    for (let i = 0; i < empty; i += 1) {
-      stars.push('<i class="fa-regular fa-star"></i>');
+    if (cafe.reservable) {
+      cafeFeatures.push("予約可能");
     }
-    return stars.join("");
+    return cafeFeatures;
   };
 
-  // ポップアップのテンプレート生成
-  const buildPopup = (cafe) => {
-    const badges = cafe.features
-      .map(
-        (feature) =>
-          `<span style="background:#F7F2EC;color:#3E2A1E;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;">${feature}</span>`
-      )
-      .join(" ");
-    return `
-      <div class="cafe-popup-container" style="background:#fff;position:relative;">
-        <button type="button" data-popup-image data-image="${cafe.image}" data-alt="${cafe.name}" style="display:block;width:100%;border:none;padding:0;cursor:pointer;background:none;">
-          <img src="${cafe.image}" alt="${cafe.name}" class="popup-image" style="width:100%;" />
-        </button>
-        <div class="cafe-popup-content" style="padding:16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <h3 style="font-size:16px;font-weight:700;color:#3E2A1E;">${cafe.name}</h3>
-            <button type="button" class="favorite-icon-btn" data-action="favorite" data-cafe-id="${cafe.id}" aria-label="お気に入り">
-              <i class="fa-regular fa-heart"></i>
-            </button>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;color:#B98A62;font-size:12px;">
-            <span>${getRatingStars(cafe.rating)}</span>
-            <span style="color:#6D5B4C;">${cafe.rating.toFixed(1)}/5</span>
-          </div>
-          <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
-            <span style="background:#E3C5A4;color:#3E2A1E;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;">${cafe.area}</span>
-            ${badges}
-          </div>
-          <div style="margin-top:10px;font-size:12px;color:#6D5B4C;display:flex;align-items:center;gap:6px;">
-            <i class="fa-solid fa-yen-sign" style="color:#3E2A1E;"></i>
-            ${formatPrice(cafe.price)}
-          </div>
-          <div style="margin-top:8px;font-size:12px;color:#6D5B4C;display:flex;align-items:flex-start;gap:6px;">
-            <span>📍</span>
-            <span>${cafe.address}</span>
-          </div>
-          <p style="margin-top:8px;font-size:12px;color:#231B17;line-height:1.5;">${cafe.comment}</p>
-          <p style="margin-top:6px;font-size:11px;color:#6D5B4C;">訪問日: ${cafe.visitDate}</p>
-          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;">
-            <a class="button" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-              cafe.address
-            )}" target="_blank" rel="noreferrer" style="background:#3E2A1E;color:#fff;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:600;">Googleマップで開く</a>
-            <button type="button" data-action="details" data-cafe-id="${cafe.id}" style="background:#F7F2EC;color:#3E2A1E;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid #E3C5A4;">詳細を見る</button>
-            <a class="button" href="${cafe.instagram}" target="_blank" rel="noreferrer" style="background:#B98A62;color:#fff;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:600;">Instagramで見る</a>
-          </div>
-          <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
-            <button type="button" data-action="route" data-cafe-id="${cafe.id}" style="background:#231B17;color:#fff;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:600;">現在地からのルート</button>
-            <button type="button" data-action="share" data-cafe-id="${cafe.id}" style="background:#fff;color:#3E2A1E;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid #E3C5A4;">このカフェを共有</button>
+  let currentDetailCafe = null;
+  let isMobileHandleReady = false;
+
+  const createDetailHTML = (cafe, platform) => {
+    const isMobileDetail = platform === "mobile";
+    const images = cafe.images?.length ? cafe.images : [getPrimaryImage(cafe)];
+    const instagramHandle = cafe.instagram
+      ? cafe.instagram.replace(/\/+$/, "").split("/").pop().split("?")[0]
+      : "";
+    const googleMaps =
+      cafe.googleMaps ||
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cafe.address || "")}`;
+    const phoneLink =
+      cafe.phone && cafe.phone !== "未登録" ? `<a href="tel:${cafe.phone}">${cafe.phone}</a>` : "未登録";
+    const infoValue = (value) => (value && value !== "未登録" ? value : "未登録");
+
+    const imagesHTML = isMobileDetail
+      ? `
+        <div class="detail-images">
+          <div class="detail-images-slider">
+            ${images
+              .map(
+                (img) => `
+              <div class="detail-image-item">
+                <img src="${img}" alt="${cafe.name}">
+              </div>
+            `
+              )
+              .join("")}
           </div>
         </div>
+      `
+      : `
+        <div class="detail-images">
+          ${images
+            .map(
+              (img) => `
+            <div class="detail-image-item">
+              <img src="${img}" alt="${cafe.name}">
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      `;
+
+    return `
+      ${imagesHTML}
+      <h2 class="detail-cafe-name">${cafe.name}</h2>
+      <p class="detail-cafe-area">📍 ${cafe.area}</p>
+      <p class="detail-cafe-comment">${cafe.comment || ""}</p>
+      <div class="detail-info-section">
+        <h3 class="detail-info-title">《店舗情報》</h3>
+        <div class="detail-info-row">
+          <span class="detail-info-label">場　　所📍：</span>
+          <span class="detail-info-value">${infoValue(cafe.address)}</span>
+        </div>
+        <div class="detail-info-row">
+          <span class="detail-info-label">営業時間🕐：</span>
+          <span class="detail-info-value">${infoValue(cafe.openingHours)}</span>
+        </div>
+        <div class="detail-info-row">
+          <span class="detail-info-label">定 休 日🗓️：</span>
+          <span class="detail-info-value">${infoValue(cafe.closedDays)}</span>
+        </div>
+        <div class="detail-info-row">
+          <span class="detail-info-label">アクセス🚶：</span>
+          <span class="detail-info-value">${infoValue(cafe.access)}</span>
+        </div>
+        <div class="detail-info-row">
+          <span class="detail-info-label">電話番号☎️：</span>
+          <span class="detail-info-value">${phoneLink}</span>
+        </div>
+        <div class="detail-info-row">
+          <span class="detail-info-label">駐 車 場🅿️：</span>
+          <span class="detail-info-value">${infoValue(cafe.parking)}</span>
+        </div>
+        <div class="detail-info-row">
+          <span class="detail-info-label">インスタ🔎：</span>
+          <span class="detail-info-value">${
+            cafe.instagram
+              ? `<a href="${cafe.instagram}" target="_blank" rel="noreferrer">@${instagramHandle}</a>`
+              : "未登録"
+          }</span>
+        </div>
+      </div>
+      <div class="detail-actions">
+        <a href="${googleMaps}" target="_blank" rel="noreferrer" class="detail-action-btn maps">
+          🗺️ Googleマップ
+        </a>
+        <a href="${cafe.instagram || "#"}" target="_blank" rel="noreferrer" class="detail-action-btn instagram">
+          📷 Instagram
+        </a>
       </div>
     `;
   };
 
-  // マーカーとポップアップを生成
+  const closeMobileCafeDetail = () => {
+    const panel = document.getElementById("mobile-cafe-detail");
+    if (panel) {
+      panel.classList.remove("active", "expanded");
+    }
+  };
+
+  const closeDesktopCafeDetail = () => {
+    const panel = document.getElementById("desktop-cafe-detail");
+    if (panel) {
+      panel.classList.remove("active");
+    }
+  };
+
+  const setupMobileHandleDrag = (panel) => {
+    if (!panel || isMobileHandleReady) {
+      return;
+    }
+    const handle = panel.querySelector(".detail-handle");
+    if (!handle) {
+      return;
+    }
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+
+    handle.addEventListener("touchstart", (event) => {
+      isDragging = true;
+      startY = event.touches[0].clientY;
+      currentY = startY;
+    });
+
+    handle.addEventListener("touchmove", (event) => {
+      if (!isDragging) {
+        return;
+      }
+      currentY = event.touches[0].clientY;
+      const diff = currentY - startY;
+      if (diff < -50) {
+        panel.classList.add("expanded");
+      } else if (diff > 50) {
+        panel.classList.remove("expanded");
+      }
+    });
+
+    handle.addEventListener("touchend", () => {
+      if (!isDragging) {
+        return;
+      }
+      const diff = currentY - startY;
+      if (diff > 150) {
+        closeMobileCafeDetail();
+      }
+      isDragging = false;
+      startY = 0;
+      currentY = 0;
+    });
+
+    isMobileHandleReady = true;
+  };
+
+  const showMobileCafeDetail = (cafe) => {
+    const panel = document.getElementById("mobile-cafe-detail");
+    const content = document.getElementById("mobile-detail-content");
+    if (!panel || !content) {
+      return;
+    }
+    content.innerHTML = createDetailHTML(cafe, "mobile");
+    panel.classList.add("active");
+    setupMobileHandleDrag(panel);
+  };
+
+  const showDesktopCafeDetail = (cafe) => {
+    const panel = document.getElementById("desktop-cafe-detail");
+    const content = document.getElementById("desktop-detail-content");
+    if (!panel || !content) {
+      return;
+    }
+    content.innerHTML = createDetailHTML(cafe, "desktop");
+    panel.classList.add("active");
+  };
+
+  const onMarkerClick = (cafe) => {
+    currentDetailCafe = cafe;
+    if (window.innerWidth <= 768) {
+      closeDesktopCafeDetail();
+      showMobileCafeDetail(cafe);
+    } else {
+      closeMobileCafeDetail();
+      showDesktopCafeDetail(cafe);
+    }
+  };
+
+  const closeButton = document.getElementById("detail-close-btn");
+  if (closeButton) {
+    closeButton.addEventListener("click", closeDesktopCafeDetail);
+  }
+
+  // マーカーを生成
   cafes.forEach((cafe) => {
     const marker = L.marker(cafe.coordinates, { icon: customIcon });
-    const popup = L.popup(popupOptions).setContent(buildPopup(cafe));
-    marker.bindPopup(popup);
-    marker.on("click touchstart", (event) => {
-      if (event.originalEvent) {
-        event.originalEvent.stopPropagation();
-        event.originalEvent.preventDefault();
-      }
-      L.DomEvent.stop(event);
-      map.eachLayer((layer) => {
-        if (layer instanceof L.Popup) {
-          map.closePopup(layer);
-        }
-      });
-      marker.openPopup();
+    marker.on("click", () => {
+      onMarkerClick(cafe);
     });
     marker.cafeId = cafe.id;
     markerById.set(cafe.id, marker);
@@ -200,88 +313,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const favoritesKey = "cafeFavorites";
   const favorites = new Set(JSON.parse(localStorage.getItem(favoritesKey) || "[]"));
 
-  let popupOpenTime = 0;
-
-  // ポップアップのイベント制御
-  map.on("popupopen", (event) => {
-    popupOpenTime = Date.now();
-    console.log("ポップアップ開いた");
-    const popupEl = event.popup.getElement();
-    if (!popupEl) {
-      return;
-    }
-    L.DomEvent.on(popupEl, "click mousedown touchstart", (popupEvent) => {
-      L.DomEvent.stopPropagation(popupEvent);
-    });
-    popupEl.querySelectorAll("a, button, input, select, textarea").forEach((element) => {
-      L.DomEvent.on(element, "click touchstart", (popupEvent) => {
-        L.DomEvent.stopPropagation(popupEvent);
-      });
-    });
-    popupEl.querySelectorAll(".scrollable, .cafe-popup-content").forEach((element) => {
-      L.DomEvent.on(element, "touchstart touchmove touchend", (popupEvent) => {
-        L.DomEvent.stopPropagation(popupEvent);
-      });
-    });
-    const favButton = popupEl.querySelector('[data-action="favorite"]');
-    if (favButton) {
-      const id = Number(favButton.dataset.cafeId);
-      if (favorites.has(id)) {
-        favButton.classList.add("is-active");
-        const icon = favButton.querySelector("i");
-        if (icon) {
-          icon.className = "fa-solid fa-heart";
-        }
-      }
-    }
-  });
-
-  map.on("popupclose", () => {
-    const duration = Date.now() - popupOpenTime;
-    console.log(`ポップアップが閉じた（表示時間: ${duration}ms）`);
-    if (duration < 500) {
-      console.warn("警告: ポップアップがすぐに閉じました");
-    }
-  });
-
-  let lastTapTime = 0;
-
-  // 背景タップでポップアップを閉じる
-  map.on("click", (event) => {
-    const target = event.originalEvent?.target;
-    const isProtected =
-      target?.closest?.(".leaflet-popup") ||
-      target?.closest?.(".custom-cafe-marker") ||
-      target?.closest?.(".svg-cafe-marker") ||
-      target?.closest?.(".leaflet-marker-icon");
-    if (!isProtected) {
-      map.closePopup();
-    }
-  });
-
-  map.on("touchstart", (event) => {
-    const currentTime = new Date().getTime();
-    const tapInterval = currentTime - lastTapTime;
-
-    if (tapInterval < 300 && tapInterval > 0) {
-      event.originalEvent?.preventDefault();
-      return;
-    }
-
-    lastTapTime = currentTime;
-
-    const target = event.originalEvent?.target;
-    const isProtected =
-      target?.closest?.(".leaflet-popup") ||
-      target?.closest?.(".custom-cafe-marker") ||
-      target?.closest?.(".svg-cafe-marker") ||
-      target?.closest?.(".leaflet-marker-icon");
-    if (!isProtected) {
-      setTimeout(() => {
-        map.closePopup();
-      }, 100);
-    }
-  });
 
   // フィルター状態
   const state = {
@@ -572,13 +603,9 @@ document.addEventListener("DOMContentLoaded", () => {
     card.className = "cafe-card";
     card.dataset.cafeId = String(cafe.id);
     card.innerHTML = `
-      <img src="${cafe.image}" alt="${cafe.name}" class="cafe-card-image" />
+      <img src="${getPrimaryImage(cafe)}" alt="${cafe.name}" class="cafe-card-image" />
       <div class="cafe-card-content">
         <h3 class="cafe-name">${cafe.name}</h3>
-        <div class="cafe-rating">
-          <span class="stars">${getRatingStars(cafe.rating)}</span>
-          <span class="rating-number">${cafe.rating.toFixed(1)}/5</span>
-        </div>
         <p class="cafe-area">📍 ${cafe.area}</p>
         <p class="cafe-comment">${cafe.comment}</p>
       </div>
@@ -591,13 +618,9 @@ document.addEventListener("DOMContentLoaded", () => {
     card.className = "cafe-card";
     card.dataset.cafeId = String(cafe.id);
     card.innerHTML = `
-      <img src="${cafe.image}" alt="${cafe.name}" class="cafe-card-image" />
+      <img src="${getPrimaryImage(cafe)}" alt="${cafe.name}" class="cafe-card-image" />
       <div class="cafe-card-content">
         <h3 class="cafe-name">${cafe.name}</h3>
-        <div class="cafe-rating">
-          <span class="stars">${getRatingStars(cafe.rating)}</span>
-          <span class="rating-number">${cafe.rating.toFixed(1)}</span>
-        </div>
         <p class="cafe-area">📍 ${cafe.area}</p>
       </div>
     `;
@@ -705,7 +728,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
       }
       if (state.features.size) {
-        const matchesFeature = [...state.features].some((feature) => cafe.features.includes(feature));
+        const cafeFeatures = getCafeFeatures(cafe);
+        const matchesFeature = [...state.features].every((feature) => cafeFeatures.includes(feature));
         if (!matchesFeature) {
           return false;
         }
@@ -716,7 +740,7 @@ document.addEventListener("DOMContentLoaded", () => {
           cafe.area,
           cafe.address,
           cafe.comment,
-          cafe.features.join(" "),
+          getCafeFeatures(cafe).join(" "),
         ]
           .join(" ")
           .toLowerCase();
@@ -729,18 +753,16 @@ document.addEventListener("DOMContentLoaded", () => {
       case "newest":
         filtered = filtered.sort((a, b) => parseVisitDate(b.visitDate) - parseVisitDate(a.visitDate));
         break;
-      case "rating":
-        filtered = filtered.sort((a, b) => b.rating - a.rating);
-        break;
       case "distance":
         filtered = filtered.sort((a, b) => getDistance(a.coordinates) - getDistance(b.coordinates));
         break;
       default:
         filtered = filtered.sort((a, b) => {
-          if (b.rating === a.rating) {
-            return parseVisitDate(b.visitDate) - parseVisitDate(a.visitDate);
+          const dateDiff = parseVisitDate(b.visitDate) - parseVisitDate(a.visitDate);
+          if (dateDiff !== 0) {
+            return dateDiff;
           }
-          return b.rating - a.rating;
+          return a.name.localeCompare(b.name, "ja");
         });
         break;
     }
@@ -789,7 +811,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return `
         <article class="cafe-card hover-lift rounded-2xl border border-primary/10 bg-white p-4" data-cafe-id="${cafe.id}">
           <div class="flex gap-3">
-            <img src="${cafe.image}" alt="${cafe.name}" class="h-20 w-24 rounded-xl object-cover" />
+            <img src="${getPrimaryImage(cafe)}" alt="${cafe.name}" class="h-20 w-24 rounded-xl object-cover" />
             <div class="flex-1">
               <div class="flex items-start justify-between gap-2">
                 <div>
@@ -798,8 +820,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="rounded-full px-2 py-0.5 text-primary" style="background:#E3C5A4">${
           cafe.area
         }</span>
-                    <span class="text-secondary">${getRatingStars(cafe.rating)}</span>
-                    <span>${cafe.rating.toFixed(1)}/5</span>
                   </div>
                 </div>
                 <button type="button" class="favorite-icon-btn text-secondary" data-action="favorite" data-cafe-id="${
@@ -1043,9 +1063,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!cafe || !marker) {
       return;
     }
-    map.closePopup();
     map.setView(cafe.coordinates, 16, { animate: true });
-    marker.openPopup();
+    onMarkerClick(cafe);
   };
 
   const enterFullscreenMode = () => {
@@ -1449,18 +1468,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (actionButton.dataset.action === "route") {
         handleRoute(id);
         return;
-      }
-    }
-
-    const imageButton = event.target.closest("[data-popup-image]");
-    if (imageButton) {
-      const lightbox = document.getElementById("cafe-lightbox");
-      const lightboxImage = document.getElementById("cafe-lightbox-image");
-      if (lightbox && lightboxImage) {
-        lightboxImage.src = imageButton.dataset.image || "";
-        lightboxImage.alt = imageButton.dataset.alt || "";
-        lightbox.classList.remove("hidden");
-        lightbox.setAttribute("aria-hidden", "false");
       }
     }
 
