@@ -60,6 +60,12 @@ const CAFE_DATA = {
       hasFood: true,
       nightOpen: false,
       reservable: false,
+      menuHighlight: {
+        imageIndex: 2,
+        itemName: "ハヤシライス",
+        price: "950円",
+        menuUrl: "https://www.instagram.com/cafe_moyau",
+      },
     },
     {
       id: 3,
@@ -173,7 +179,14 @@ const CAFE_DATA = {
       price: 2,
       comment: "落ち着いた空間でゆっくりコーヒーを楽しめます。",
       visitDate: "2026年02月",
-      images: ["images/カフェ巡り/カフェ巡り_vol5.jpg"],
+      images: [
+        "images/カフェ巡り/vol5_nes/nes_1.jpg",
+        "images/カフェ巡り/vol5_nes/nes_2.jpg",
+        "images/カフェ巡り/vol5_nes/nes_3.jpg",
+        "images/カフェ巡り/vol5_nes/nes_4.jpg",
+        "images/カフェ巡り/vol5_nes/nes_5.jpg",
+        "images/カフェ巡り/vol5_nes/nes_6.jpg",
+      ],
       openingHours: "13:00~24:00",
       closedDays: "毎週水曜日",
       access: "岡山駅から徒歩11分",

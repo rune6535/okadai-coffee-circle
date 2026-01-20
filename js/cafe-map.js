@@ -71,21 +71,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ズームコントロールの配置調整
   map.zoomControl.remove();
-  L.control.zoom({ position: "bottomleft" }).addTo(map);
+  L.control.zoom({ position: "topright" }).addTo(map);
 
   // マーカー管理用レイヤー
   const markerLayer = L.layerGroup().addTo(map);
 
   const markerById = new Map();
 
-  // カスタムマーカー
-  const customIcon = L.divIcon({
-    html: '<i class="fas fa-map-marker-alt"></i>',
-    iconSize: [30, 42],
-    iconAnchor: [15, 42],
-    popupAnchor: [0, -42],
-    className: "custom-cafe-marker",
-  });
+  // 地名ラベルの追加
+  const LOCATIONS = {
+    station: {
+      name: "岡山駅",
+      coordinates: [34.66655797257619, 133.91773349699008],
+    },
+    university: {
+      name: "岡山大学",
+      coordinates: [34.68724223530956, 133.9222190258267],
+    },
+    stadium: {
+      name: "JFE晴れの国スタジアム",
+      coordinates: [34.68082470904376, 133.91873154534647],
+    },
+    castle: {
+      name: "岡山城",
+      coordinates: [34.66557719985855, 133.93614223521337],
+    },
+    shikataCampus: {
+      name: "鹿田キャンパス",
+      coordinates: [34.65151604773539, 133.91976351141483],
+    },
+  };
+
+  // 地名ラベル用のカスタムアイコン
+  const createLocationLabel = (name) =>
+    L.divIcon({
+      html: `<div class="location-label">${name}</div>`,
+      iconSize: [150, 30],
+      iconAnchor: [75, 15],
+      className: "location-label-marker",
+    });
+
+  // カスタムマーカーアイコン（カフェ名付き）
+  const createCafeMarker = (cafe) =>
+    L.divIcon({
+      html: `
+        <div class="marker-container">
+          <div class="marker-label">${cafe.name}</div>
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+      `,
+      iconSize: [30, 42],
+      iconAnchor: [15, 42],
+      popupAnchor: [0, -42],
+      className: "custom-cafe-marker",
+    });
 
   const formatPrice = (price) => "￥".repeat(price);
   const getPrimaryImage = (cafe) => cafe.images?.[0] || cafe.image || "images/coming-soon.svg";
@@ -142,15 +181,33 @@ document.addEventListener("DOMContentLoaded", () => {
       `
         : "";
 
+    const hasMenuHighlight =
+      isMobileDetail && cafe.menuHighlight && images.length > cafe.menuHighlight.imageIndex;
     const imagesHTML = isMobileDetail
       ? `
         <div class="detail-images">
-          <div class="detail-images-slider">
+          <div class="detail-images-slider" id="image-slider-${cafe.id}">
             ${images
               .map(
-                (img) => `
-              <div class="detail-image-item">
+                (img, index) => `
+              <div class="detail-image-item" data-index="${index}">
                 <img src="${img}" alt="${cafe.name}">
+                ${
+                  hasMenuHighlight && index === cafe.menuHighlight.imageIndex
+                    ? `
+                <div class="menu-popup" id="menu-popup-${cafe.id}" style="opacity: 0;">
+                  <div class="menu-popup-content">
+                    <div class="menu-item-name">${cafe.menuHighlight.itemName}</div>
+                    <div class="menu-price">${cafe.menuHighlight.price}</div>
+                    <a href="${cafe.menuHighlight.menuUrl}" target="_blank" rel="noreferrer" class="menu-button">
+                      ほかの商品メニューも確認する
+                    </a>
+                  </div>
+                  <div class="menu-popup-arrow"></div>
+                </div>
+                `
+                    : ""
+                }
               </div>
             `
               )
@@ -228,6 +285,21 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   };
 
+  // マーカーを強調表示
+  const highlightMarker = (cafeId) => {
+    const marker = markerById.get(cafeId);
+    if (!marker) {
+      return;
+    }
+    const markerElement = marker.getElement();
+    if (markerElement) {
+      markerElement.classList.add("highlight");
+      setTimeout(() => {
+        markerElement.classList.remove("highlight");
+      }, 600);
+    }
+  };
+
   const closeMobileCafeDetail = () => {
     if (!mobileDetailPanel) {
       return;
@@ -238,6 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mapDetailOverlay) {
       mapDetailOverlay.classList.remove("active");
     }
+    document.body.classList.remove("ui-size-1", "ui-size-2", "ui-size-3", "cafe-detail-open");
     document.body.style.overflow = "";
     currentUISize = 0;
     currentDetailCafe = null;
@@ -257,11 +330,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (size < 0 || size > 3) {
       return;
     }
+    document.body.classList.remove("ui-size-1", "ui-size-2", "ui-size-3");
     currentUISize = size;
     if (size === 0) {
       closeMobileCafeDetail();
       return;
     }
+    document.body.classList.add(`ui-size-${size}`, "cafe-detail-open");
     mobileDetailPanel.setAttribute("data-size", String(size));
     if (mapDetailOverlay) {
       mapDetailOverlay.classList.toggle("active", size > 1);
@@ -274,18 +349,22 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileDetailContent.scrollTop = 0;
   };
 
-  const handleDragStart = (event) => {
-    if (!mobileDetailPanel) {
+  const handleUITouchStart = (event) => {
+    if (!mobileDetailPanel || !mobileDetailContent) {
+      return;
+    }
+    const inContent = event.target.closest(".detail-content");
+    if (inContent && mobileDetailContent.scrollTop > 0) {
       return;
     }
     isDraggingUI = true;
     dragStartY = event.touches[0].clientY;
     currentDragY = dragStartY;
-    document.addEventListener("touchmove", handleDragMove, { passive: false });
-    document.addEventListener("touchend", handleDragEnd, { passive: true });
+    document.addEventListener("touchmove", handleUIDragMove, { passive: false });
+    document.addEventListener("touchend", handleUIDragEnd, { passive: true });
   };
 
-  const handleDragMove = (event) => {
+  const handleUIDragMove = (event) => {
     if (!isDraggingUI || !mobileDetailPanel || !mobileDetailContent) {
       return;
     }
@@ -295,20 +374,19 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     event.preventDefault();
-    if (diff > 50) {
-      mobileDetailPanel.style.transform = `translateY(${Math.min(diff * 0.5, 50)}px)`;
-    } else if (diff < -50) {
-      mobileDetailPanel.style.transform = `translateY(${Math.max(diff * 0.5, -50)}px)`;
+    if (Math.abs(diff) > 10) {
+      const translateY = Math.min(Math.max(diff * 0.5, -50), 50);
+      mobileDetailPanel.style.transform = `translateY(${translateY}px)`;
     }
   };
 
-  const handleDragEnd = () => {
+  const handleUIDragEnd = () => {
     if (!isDraggingUI || !mobileDetailPanel) {
       return;
     }
     isDraggingUI = false;
-    document.removeEventListener("touchmove", handleDragMove);
-    document.removeEventListener("touchend", handleDragEnd);
+    document.removeEventListener("touchmove", handleUIDragMove);
+    document.removeEventListener("touchend", handleUIDragEnd);
     mobileDetailPanel.style.transform = "";
     const diff = currentDragY - dragStartY;
     const threshold = 80;
@@ -331,11 +409,24 @@ document.addEventListener("DOMContentLoaded", () => {
     currentDragY = 0;
   };
 
-  const setupMobileUIInteraction = () => {
-    if (isMobileUIReady || !mobileDetailPanel || !mobileDetailContent || !detailHandle) {
+  const handleContentScroll = (event) => {
+    if (!mobileDetailContent) {
       return;
     }
-    detailHandle.addEventListener("touchstart", handleDragStart, { passive: true });
+    const scrollTop = mobileDetailContent.scrollTop;
+    if (scrollTop === 0 && initialScrollTop === 0) {
+      const touch = event.touches[0];
+      if (touch.clientY > dragStartY) {
+        event.preventDefault();
+      }
+    }
+  };
+
+  const setupMobileUIInteraction = () => {
+    if (isMobileUIReady || !mobileDetailPanel || !mobileDetailContent) {
+      return;
+    }
+    mobileDetailPanel.addEventListener("touchstart", handleUITouchStart, { passive: true });
     mobileDetailContent.addEventListener(
       "touchstart",
       function (event) {
@@ -344,19 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       { passive: true }
     );
-    mobileDetailContent.addEventListener(
-      "touchmove",
-      function (event) {
-        const scrollTop = this.scrollTop;
-        if (scrollTop === 0 && initialScrollTop === 0) {
-          const touch = event.touches[0];
-          if (touch.clientY > dragStartY) {
-            event.preventDefault();
-          }
-        }
-      },
-      { passive: false }
-    );
+    mobileDetailContent.addEventListener("touchmove", handleContentScroll, { passive: false });
     if (mapDetailOverlay) {
       mapDetailOverlay.addEventListener("click", (event) => {
         event.preventDefault();
@@ -384,19 +463,54 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileDetailPanel.classList.add("active");
     setUISize(size);
     setupMobileUIInteraction();
+    setupImageSliderPopup(cafe);
   };
 
-  const openPhotoGallery = () => {
-    const modal = document.getElementById("photo-gallery-modal");
-    const galleryImages = document.getElementById("gallery-images");
-    if (!modal || !galleryImages || !currentDetailCafe) {
+  const setupImageSliderPopup = (cafe) => {
+    if (!cafe.menuHighlight) {
       return;
     }
-    const images = currentDetailCafe.images?.length
-      ? currentDetailCafe.images
-      : [getPrimaryImage(currentDetailCafe)];
+    const slider = document.getElementById(`image-slider-${cafe.id}`);
+    const popup = document.getElementById(`menu-popup-${cafe.id}`);
+    if (!slider || !popup) {
+      return;
+    }
+    let scrollTimeout;
+    let hasShownPopup = false;
+    slider.addEventListener("scroll", () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const item = slider.querySelector(".detail-image-item");
+        if (!item) {
+          return;
+        }
+        const trackStyle = getComputedStyle(slider);
+        const gapValue =
+          parseFloat(trackStyle.gap || trackStyle.columnGap || trackStyle.rowGap || "8") || 8;
+        const itemWidth = item.getBoundingClientRect().width + gapValue;
+        const currentIndex = Math.round(slider.scrollLeft / itemWidth);
+        if (currentIndex === cafe.menuHighlight.imageIndex && !hasShownPopup) {
+          setTimeout(() => {
+            popup.style.opacity = "1";
+            hasShownPopup = true;
+            setTimeout(() => {
+              popup.style.opacity = "0";
+            }, 5000);
+          }, 200);
+        }
+      }, 100);
+    });
+  };
+
+  const openPhotoGallery = (cafe = currentDetailCafe || window.currentPhotoCafe) => {
+    const modal = document.getElementById("photo-gallery-modal");
+    const galleryImages = document.getElementById("gallery-images");
+    if (!modal || !galleryImages || !cafe) {
+      return;
+    }
+    const images = cafe.images?.length ? cafe.images : [getPrimaryImage(cafe)];
     galleryImages.innerHTML = images
-      .map((img) => `<img src="${img}" alt="${currentDetailCafe.name}">`)
+      .map((img) => `<img src="${img}" alt="${cafe.name}">`)
       .join("");
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
@@ -419,26 +533,73 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!panel || !content) {
       return;
     }
+    window.currentPhotoCafe = cafe;
     content.innerHTML = createDetailHTML(cafe, "desktop");
     panel.classList.add("active");
     content.querySelectorAll('[data-action="open-gallery"]').forEach((element) => {
-      element.addEventListener("click", openPhotoGallery);
+      element.addEventListener("click", () => openPhotoGallery(cafe));
     });
   };
 
-  const onMarkerClick = (cafe) => {
+  const PC_MAP_OFFSET = 200;
+
+  const onMarkerClick = (cafe, skipAnimation = false) => {
     const scrollY = window.scrollY || window.pageYOffset;
     currentDetailCafe = cafe;
-    if (window.innerWidth <= 768) {
-      closeDesktopCafeDetail();
+    const isUIOpen = mobileDetailPanel && mobileDetailPanel.classList.contains("active");
+    if (skipAnimation) {
+      highlightMarker(cafe.id);
+      if (window.innerWidth <= 768) {
+        closeDesktopCafeDetail();
+        showMobileCafeDetail(cafe, 2);
+        setTimeout(() => {
+          window.scrollTo(0, scrollY);
+        }, 0);
+      } else {
+        closeMobileCafeDetail();
+        showDesktopCafeDetail(cafe);
+      }
+      return;
+    }
+    if (window.innerWidth <= 768 && isUIOpen && currentUISize >= 2) {
+      highlightMarker(cafe.id);
       showMobileCafeDetail(cafe, 2);
+      map.flyTo(cafe.coordinates, 17, {
+        animate: true,
+        duration: 0.5,
+        easeLinearity: 0.25,
+      });
       setTimeout(() => {
         window.scrollTo(0, scrollY);
       }, 0);
-    } else {
-      closeMobileCafeDetail();
-      showDesktopCafeDetail(cafe);
+      return;
     }
+    let targetCoordinates = cafe.coordinates;
+    if (window.innerWidth > 768) {
+      const offset = map.project(cafe.coordinates, 17);
+      offset.x -= PC_MAP_OFFSET;
+      targetCoordinates = map.unproject(offset, 17);
+    }
+    map.flyTo(targetCoordinates, 17, {
+      animate: true,
+      duration: 1,
+      easeLinearity: 0.25,
+    });
+    setTimeout(() => {
+      highlightMarker(cafe.id);
+      setTimeout(() => {
+        if (window.innerWidth <= 768) {
+          closeDesktopCafeDetail();
+          showMobileCafeDetail(cafe, 2);
+          setTimeout(() => {
+            window.scrollTo(0, scrollY);
+          }, 0);
+        } else {
+          closeMobileCafeDetail();
+          showDesktopCafeDetail(cafe);
+        }
+      }, 300);
+    }, 1000);
   };
 
   const closeButton = document.getElementById("detail-close-btn");
@@ -457,7 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // マーカーを生成
   cafes.forEach((cafe) => {
-    const marker = L.marker(cafe.coordinates, { icon: customIcon });
+    const marker = L.marker(cafe.coordinates, { icon: createCafeMarker(cafe) });
     marker.on("click", (event) => {
       L.DomEvent.preventDefault(event);
       L.DomEvent.stopPropagation(event);
@@ -466,6 +627,49 @@ document.addEventListener("DOMContentLoaded", () => {
     marker.cafeId = cafe.id;
     markerById.set(cafe.id, marker);
     markerLayer.addLayer(marker);
+  });
+
+  // 地名ラベルをマップに追加
+  const locationMarkers = {};
+  Object.keys(LOCATIONS).forEach((key) => {
+    const location = LOCATIONS[key];
+    const marker = L.marker(location.coordinates, {
+      icon: createLocationLabel(location.name),
+      interactive: false,
+    }).addTo(map);
+    locationMarkers[key] = marker;
+  });
+
+  // ズームレベルに応じてラベルの表示/非表示を制御
+  const CAFE_LABEL_MIN_ZOOM = 15;
+  const LOCATION_LABEL_MIN_ZOOM = 14;
+
+  const updateLabelVisibility = () => {
+    const zoom = map.getZoom();
+    document.querySelectorAll(".marker-label").forEach((label) => {
+      if (zoom < CAFE_LABEL_MIN_ZOOM) {
+        label.style.opacity = "0";
+        label.style.display = "none";
+      } else {
+        label.style.opacity = "1";
+        label.style.display = "block";
+      }
+    });
+    document.querySelectorAll(".location-label").forEach((label) => {
+      if (zoom < LOCATION_LABEL_MIN_ZOOM) {
+        label.style.opacity = "0";
+        label.style.display = "none";
+      } else {
+        label.style.opacity = "1";
+        label.style.display = "block";
+      }
+    });
+  };
+
+  map.on("zoomend", updateLabelVisibility);
+  updateLabelVisibility();
+  map.whenReady(() => {
+    updateLabelVisibility();
   });
 
   // お気に入り管理（LocalStorage）
@@ -1116,6 +1320,16 @@ document.addEventListener("DOMContentLoaded", () => {
       expandCafeDetails(cafe.id);
       return;
     }
+    if (window.innerWidth <= 768 && mobileDetailPanel && mobileDetailPanel.classList.contains("active") && currentUISize >= 2) {
+      highlightMarker(cafe.id);
+      showMobileCafeDetail(cafe, 2);
+      map.flyTo(cafe.coordinates, 17, {
+        animate: true,
+        duration: 0.5,
+        easeLinearity: 0.25,
+      });
+      return;
+    }
     focusCafe(cafe.id);
   };
 
@@ -1233,14 +1447,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const zoomToCafe = (cafe, duration = 1000) => {
+    let targetCoordinates = cafe.coordinates;
+    if (window.innerWidth > 768) {
+      const offset = map.project(cafe.coordinates, 17);
+      offset.x -= PC_MAP_OFFSET;
+      targetCoordinates = map.unproject(offset, 17);
+    }
+    map.flyTo(targetCoordinates, 17, {
+      animate: true,
+      duration: duration / 1000,
+      easeLinearity: 0.25,
+    });
+    setTimeout(() => {
+      highlightMarker(cafe.id);
+      setTimeout(() => {
+        onMarkerClick(cafe, true);
+      }, 300);
+    }, duration);
+  };
+
   const focusCafe = (id) => {
     const cafe = cafes.find((item) => item.id === id);
-    const marker = markerById.get(id);
-    if (!cafe || !marker) {
+    if (!cafe) {
       return;
     }
-    map.setView(cafe.coordinates, 16, { animate: true });
-    onMarkerClick(cafe);
+    zoomToCafe(cafe, 1000);
   };
 
   const viewCafeOnMap = (cafe) => {
@@ -1252,13 +1484,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     setView("map");
-    map.setView(cafe.coordinates, 17, { animate: true, duration: 0.8 });
-    setTimeout(() => {
-      const marker = markerById.get(cafe.id);
-      if (marker) {
-        marker.fire("click");
-      }
-    }, 800);
+    zoomToCafe(cafe, 1000);
   };
 
   const enterFullscreenMode = () => {

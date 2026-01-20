@@ -914,6 +914,7 @@
       .detail-image-item {
         flex: 0 0 calc(100% - 40px);
         scroll-snap-align: center;
+        position: relative;
       }
 
       .detail-image-item img {
@@ -1019,6 +1020,69 @@
 
       .detail-action-btn:active {
         transform: scale(0.98);
+      }
+
+      /* メニューポップアップ */
+      .menu-popup {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        padding: 16px;
+        z-index: 100;
+        transition: opacity 0.3s ease;
+        max-width: 280px;
+        width: calc(100% - 40px);
+      }
+
+      .menu-popup-content {
+        text-align: center;
+      }
+
+      .menu-item-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2d2424;
+        margin-bottom: 8px;
+      }
+
+      .menu-price {
+        font-size: 20px;
+        font-weight: 800;
+        color: #6b4423;
+        margin-bottom: 12px;
+      }
+
+      .menu-button {
+        display: inline-block;
+        padding: 10px 16px;
+        background: #6b4423;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+
+      .menu-button:active {
+        transform: scale(0.98);
+        background: #5a3a1e;
+      }
+
+      .menu-popup-arrow {
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid white;
       }
 
       /* ===== PC版：カフェ詳細パネル ===== */
@@ -1253,6 +1317,32 @@
 
         body.map-fullscreen-mode .fullscreen-bottom-list {
           display: block;
+        }
+      }
+
+      /* Leafletのズームコントロールを下に配置（スマホ版） */
+      @media (max-width: 768px) {
+        .leaflet-top.leaflet-right {
+          top: auto !important;
+          bottom: 280px;
+          right: 16px;
+          transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.ui-size-1 .leaflet-top.leaflet-right {
+          bottom: 80px;
+        }
+
+        body.ui-size-2 .leaflet-top.leaflet-right {
+          bottom: calc(40vh + 20px);
+        }
+
+        body.ui-size-3 .leaflet-top.leaflet-right {
+          bottom: calc(87.5vh + 20px);
+        }
+
+        body:not(.cafe-detail-open) .leaflet-top.leaflet-right {
+          bottom: 16px;
         }
       }
 
@@ -1709,21 +1799,89 @@
         font-size: 13px;
       }
 
+      /* マーカー強調アニメーション */
+      @keyframes markerPulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.4);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
       .custom-cafe-marker {
         background: none;
         border: none;
+      }
+
+      .custom-cafe-marker.highlight i {
+        animation: markerPulse 0.6s ease-out;
       }
 
       .custom-cafe-marker i {
         font-size: 42px;
         color: #ea4335;
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-        transition: transform 0.2s;
+        display: block;
+        transition: transform 0.1s;
       }
 
       .custom-cafe-marker:hover i {
         transform: scale(1.1);
         filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+      }
+
+      /* マーカーコンテナ */
+      .marker-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* カフェ名ラベル */
+      .marker-label {
+        position: absolute;
+        bottom: 48px;
+        white-space: nowrap;
+        background: transparent;
+        padding: 2px 4px;
+        border-radius: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #2d2424;
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff,
+          1px 1px 0 #fff, 0 0 3px rgba(255, 255, 255, 0.8);
+        pointer-events: none;
+        transition: opacity 0.3s;
+        display: none;
+        z-index: 1000;
+        letter-spacing: 0.5px;
+      }
+
+      /* 地名ラベル */
+      .location-label {
+        background: transparent;
+        color: #6b4423;
+        padding: 0;
+        border-radius: 0;
+        font-size: 14px;
+        font-weight: 800;
+        text-align: center;
+        white-space: nowrap;
+        text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff,
+          -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff, 0 0 4px rgba(255, 255, 255, 0.9);
+        pointer-events: none;
+        transition: opacity 0.3s;
+        letter-spacing: 1px;
+      }
+
+      .location-label-marker {
+        border: none !important;
+        background: transparent !important;
       }
 
       .cafe-popup-persistent .leaflet-popup-content-wrapper {
@@ -1874,13 +2032,13 @@
                 駐車場あり
               </button>
               <button class="feature-btn" data-feature="ご飯あり" type="button">
-                🍽️ ご飯あり
+                ご飯あり
               </button>
               <button class="feature-btn" data-feature="夜営業あり" type="button">
-                🌙 夜営業あり
+                夜営業あり
               </button>
               <button class="feature-btn" data-feature="予約可能" type="button">
-                📅 予約可能
+                予約可能
               </button>
             </div>
           </div>
@@ -1992,8 +2150,7 @@
               <label class="sort-label" for="sort-select">並び替え:</label>
               <select id="sort-select" class="sort-dropdown">
                 <option value="newest">訪問日が新しい順</option>
-                <option value="rating">評価が高い順</option>
-                <option value="distance-station">岡山駅からの距離順</option>
+                <option value="distance-station">岡山駅から近い順</option>
                 <option value="distance-university">岡山大学から近い順</option>
               </select>
             </div>
@@ -2023,8 +2180,7 @@
               <label class="sort-label" for="sidebar-sort">並び替え:</label>
               <select class="sort-dropdown" id="sidebar-sort">
                 <option value="newest">訪問日が新しい順</option>
-                <option value="rating">評価が高い順</option>
-                <option value="distance-station">岡山駅からの距離順</option>
+                <option value="distance-station">岡山駅から近い順</option>
                 <option value="distance-university">岡山大学から近い順</option>
               </select>
             </div>
