@@ -305,7 +305,51 @@ const CAFE_DATA = {
   addCafe(cafeData) {
     const newId = Math.max(...this.cafes.map((cafe) => cafe.id)) + 1;
     this.cafes.push({ id: newId, ...cafeData });
+    this._cafesWithDistances = null;
   },
+};
+
+// 基準地点の座標
+const REFERENCE_POINTS = {
+  station: {
+    name: "岡山駅",
+    coordinates: [34.66655797257619, 133.91773349699008],
+  },
+  university: {
+    name: "岡山大学",
+    coordinates: [34.68724223530956, 133.9222190258267],
+  },
+};
+
+// 2点間の距離を計算（Haversine formula）
+const calculateDistance = (coord1, coord2) => {
+  const radius = 6371;
+  const [lat1, lon1] = coord1.map((v) => (v * Math.PI) / 180);
+  const [lat2, lon2] = coord2.map((v) => (v * Math.PI) / 180);
+  const dLat = lat2 - lat1;
+  const dLon = lon2 - lon1;
+  const a =
+    Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return radius * c;
+};
+
+const enrichCafesWithDistances = (cafes) =>
+  cafes.map((cafe) => ({
+    ...cafe,
+    distanceFromStation: calculateDistance(cafe.coordinates, REFERENCE_POINTS.station.coordinates),
+    distanceFromUniversity: calculateDistance(
+      cafe.coordinates,
+      REFERENCE_POINTS.university.coordinates
+    ),
+  }));
+
+CAFE_DATA.referencePoints = REFERENCE_POINTS;
+CAFE_DATA.getCafesWithDistances = function getCafesWithDistances() {
+  if (!this._cafesWithDistances) {
+    this._cafesWithDistances = enrichCafesWithDistances(this.cafes);
+  }
+  return this._cafesWithDistances;
 };
 
 // グローバルに公開

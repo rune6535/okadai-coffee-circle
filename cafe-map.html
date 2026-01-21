@@ -351,6 +351,7 @@
         position: relative;
         height: 600px;
         border-right: 2px solid #e0e0e0;
+        overflow: hidden;
       }
 
       #map {
@@ -362,22 +363,20 @@
       .map-controls {
         position: absolute;
         bottom: 20px;
-        left: auto;
-        right: 20px;
-        z-index: 10002;
+        left: 20px;
+        z-index: 1000;
         display: flex;
-        flex-direction: column;
-        gap: 10px;
+        gap: 12px;
       }
 
       .expand-btn,
       .collapse-btn {
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         background: white;
         border: none;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -389,13 +388,12 @@
       .expand-btn:hover,
       .collapse-btn:hover {
         background: #f5f5f5;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       }
 
       .expand-btn:active,
       .collapse-btn:active {
-        transform: scale(0.98);
+        transform: scale(0.95);
       }
 
       /* ===== 拡大モード ===== */
@@ -545,6 +543,21 @@
         font-weight: 700;
         color: #2d2424;
         margin: 0 0 8px 0;
+      }
+
+      .sidebar-distance {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b4423;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .sidebar-distance::before {
+        content: "📍";
+        font-size: 12px;
       }
 
       .photo-emphasized .cafe-rating {
@@ -767,7 +780,7 @@
 
       /* ===== スマホ版：カフェ詳細パネル ===== */
       .mobile-cafe-detail {
-        position: fixed;
+        position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
@@ -775,30 +788,15 @@
         border-radius: 20px 20px 0 0;
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
         z-index: 10001;
-        transform: translateY(100%);
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 0;
+        overflow: hidden;
         display: none;
-        touch-action: pan-y;
+        transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       .mobile-cafe-detail.active {
-        display: block;
-        transform: translateY(0);
-      }
-
-      /* UIサイズ1: 画面の1/8（12.5%） */
-      .mobile-cafe-detail[data-size="1"] {
-        height: 12.5vh;
-      }
-
-      /* UIサイズ2: 画面の2/5（40%） - デフォルト */
-      .mobile-cafe-detail[data-size="2"] {
-        height: 40vh;
-      }
-
-      /* UIサイズ3: 画面の7/8（87.5%） */
-      .mobile-cafe-detail[data-size="3"] {
-        height: 87.5vh;
+        display: flex;
+        flex-direction: column;
       }
 
       /* ハンドル */
@@ -808,6 +806,7 @@
         justify-content: center;
         cursor: grab;
         flex-shrink: 0;
+        touch-action: none;
       }
 
       .detail-handle:active {
@@ -859,8 +858,9 @@
 
       /* コンテンツ */
       .detail-content {
+        flex: 1;
         overflow-y: auto;
-        height: calc(100% - 40px);
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         padding: 0 20px 20px 20px;
         overscroll-behavior: contain;
@@ -868,13 +868,18 @@
 
       /* サイズ1: コンテンツを非表示 */
       .mobile-cafe-detail[data-size="1"] .detail-content {
-        opacity: 0.3;
-        pointer-events: none;
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .mobile-cafe-detail .detail-handle,
+      .mobile-cafe-detail .detail-header {
+        pointer-events: auto;
       }
 
       /* マップオーバーレイ */
       .map-detail-overlay {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         right: 0;
@@ -900,11 +905,13 @@
       .detail-images-slider {
         display: flex;
         overflow-x: auto;
+        overflow-y: hidden;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         gap: 8px;
         padding-bottom: 8px;
+        touch-action: pan-x;
       }
 
       .detail-images-slider::-webkit-scrollbar {
@@ -922,6 +929,7 @@
         aspect-ratio: 4 / 5;
         object-fit: cover;
         border-radius: 12px;
+        pointer-events: none;
       }
 
       /* カフェ情報 */
@@ -1300,7 +1308,9 @@
 
       @media (max-width: 768px) {
         .map-controls {
-          bottom: 24px;
+          bottom: 20px;
+          left: 20px;
+          transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .fullscreen-sidebar {
@@ -1317,32 +1327,6 @@
 
         body.map-fullscreen-mode .fullscreen-bottom-list {
           display: block;
-        }
-      }
-
-      /* Leafletのズームコントロールを下に配置（スマホ版） */
-      @media (max-width: 768px) {
-        .leaflet-top.leaflet-right {
-          top: auto !important;
-          bottom: 280px;
-          right: 16px;
-          transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        body.ui-size-1 .leaflet-top.leaflet-right {
-          bottom: 80px;
-        }
-
-        body.ui-size-2 .leaflet-top.leaflet-right {
-          bottom: calc(40vh + 20px);
-        }
-
-        body.ui-size-3 .leaflet-top.leaflet-right {
-          bottom: calc(87.5vh + 20px);
-        }
-
-        body:not(.cafe-detail-open) .leaflet-top.leaflet-right {
-          bottom: 16px;
         }
       }
 
@@ -1521,6 +1505,58 @@
         padding: 16px;
       }
 
+      .cafe-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .cafe-distance {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+        flex-shrink: 0;
+      }
+
+      .distance-icon {
+        font-size: 14px;
+        line-height: 1;
+      }
+
+      .distance-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #6b4423;
+        line-height: 1;
+      }
+
+      .distance-label {
+        font-size: 10px;
+        color: #999;
+        line-height: 1;
+      }
+
+      @media (max-width: 768px) {
+        .cafe-card-header {
+          gap: 8px;
+        }
+
+        .cafe-name {
+          font-size: 16px;
+        }
+
+        .distance-value {
+          font-size: 16px;
+        }
+
+        .distance-label {
+          font-size: 9px;
+        }
+      }
+
       /* ===== 5. おすすめセクション ===== */
       .recommend-section {
         background: white;
@@ -1679,13 +1715,13 @@
         }
 
         .map-section {
-          height: 500px;
+          height: 100vh;
           border-right: none;
         }
 
         .list-section {
-          height: auto;
-          min-height: 500px;
+          height: 100vh;
+          overflow-y: auto;
         }
 
         /* デフォルトはマップ表示 */
@@ -2143,6 +2179,18 @@
                 </svg>
               </button>
             </div>
+
+            <div class="mobile-cafe-detail" id="mobile-cafe-detail" data-size="0">
+              <div class="detail-handle">
+                <div class="handle-bar"></div>
+              </div>
+              <div class="detail-header">
+                <button class="detail-close-btn-mobile" id="detail-close-btn-mobile" type="button">×</button>
+              </div>
+              <div class="detail-content" id="mobile-detail-content"></div>
+            </div>
+
+            <div class="map-detail-overlay" id="map-detail-overlay"></div>
           </div>
 
           <div class="list-section" id="list-section">
@@ -2242,18 +2290,6 @@
         </section>
       </div>
     </main>
-
-    <div class="mobile-cafe-detail" id="mobile-cafe-detail" data-size="0">
-      <div class="detail-handle">
-        <div class="handle-bar"></div>
-      </div>
-      <div class="detail-header">
-        <button class="detail-close-btn-mobile" id="detail-close-btn-mobile" type="button">×</button>
-      </div>
-      <div class="detail-content" id="mobile-detail-content"></div>
-    </div>
-
-    <div class="map-detail-overlay" id="map-detail-overlay"></div>
 
     <!-- フッター -->
     <footer class="bg-primary text-white">

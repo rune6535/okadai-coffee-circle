@@ -96,17 +96,200 @@
         overflow: hidden;
       }
       .calendar-cell {
-        background: rgba(255, 255, 255, 0.9);
-        min-height: 92px;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 8px 4px;
+        border: 1px solid #e0e0e0;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
       }
-      .calendar-cell button {
-        min-height: 92px;
+      .calendar-cell.has-event:hover {
+        background: #f9f9f9;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .calendar-cell.today {
+        background: #fff9f0;
+        border-color: #6b4423;
+        font-weight: 700;
+      }
+      .calendar-cell.other-month {
+        background: #fafafa;
+        opacity: 0.5;
+      }
+      .date-number {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+      .event-dots {
+        display: flex;
+        gap: 3px;
+        margin-top: auto;
+      }
+      .event-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: block;
       }
       .calendar-fade {
         transition: opacity 0.25s ease;
       }
       .calendar-fade.is-changing {
         opacity: 0.4;
+      }
+      .calendar-legend {
+        margin-top: 24px;
+        padding: 20px;
+        background: #fafafa;
+        border-radius: 12px;
+      }
+      .legend-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #666;
+        margin-bottom: 12px;
+        text-align: center;
+      }
+      .legend-items {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .legend-item:hover {
+        background: #f5f5f5;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .legend-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+      }
+      .event-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      .event-modal.active {
+        display: flex;
+      }
+      .modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .modal-content {
+        position: relative;
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        z-index: 1;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      }
+      .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 32px;
+        height: 32px;
+        background: #f5f5f5;
+        border: none;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+      }
+      .modal-close:hover {
+        background: #e0e0e0;
+      }
+      .modal-date {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d2424;
+        margin: 0 0 20px 0;
+      }
+      .modal-events {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .modal-event-item {
+        padding: 16px;
+        background: #fafafa;
+        border-radius: 12px;
+        border-left: 4px solid;
+      }
+      .modal-event-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .modal-event-icon {
+        font-size: 20px;
+      }
+      .modal-event-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2d2424;
+      }
+      .modal-event-time {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 8px;
+      }
+      .modal-event-description {
+        font-size: 14px;
+        color: #666;
+        line-height: 1.6;
+      }
+      @media (max-width: 768px) {
+        .legend-items {
+          grid-template-columns: 1fr;
+        }
+        .modal-content {
+          width: 95%;
+          padding: 20px;
+        }
       }
     </style>
     <script src="js/main.js" defer></script>
@@ -238,7 +421,7 @@
                     すべて
                   </button>
                   <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="regular">
-                    定期開催
+                    定期活動
                   </button>
                 </div>
               </div>
@@ -255,6 +438,27 @@
                 <span class="text-blue-500">土</span>
               </div>
               <div id="calendar-grid" class="calendar-grid mt-3"></div>
+              <div class="calendar-legend">
+                <div class="legend-title">イベントの種類</div>
+                <div class="legend-items">
+                  <div class="legend-item" data-type="regular">
+                    <span class="legend-dot" style="background-color: #6b4423;"></span>
+                    <span class="legend-label">定期活動</span>
+                  </div>
+                  <div class="legend-item" data-type="cafe-tour">
+                    <span class="legend-dot" style="background-color: #e8926f;"></span>
+                    <span class="legend-label">カフェ巡り</span>
+                  </div>
+                  <div class="legend-item" data-type="event">
+                    <span class="legend-dot" style="background-color: #ffb347;"></span>
+                    <span class="legend-label">特別イベント</span>
+                  </div>
+                  <div class="legend-item" data-type="roasting">
+                    <span class="legend-dot" style="background-color: #8b4513;"></span>
+                    <span class="legend-label">焙煎見学</span>
+                  </div>
+                </div>
+              </div>
               <a
                 href="#event-details"
                 class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-secondary transition hover:text-primary"
@@ -266,30 +470,6 @@
 
             <div id="list-view" class="mt-6 hidden"></div>
 
-            <div class="hero-reveal mt-6 rounded-2xl bg-background/70 p-4" style="animation-delay: 1.2s;">
-              <h3 class="text-sm font-semibold text-primary">イベント凡例</h3>
-              <p class="mt-2 text-xs text-muted">
-                定期開催は毎月第二木曜日のカレンダー内にバッジで表示しています。
-              </p>
-              <div class="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
-                <span class="group inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-primary transition hover:bg-background/70">
-                  <span class="h-2.5 w-2.5 rounded-full bg-[#D2691E] transition group-hover:scale-110"></span>
-                  珈琲を学ぶ会
-                </span>
-                <span class="group inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-primary transition hover:bg-background/70">
-                  <span class="h-2.5 w-2.5 rounded-full bg-[#FF8C42] transition group-hover:scale-110"></span>
-                  出店・外部イベント
-                </span>
-                <span class="group inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-primary transition hover:bg-background/70">
-                  <span class="h-2.5 w-2.5 rounded-full bg-[#E8B4A8] transition group-hover:scale-110"></span>
-                  カフェ巡り
-                </span>
-                <span class="group inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-primary transition hover:bg-background/70">
-                  <span class="h-2.5 w-2.5 rounded-full bg-[#8B3A3A] transition group-hover:scale-110"></span>
-                  特別イベント
-                </span>
-              </div>
-            </div>
           </div>
 
           <div id="event-details" class="rounded-3xl bg-background/60 p-6 md:p-8">
@@ -301,6 +481,15 @@
           </div>
         </div>
       </section>
+
+      <div class="event-modal" id="event-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+          <button class="modal-close" id="modal-close" type="button">×</button>
+          <h3 class="modal-date" id="modal-date"></h3>
+          <div class="modal-events" id="modal-events"></div>
+        </div>
+      </div>
 
       <section class="fade-section mt-16">
         <div class="rounded-3xl bg-primary px-8 py-12 text-white md:px-12">
@@ -397,21 +586,70 @@
 
       const eventTypes = {
         regular: {
-          label: "定期開催",
-          color: "#4A3728",
-          badge: "bg-[#4A3728] text-white transition hover:bg-[#3B2C22]",
+          label: "定期活動",
+          color: "#6B4423",
+          icon: "☕",
+          badge: "bg-[#6B4423] text-white transition hover:bg-[#5B3A1E]",
+        },
+        "cafe-tour": {
+          label: "カフェ巡り",
+          color: "#E8926F",
+          icon: "🚶",
+          badge: "bg-[#E8926F] text-white transition hover:bg-[#D98460]",
+        },
+        event: {
+          label: "特別イベント",
+          color: "#FFB347",
+          icon: "🎉",
+          badge: "bg-[#FFB347] text-primary transition hover:bg-[#F0A53D]",
+        },
+        roasting: {
+          label: "焙煎見学",
+          color: "#8B4513",
+          icon: "🔥",
+          badge: "bg-[#8B4513] text-white transition hover:bg-[#7A3D11]",
         },
       };
 
       const events = [
         {
+          date: "2026-01-15",
+          title: "新年カフェ巡り",
+          type: "cafe-tour",
+          description: "2026年最初のカフェ巡り！新しいお店を開拓します。",
+          location: "岡山市内",
+          time: "13:00〜16:00",
+          signup: "参加希望はLINEまたはInstagramのDMでご連絡ください。",
+          image: "images/coming-soon.svg",
+        },
+        {
           date: "2026-02-13",
           type: "regular",
           title: "定期活動",
-          time: "18:00-20:00",
+          time: "18:00〜20:00",
           location: "岡山大学〇〇棟",
           description:
             "ゆげの定例会です。コーヒーの抽出や交流を中心に、気軽に参加できます。",
+          signup: "参加希望はLINEまたはInstagramのDMでご連絡ください。",
+          image: "images/coming-soon.svg",
+        },
+        {
+          date: "2026-02-20",
+          title: "バレンタインコーヒー会",
+          type: "event",
+          description: "チョコレートとコーヒーのペアリングを楽しもう！",
+          location: "サークル室",
+          time: "18:00〜20:00",
+          signup: "参加希望はLINEまたはInstagramのDMでご連絡ください。",
+          image: "images/coming-soon.svg",
+        },
+        {
+          date: "2026-03-05",
+          title: "ロースタリー見学会",
+          type: "roasting",
+          description: "焙煎の現場を見学し、豆の奥深さを学びます。",
+          location: "岡山市内ロースタリー",
+          time: "14:00〜16:00",
           signup: "参加希望はLINEまたはInstagramのDMでご連絡ください。",
           image: "images/coming-soon.svg",
         },
@@ -436,7 +674,119 @@
       const getEventsForDate = (dateKey) =>
         events.filter((event) => event.date === dateKey && (activeFilter === "all" || event.type === activeFilter));
 
-      const excludeRegularDates = new Set(["2026-01-08", "2026-02-12", "2026-02-14"]);
+      const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+        const weekday = weekdays[date.getDay()];
+        return `${year}年${month}月${day}日（${weekday}）`;
+      };
+
+      const closeEventModal = () => {
+        const modal = document.getElementById("event-modal");
+        if (modal) {
+          modal.classList.remove("active");
+        }
+      };
+
+      const showEventsByType = (eventType) => {
+        const typeInfo = eventTypes[eventType];
+        const filteredEvents = events.filter((event) => event.type === eventType);
+        if (!filteredEvents.length) {
+          window.alert(`${typeInfo.label}のイベントは現在予定されていません。`);
+          return;
+        }
+        const modal = document.getElementById("event-modal");
+        const modalDate = document.getElementById("modal-date");
+        const modalEvents = document.getElementById("modal-events");
+        if (!modal || !modalDate || !modalEvents) {
+          return;
+        }
+        modalDate.textContent = `${typeInfo.icon} ${typeInfo.label}`;
+        modalEvents.innerHTML = filteredEvents
+          .map(
+            (event) => `
+            <div class="modal-event-item" style="border-left-color: ${typeInfo.color};">
+              <div class="modal-event-header">
+                <span class="modal-event-icon">${typeInfo.icon}</span>
+                <span class="modal-event-title">${event.title}</span>
+              </div>
+              <div class="modal-event-time">📅 ${formatDate(event.date)}${
+              event.time ? ` | 🕐 ${event.time}` : ""
+            }</div>
+              ${event.location ? `<div class="modal-event-time">📍 ${event.location}</div>` : ""}
+              <div class="modal-event-description">${event.description}</div>
+            </div>
+          `
+          )
+          .join("");
+        modal.classList.add("active");
+      };
+
+      const showEventDetails = (date, dayEvents) => {
+        const modal = document.getElementById("event-modal");
+        const modalDate = document.getElementById("modal-date");
+        const modalEvents = document.getElementById("modal-events");
+        if (!modal || !modalDate || !modalEvents) {
+          return;
+        }
+        modalDate.textContent = formatDate(toDateKey(date));
+        modalEvents.innerHTML = dayEvents
+          .map((event) => {
+            const typeInfo = eventTypes[event.type];
+            return `
+            <div class="modal-event-item" style="border-left-color: ${typeInfo.color};">
+              <div class="modal-event-header">
+                <span class="modal-event-icon">${typeInfo.icon}</span>
+                <span class="modal-event-title">${event.title}</span>
+              </div>
+              ${event.time ? `<div class="modal-event-time">🕐 ${event.time}</div>` : ""}
+              ${event.location ? `<div class="modal-event-time">📍 ${event.location}</div>` : ""}
+              <div class="modal-event-description">${event.description}</div>
+            </div>
+          `;
+          })
+          .join("");
+        modal.classList.add("active");
+      };
+
+      const createCalendarCell = (date, isCurrentMonth, dayEvents) => {
+        const cell = document.createElement("div");
+        cell.className = "calendar-cell";
+        if (!isCurrentMonth) {
+          cell.classList.add("other-month");
+          return cell;
+        }
+
+        const today = new Date();
+        if (date.toDateString() === today.toDateString()) {
+          cell.classList.add("today");
+        }
+
+        const dateNumber = document.createElement("div");
+        dateNumber.className = "date-number";
+        dateNumber.textContent = date.getDate();
+        cell.appendChild(dateNumber);
+
+        if (dayEvents.length > 0) {
+          const eventDots = document.createElement("div");
+          eventDots.className = "event-dots";
+          dayEvents.slice(0, 3).forEach((event) => {
+            const dot = document.createElement("span");
+            dot.className = "event-dot";
+            dot.style.backgroundColor = eventTypes[event.type].color;
+            dot.setAttribute("data-event-type", event.type);
+            eventDots.appendChild(dot);
+          });
+          cell.appendChild(eventDots);
+          cell.classList.add("has-event");
+          cell.addEventListener("click", () => showEventDetails(date, dayEvents));
+        }
+
+        return cell;
+      };
 
       const renderCalendar = () => {
         calendarWrapper.classList.add("is-changing");
@@ -449,91 +799,18 @@
         const month = currentMonth.getMonth();
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const firstThursday = ((4 - firstDay + 7) % 7) + 1;
-        const secondThursday = firstThursday + 7;
         const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-        const today = new Date();
 
         for (let i = 0; i < totalCells; i += 1) {
           const dayNumber = i - firstDay + 1;
-          const cell = document.createElement("div");
-          cell.className = "calendar-cell";
-
           if (dayNumber > 0 && dayNumber <= daysInMonth) {
             const date = new Date(year, month, dayNumber);
             const dateKey = toDateKey(date);
             const dayEvents = getEventsForDate(dateKey);
-            const isSecondThursday = dayNumber === secondThursday && !excludeRegularDates.has(dateKey);
-            const isToday =
-              today.getFullYear() === year &&
-              today.getMonth() === month &&
-              today.getDate() === dayNumber;
-
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = `group relative flex h-full w-full flex-col items-start gap-2 px-3 py-2 text-left text-sm font-semibold transition hover:bg-background/80 ${
-              isToday ? "ring-2 ring-secondary" : ""
-            } ${isSecondThursday ? "bg-[#4A3728]/10" : ""}`;
-
-            const dayLabel = document.createElement("span");
-            const dayOfWeek = date.getDay();
-            if (dayOfWeek === 0) {
-              dayLabel.className = "text-red-500";
-            } else if (dayOfWeek === 6) {
-              dayLabel.className = "text-blue-500";
-            } else {
-              dayLabel.className = "text-textbase";
-            }
-            dayLabel.textContent = dayNumber.toString();
-
-            button.appendChild(dayLabel);
-
-            const tooltipParts = [];
-
-            if (isSecondThursday) {
-              const badge = document.createElement("span");
-              badge.className =
-                "mt-1 inline-flex items-center rounded-full bg-[#4A3728] px-2 py-0.5 text-xs font-semibold text-white";
-              badge.textContent = "定期開催";
-              button.appendChild(badge);
-              tooltipParts.push("毎月第二木曜日は定期開催日です");
-            }
-
-            if (dayEvents.length) {
-              const dots = document.createElement("div");
-              dots.className = "mt-auto flex flex-wrap gap-1";
-              dayEvents.forEach((event) => {
-                const dot = document.createElement("span");
-                dot.className = "h-2 w-2 rounded-full transition group-hover:scale-110";
-                dot.style.backgroundColor = eventTypes[event.type].color;
-                dots.appendChild(dot);
-              });
-              button.appendChild(dots);
-
-              tooltipParts.push(dayEvents.map((event) => event.title).join(" / "));
-
-              button.addEventListener("click", () => {
-                const target = document.getElementById(`event-${dateKey}`);
-                if (target) {
-                  target.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-              });
-            }
-
-            if (tooltipParts.length) {
-              const tooltip = document.createElement("div");
-              tooltip.className =
-                "pointer-events-none absolute bottom-2 left-1/2 z-10 w-max -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100";
-              tooltip.textContent = tooltipParts.join(" / ");
-              button.appendChild(tooltip);
-            }
-
-            cell.appendChild(button);
+            calendarGrid.appendChild(createCalendarCell(date, true, dayEvents));
           } else {
-            cell.innerHTML = "<div class=\"h-full w-full\"></div>";
+            calendarGrid.appendChild(createCalendarCell(new Date(year, month, 1), false, []));
           }
-
-          calendarGrid.appendChild(cell);
         }
       };
 
@@ -708,6 +985,24 @@
           syncView();
         });
       });
+
+      document.querySelectorAll(".legend-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          const eventType = item.getAttribute("data-type");
+          if (eventType) {
+            showEventsByType(eventType);
+          }
+        });
+      });
+
+      const modalClose = document.getElementById("modal-close");
+      const modalOverlay = document.getElementById("modal-overlay");
+      if (modalClose) {
+        modalClose.addEventListener("click", closeEventModal);
+      }
+      if (modalOverlay) {
+        modalOverlay.addEventListener("click", closeEventModal);
+      }
 
       renderCalendar();
       renderEventCards();

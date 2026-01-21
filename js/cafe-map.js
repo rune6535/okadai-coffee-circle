@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!cafeData) {
     return;
   }
-  const cafes = cafeData.cafes;
+  const cafes = cafeData.getCafesWithDistances ? cafeData.getCafesWithDistances() : cafeData.cafes;
   const stats = cafeData.getStats();
 
   const totalCafesEl = document.getElementById("total-cafes");
@@ -38,23 +38,29 @@ document.addEventListener("DOMContentLoaded", () => {
   // 岡山駅周辺を初期表示の中心に設定
   const stationCenter = [34.6617, 133.9183];
   const okayamaUniversity = [34.6859, 133.9178];
+  const referencePoints = cafeData.referencePoints || {
+    station: { coordinates: [34.66655797257619, 133.91773349699008] },
+    university: { coordinates: [34.68724223530956, 133.9222190258267] },
+  };
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
   // 地図の初期化
   function initMap() {
     const mapInstance = L.map("map", {
-      scrollWheelZoom: !isMobile && !isTouchDevice,
+      scrollWheelZoom: true,
+      zoomControl: false,
+      doubleClickZoom: true,
       touchZoom: true,
-      zoomSnap: 0.5,
-      zoomDelta: 0.25,
-      wheelPxPerZoomLevel: 120,
-      wheelDebounceTime: 40,
+      dragging: true,
       minZoom: 10,
       maxZoom: 18,
+      zoomSnap: 0.5,
+      zoomDelta: 0.5,
+      wheelPxPerZoomLevel: 80,
       zoomAnimation: true,
       fadeAnimation: true,
-    }).setView(stationCenter, 14);
+    }).setView(stationCenter, 13);
 
     L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       attribution:
@@ -68,10 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const map = initMap();
   console.log("モバイルデバイス:", isMobile);
-
-  // ズームコントロールの配置調整
-  map.zoomControl.remove();
-  L.control.zoom({ position: "topright" }).addTo(map);
 
   // マーカー管理用レイヤー
   const markerLayer = L.layerGroup().addTo(map);
@@ -143,17 +145,28 @@ document.addEventListener("DOMContentLoaded", () => {
     return cafeFeatures;
   };
 
+  // ===== スマホ版UI: ドラッグ/スワイプ対応 =====
   let currentDetailCafe = null;
   let currentUISize = 0;
-  let dragStartY = 0;
-  let currentDragY = 0;
   let isDraggingUI = false;
+  let isSwipingImage = false;
+  let dragStartY = 0;
+  let dragStartX = 0;
+  let currentDragY = 0;
+  let currentDragX = 0;
   let initialScrollTop = 0;
+  let dragTarget = null;
   let isMobileUIReady = false;
+
+  const UI_SIZES = {
+    0: 0,
+    1: window.innerHeight * 0.125,
+    2: window.innerHeight * 0.4,
+    3: window.innerHeight * 0.875,
+  };
 
   const mobileDetailPanel = document.getElementById("mobile-cafe-detail");
   const mobileDetailContent = document.getElementById("mobile-detail-content");
-  const detailHandle = document.querySelector(".detail-handle");
   const detailCloseBtnMobile = document.getElementById("detail-close-btn-mobile");
   const mapDetailOverlay = document.getElementById("map-detail-overlay");
 
@@ -306,12 +319,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     mobileDetailPanel.classList.remove("active");
     mobileDetailPanel.setAttribute("data-size", "0");
-    mobileDetailPanel.style.transform = "";
+    mobileDetailPanel.style.height = "0";
     if (mapDetailOverlay) {
       mapDetailOverlay.classList.remove("active");
     }
     document.body.classList.remove("ui-size-1", "ui-size-2", "ui-size-3", "cafe-detail-open");
-    document.body.style.overflow = "";
+    const mapSection = document.getElementById("map-section");
+    if (mapSection) {
+      mapSection.style.overflow = "hidden";
+    }
+    updateMapControlsPosition(0);
     currentUISize = 0;
     currentDetailCafe = null;
   };
@@ -323,136 +340,248 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const setUISize = (size) => {
+  const updateUISizes = () => {
+    UI_SIZES[1] = window.innerHeight * 0.125;
+    UI_SIZES[2] = window.innerHeight * 0.4;
+    UI_SIZES[3] = window.innerHeight * 0.875;
+  };
+
+  const updateMapControlsPosition = (size = currentUISize) => {
+    if (window.innerWidth > 768) {
+      return;
+    }
+    const mapControls = document.querySelector(".map-controls");
+    if (!mapControls) {
+      return;
+    }
+    if (size <= 0) {
+      mapControls.style.bottom = "20px";
+    } else {
+      const uiHeight = UI_SIZES[size];
+      mapControls.style.bottom = `${uiHeight + 20}px`;
+    }
+  };
+
+  const setupMobileUIInteraction = () => {
+    if (!mobileDetailPanel) {
+      return;
+    }
+    if (!isMobileUIReady) {
+      mobileDetailPanel.addEventListener("touchstart", handlePanelTouchStart, { passive: false });
+      isMobileUIReady = true;
+    }
+    setupImageSlider();
+  };
+
+  const handlePanelTouchStart = (event) => {
+    if (
+      event.target.closest(".detail-close-btn-mobile") ||
+      event.target.closest("a") ||
+      event.target.closest("button:not(.detail-close-btn-mobile)")
+    ) {
+      return;
+    }
+
+    const touch = event.touches[0];
+    dragStartY = touch.clientY;
+    dragStartX = touch.clientX;
+    dragTarget = event.target;
+
+    const isInImageSlider = event.target.closest(".detail-images-slider");
+
+    if (isInImageSlider) {
+      isSwipingImage = null;
+      isDraggingUI = null;
+    } else if (event.target.closest(".detail-content")) {
+      initialScrollTop = mobileDetailContent ? mobileDetailContent.scrollTop : 0;
+      if (initialScrollTop === 0) {
+        isDraggingUI = true;
+      } else {
+        isDraggingUI = false;
+      }
+    } else {
+      isDraggingUI = true;
+    }
+
+    document.addEventListener("touchmove", handlePanelTouchMove, { passive: false });
+    document.addEventListener("touchend", handlePanelTouchEnd, { passive: true });
+  };
+
+  const handlePanelTouchMove = (event) => {
+    if (!mobileDetailPanel || !mobileDetailContent) {
+      return;
+    }
+    const touch = event.touches[0];
+    currentDragY = touch.clientY;
+    currentDragX = touch.clientX;
+
+    const diffY = currentDragY - dragStartY;
+    const diffX = currentDragX - dragStartX;
+
+    if (isSwipingImage === null && isDraggingUI === null) {
+      const absX = Math.abs(diffX);
+      const absY = Math.abs(diffY);
+
+      if (absX > 10 || absY > 10) {
+        if (absX > absY * 1.5) {
+          isSwipingImage = true;
+          isDraggingUI = false;
+        } else {
+          isSwipingImage = false;
+          isDraggingUI = true;
+        }
+      }
+    }
+
+    if (isSwipingImage) {
+      return;
+    }
+
+    if (isDraggingUI) {
+      event.preventDefault();
+
+      if (mobileDetailContent.scrollTop > 0 && diffY < 0) {
+        return;
+      }
+
+      const currentHeight = UI_SIZES[currentUISize] || mobileDetailPanel.offsetHeight;
+      let newHeight = currentHeight - diffY;
+      newHeight = Math.max(UI_SIZES[1], Math.min(UI_SIZES[3], newHeight));
+      mobileDetailPanel.style.height = `${newHeight}px`;
+      updateMapControlsPosition(currentUISize);
+      if (window.innerWidth <= 768) {
+        const mapControls = document.querySelector(".map-controls");
+        if (mapControls) {
+          mapControls.style.bottom = `${newHeight + 20}px`;
+        }
+      }
+
+      determineUISize(newHeight);
+    }
+  };
+
+  const handlePanelTouchEnd = () => {
+    document.removeEventListener("touchmove", handlePanelTouchMove);
+    document.removeEventListener("touchend", handlePanelTouchEnd);
+
+    if (isDraggingUI) {
+      snapToNearestSize();
+    }
+
+    isDraggingUI = false;
+    isSwipingImage = false;
+    dragStartY = 0;
+    dragStartX = 0;
+    currentDragY = 0;
+    currentDragX = 0;
+    dragTarget = null;
+  };
+
+  const determineUISize = (height) => {
+    let newSize = currentUISize;
+
+    if (height < (UI_SIZES[1] + UI_SIZES[2]) / 2) {
+      newSize = 1;
+    } else if (height < (UI_SIZES[2] + UI_SIZES[3]) / 2) {
+      newSize = 2;
+    } else {
+      newSize = 3;
+    }
+
+    if (newSize !== currentUISize) {
+      currentUISize = newSize;
+      updateUIState(newSize, false);
+    }
+  };
+
+  const snapToNearestSize = () => {
+    const currentHeight = parseInt(mobileDetailPanel.style.height, 10) || UI_SIZES[currentUISize];
+
+    let nearestSize = 1;
+    let minDiff = Math.abs(currentHeight - UI_SIZES[1]);
+
+    for (let size = 2; size <= 3; size += 1) {
+      const diff = Math.abs(currentHeight - UI_SIZES[size]);
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearestSize = size;
+      }
+    }
+
+    setUISize(nearestSize);
+  };
+
+  const setUISize = (size, animate = true) => {
     if (!mobileDetailPanel || !mobileDetailContent) {
       return;
     }
     if (size < 0 || size > 3) {
       return;
     }
-    document.body.classList.remove("ui-size-1", "ui-size-2", "ui-size-3");
     currentUISize = size;
+
     if (size === 0) {
       closeMobileCafeDetail();
+    } else {
+      updateUIState(size, animate);
+    }
+  };
+
+  const updateUIState = (size, animate = true) => {
+    if (!mobileDetailPanel) {
       return;
     }
-    document.body.classList.add(`ui-size-${size}`, "cafe-detail-open");
+    document.body.classList.remove("ui-size-1", "ui-size-2", "ui-size-3");
+    document.body.classList.add(`ui-size-${size}`);
+    if (size > 0) {
+      document.body.classList.add("cafe-detail-open");
+    }
     mobileDetailPanel.setAttribute("data-size", String(size));
+
+    if (animate) {
+      mobileDetailPanel.style.transition = "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+    } else {
+      mobileDetailPanel.style.transition = "none";
+    }
+
+    mobileDetailPanel.style.height = `${UI_SIZES[size]}px`;
+
+    setTimeout(() => {
+      if (mobileDetailPanel) {
+        mobileDetailPanel.style.transition = "";
+      }
+    }, 300);
+
     if (mapDetailOverlay) {
       mapDetailOverlay.classList.toggle("active", size > 1);
     }
-    if (size === 3) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    mobileDetailContent.scrollTop = 0;
-  };
 
-  const handleUITouchStart = (event) => {
-    if (!mobileDetailPanel || !mobileDetailContent) {
-      return;
-    }
-    const inContent = event.target.closest(".detail-content");
-    if (inContent && mobileDetailContent.scrollTop > 0) {
-      return;
-    }
-    isDraggingUI = true;
-    dragStartY = event.touches[0].clientY;
-    currentDragY = dragStartY;
-    document.addEventListener("touchmove", handleUIDragMove, { passive: false });
-    document.addEventListener("touchend", handleUIDragEnd, { passive: true });
-  };
+    setTimeout(() => {
+      updateMapControlsPosition(size);
+    }, animate ? 300 : 0);
 
-  const handleUIDragMove = (event) => {
-    if (!isDraggingUI || !mobileDetailPanel || !mobileDetailContent) {
-      return;
-    }
-    currentDragY = event.touches[0].clientY;
-    const diff = currentDragY - dragStartY;
-    if (mobileDetailContent.scrollTop > 0) {
-      return;
-    }
-    event.preventDefault();
-    if (Math.abs(diff) > 10) {
-      const translateY = Math.min(Math.max(diff * 0.5, -50), 50);
-      mobileDetailPanel.style.transform = `translateY(${translateY}px)`;
+    const mapSection = document.getElementById("map-section");
+    if (mapSection) {
+      mapSection.style.overflow = "hidden";
     }
   };
 
-  const handleUIDragEnd = () => {
-    if (!isDraggingUI || !mobileDetailPanel) {
-      return;
-    }
-    isDraggingUI = false;
-    document.removeEventListener("touchmove", handleUIDragMove);
-    document.removeEventListener("touchend", handleUIDragEnd);
-    mobileDetailPanel.style.transform = "";
-    const diff = currentDragY - dragStartY;
-    const threshold = 80;
-    if (diff > threshold) {
-      if (currentUISize === 3) {
-        setUISize(2);
-      } else if (currentUISize === 2) {
-        setUISize(1);
-      } else if (currentUISize === 1) {
-        setUISize(0);
-      }
-    } else if (diff < -threshold) {
-      if (currentUISize === 1) {
-        setUISize(2);
-      } else if (currentUISize === 2) {
-        setUISize(3);
-      }
-    }
-    dragStartY = 0;
-    currentDragY = 0;
-  };
-
-  const handleContentScroll = (event) => {
+  const setupImageSlider = () => {
     if (!mobileDetailContent) {
       return;
     }
-    const scrollTop = mobileDetailContent.scrollTop;
-    if (scrollTop === 0 && initialScrollTop === 0) {
-      const touch = event.touches[0];
-      if (touch.clientY > dragStartY) {
-        event.preventDefault();
-      }
-    }
-  };
-
-  const setupMobileUIInteraction = () => {
-    if (isMobileUIReady || !mobileDetailPanel || !mobileDetailContent) {
+    const slider = mobileDetailContent.querySelector(".detail-images-slider");
+    if (!slider) {
       return;
     }
-    mobileDetailPanel.addEventListener("touchstart", handleUITouchStart, { passive: true });
-    mobileDetailContent.addEventListener(
-      "touchstart",
-      function (event) {
-        initialScrollTop = this.scrollTop;
-        dragStartY = event.touches[0].clientY;
-      },
-      { passive: true }
-    );
-    mobileDetailContent.addEventListener("touchmove", handleContentScroll, { passive: false });
-    if (mapDetailOverlay) {
-      mapDetailOverlay.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        if (currentUISize > 1) {
-          setUISize(1);
-        }
-      });
-    }
-    if (detailCloseBtnMobile) {
-      detailCloseBtnMobile.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        closeMobileCafeDetail();
-      });
-    }
-    isMobileUIReady = true;
+    slider.style.scrollSnapType = "x mandatory";
+    slider.style.overflowX = "auto";
+    slider.style.scrollBehavior = "smooth";
+
+    const images = slider.querySelectorAll(".detail-image-item");
+    images.forEach((img) => {
+      img.style.scrollSnapAlign = "center";
+    });
   };
 
   const showMobileCafeDetail = (cafe, size = 2) => {
@@ -460,11 +589,44 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     mobileDetailContent.innerHTML = createDetailHTML(cafe, "mobile");
+    updateUISizes();
+    currentUISize = size;
     mobileDetailPanel.classList.add("active");
-    setUISize(size);
+    if (mapDetailOverlay) {
+      mapDetailOverlay.classList.add("active");
+    }
+    document.body.classList.add("cafe-detail-open");
+    updateUIState(size, true);
     setupMobileUIInteraction();
     setupImageSliderPopup(cafe);
   };
+
+  if (detailCloseBtnMobile) {
+    detailCloseBtnMobile.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      closeMobileCafeDetail();
+    });
+  }
+
+  if (mapDetailOverlay) {
+    mapDetailOverlay.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (currentUISize > 1) {
+        setUISize(1);
+      }
+    });
+  }
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth <= 768 && currentUISize > 0) {
+      updateUISizes();
+      updateUIState(currentUISize, false);
+    } else if (window.innerWidth > 768 && currentUISize > 0) {
+      closeMobileCafeDetail();
+    }
+  });
 
   const setupImageSliderPopup = (cafe) => {
     if (!cafe.menuHighlight) {
@@ -641,7 +803,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ズームレベルに応じてラベルの表示/非表示を制御
-  const CAFE_LABEL_MIN_ZOOM = 15;
+  const CAFE_LABEL_MIN_ZOOM = isMobile ? 14.5 : 15;
   const LOCATION_LABEL_MIN_ZOOM = 14;
 
   const updateLabelVisibility = () => {
@@ -961,7 +1123,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const createPhotoEmphasizedCard = (cafe) => {
+  const createPhotoEmphasizedCard = (cafe, sortType) => {
+    const distanceInfo = getDistanceLabel(sortType, cafe);
+    const distanceHTML = distanceInfo
+      ? `<div class="sidebar-distance">${distanceInfo.label} ${distanceInfo.value}</div>`
+      : "";
     const card = document.createElement("article");
     card.className = "cafe-card";
     card.dataset.cafeId = String(cafe.id);
@@ -969,6 +1135,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <img src="${getPrimaryImage(cafe)}" alt="${cafe.name}" class="cafe-card-image" />
       <div class="cafe-card-content">
         <h3 class="cafe-name">${cafe.name}</h3>
+        ${distanceHTML}
         <p class="cafe-area">📍 ${cafe.area}</p>
         <p class="cafe-comment">${cafe.comment}</p>
       </div>
@@ -997,7 +1164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebarCafeList.classList.add("photo-emphasized");
     sidebarCafeList.innerHTML = "";
     list.forEach((cafe) => {
-      sidebarCafeList.appendChild(createPhotoEmphasizedCard(cafe));
+      sidebarCafeList.appendChild(createPhotoEmphasizedCard(cafe, state.sort));
     });
   };
 
@@ -1078,6 +1245,33 @@ document.addEventListener("DOMContentLoaded", () => {
     return radius * c;
   };
 
+  const getCafeDistance = (cafe, type) => {
+    if (type === "station") {
+      return cafe.distanceFromStation ?? getDistance(referencePoints.station.coordinates, cafe.coordinates);
+    }
+    return cafe.distanceFromUniversity ?? getDistance(referencePoints.university.coordinates, cafe.coordinates);
+  };
+
+  const formatDistance = (distance) => `${distance.toFixed(2)}km`;
+
+  const getDistanceLabel = (sortType, cafe) => {
+    if (sortType === "distance-station") {
+      return {
+        icon: "📍",
+        label: "岡山駅から",
+        value: formatDistance(getCafeDistance(cafe, "station")),
+      };
+    }
+    if (sortType === "distance-university") {
+      return {
+        icon: "🎓",
+        label: "岡山大学から",
+        value: formatDistance(getCafeDistance(cafe, "university")),
+      };
+    }
+    return null;
+  };
+
   const getFilteredCafes = () => {
     const keyword = state.search.trim().toLowerCase();
     let filtered = cafes.filter((cafe) => {
@@ -1120,15 +1314,11 @@ document.addEventListener("DOMContentLoaded", () => {
         filtered = filtered.sort((a, b) => (b.comment || "").length - (a.comment || "").length);
         break;
       case "distance-station":
-        filtered = filtered.sort(
-          (a, b) => getDistance(stationCenter, a.coordinates) - getDistance(stationCenter, b.coordinates)
-        );
+        filtered = filtered.sort((a, b) => getCafeDistance(a, "station") - getCafeDistance(b, "station"));
         break;
       case "distance-university":
         filtered = filtered.sort(
-          (a, b) =>
-            getDistance(okayamaUniversity, a.coordinates) -
-            getDistance(okayamaUniversity, b.coordinates)
+          (a, b) => getCafeDistance(a, "university") - getCafeDistance(b, "university")
         );
         break;
       default:
@@ -1183,14 +1373,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     listElement.innerHTML = list
       .map((cafe) => {
+        const distanceInfo = getDistanceLabel(state.sort, cafe);
+        const distanceHTML = distanceInfo
+          ? `
+                <div class="cafe-distance">
+                  <span class="distance-icon">${distanceInfo.icon}</span>
+                  <span class="distance-value">${distanceInfo.value}</span>
+                  <span class="distance-label">${distanceInfo.label}</span>
+                </div>
+              `
+          : "";
         return `
         <article class="cafe-card hover-lift rounded-2xl border border-primary/10 bg-white p-4" data-cafe-id="${cafe.id}">
           <div class="flex gap-3">
             <img src="${getPrimaryImage(cafe)}" alt="${cafe.name}" class="h-20 w-24 rounded-xl object-cover" />
             <div class="flex-1">
               <div class="flex items-start justify-between gap-2">
-                <div>
-                  <h3 class="text-sm font-semibold text-primary">${cafe.name}</h3>
+                <div class="flex-1">
+                  <div class="cafe-card-header">
+                    <h3 class="cafe-name text-sm font-semibold text-primary">${cafe.name}</h3>
+                    ${distanceHTML}
+                  </div>
                   <div class="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted">
                     <span class="rounded-full px-2 py-0.5 text-primary" style="background:#E3C5A4">${
           cafe.area
@@ -1943,6 +2146,9 @@ document.addEventListener("DOMContentLoaded", () => {
     currentView = view;
     if (pageContainer) {
       pageContainer.classList.toggle("view-list", view === "list");
+    }
+    if (view === "list" && window.innerWidth <= 768 && currentUISize > 0) {
+      closeMobileCafeDetail();
     }
     if (view === "map" || window.innerWidth > 768) {
       map.invalidateSize();
