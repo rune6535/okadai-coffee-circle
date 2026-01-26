@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wheelPxPerZoomLevel: 80,
       zoomAnimation: true,
       fadeAnimation: true,
-    }).setView(stationCenter, 13);
+    }).setView(stationCenter, 13.5);
 
     L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       attribution:
@@ -157,6 +157,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let initialScrollTop = 0;
   let dragTarget = null;
   let isMobileUIReady = false;
+  let lastTouchY = 0;
+  let lastTouchTime = 0;
+  let touchVelocity = 0;
+  let uiDragStartHeight = 0;
 
   const UI_SIZES = {
     0: 0,
@@ -328,7 +332,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mapSection) {
       mapSection.style.overflow = "hidden";
     }
-    updateMapControlsPosition(0);
     currentUISize = 0;
     currentDetailCafe = null;
   };
@@ -344,22 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
     UI_SIZES[1] = window.innerHeight * 0.125;
     UI_SIZES[2] = window.innerHeight * 0.4;
     UI_SIZES[3] = window.innerHeight * 0.875;
-  };
-
-  const updateMapControlsPosition = (size = currentUISize) => {
-    if (window.innerWidth > 768) {
-      return;
-    }
-    const mapControls = document.querySelector(".map-controls");
-    if (!mapControls) {
-      return;
-    }
-    if (size <= 0) {
-      mapControls.style.bottom = "20px";
-    } else {
-      const uiHeight = UI_SIZES[size];
-      mapControls.style.bottom = `${uiHeight + 20}px`;
-    }
   };
 
   const setupMobileUIInteraction = () => {
@@ -386,6 +373,8 @@ document.addEventListener("DOMContentLoaded", () => {
     dragStartY = touch.clientY;
     dragStartX = touch.clientX;
     dragTarget = event.target;
+    lastTouchY = dragStartY;
+    lastTouchTime = Date.now();
 
     const isInImageSlider = event.target.closest(".detail-images-slider");
 
@@ -403,6 +392,10 @@ document.addEventListener("DOMContentLoaded", () => {
       isDraggingUI = true;
     }
 
+    if (isDraggingUI) {
+      uiDragStartHeight = parseInt(mobileDetailPanel.style.height, 10) || UI_SIZES[currentUISize];
+    }
+
     document.addEventListener("touchmove", handlePanelTouchMove, { passive: false });
     document.addEventListener("touchend", handlePanelTouchEnd, { passive: true });
   };
@@ -418,6 +411,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const diffY = currentDragY - dragStartY;
     const diffX = currentDragX - dragStartX;
 
+    const now = Date.now();
+    const timeDiff = now - lastTouchTime;
+    if (timeDiff > 0) {
+      touchVelocity = (currentDragY - lastTouchY) / timeDiff;
+    }
+    lastTouchY = currentDragY;
+    lastTouchTime = now;
+
     if (isSwipingImage === null && isDraggingUI === null) {
       const absX = Math.abs(diffX);
       const absY = Math.abs(diffY);
@@ -429,6 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           isSwipingImage = false;
           isDraggingUI = true;
+          uiDragStartHeight = parseInt(mobileDetailPanel.style.height, 10) || UI_SIZES[currentUISize];
         }
       }
     }
@@ -440,23 +442,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isDraggingUI) {
       event.preventDefault();
 
-      if (mobileDetailContent.scrollTop > 0 && diffY < 0) {
+      if (currentUISize === 3 && mobileDetailContent.scrollTop > 0 && diffY < 0) {
         return;
       }
 
-      const currentHeight = UI_SIZES[currentUISize] || mobileDetailPanel.offsetHeight;
-      let newHeight = currentHeight - diffY;
-      newHeight = Math.max(UI_SIZES[1], Math.min(UI_SIZES[3], newHeight));
+      let newHeight = uiDragStartHeight - diffY;
+      newHeight = Math.max(0, Math.min(UI_SIZES[3], newHeight));
+      mobileDetailPanel.style.transition = "none";
       mobileDetailPanel.style.height = `${newHeight}px`;
-      updateMapControlsPosition(currentUISize);
-      if (window.innerWidth <= 768) {
-        const mapControls = document.querySelector(".map-controls");
-        if (mapControls) {
-          mapControls.style.bottom = `${newHeight + 20}px`;
-        }
-      }
-
-      determineUISize(newHeight);
     }
   };
 
@@ -465,7 +458,25 @@ document.addEventListener("DOMContentLoaded", () => {
     document.removeEventListener("touchend", handlePanelTouchEnd);
 
     if (isDraggingUI) {
-      snapToNearestSize();
+      const diff = dragStartY - currentDragY;
+
+      let targetSize = currentUISize;
+
+      if (Math.abs(touchVelocity) > 0.5) {
+        if (touchVelocity < 0) {
+          targetSize = Math.min(3, currentUISize + 1);
+        } else {
+          targetSize = Math.max(1, currentUISize - 1);
+        }
+      } else if (diff > 50) {
+        targetSize = Math.min(3, currentUISize + 1);
+      } else if (diff < -50) {
+        targetSize = Math.max(1, currentUISize - 1);
+      } else {
+        targetSize = currentUISize;
+      }
+
+      setUISize(targetSize, true);
     }
 
     isDraggingUI = false;
@@ -474,41 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dragStartX = 0;
     currentDragY = 0;
     currentDragX = 0;
-    dragTarget = null;
-  };
-
-  const determineUISize = (height) => {
-    let newSize = currentUISize;
-
-    if (height < (UI_SIZES[1] + UI_SIZES[2]) / 2) {
-      newSize = 1;
-    } else if (height < (UI_SIZES[2] + UI_SIZES[3]) / 2) {
-      newSize = 2;
-    } else {
-      newSize = 3;
-    }
-
-    if (newSize !== currentUISize) {
-      currentUISize = newSize;
-      updateUIState(newSize, false);
-    }
-  };
-
-  const snapToNearestSize = () => {
-    const currentHeight = parseInt(mobileDetailPanel.style.height, 10) || UI_SIZES[currentUISize];
-
-    let nearestSize = 1;
-    let minDiff = Math.abs(currentHeight - UI_SIZES[1]);
-
-    for (let size = 2; size <= 3; size += 1) {
-      const diff = Math.abs(currentHeight - UI_SIZES[size]);
-      if (diff < minDiff) {
-        minDiff = diff;
-        nearestSize = size;
-      }
-    }
-
-    setUISize(nearestSize);
+    touchVelocity = 0;
   };
 
   const setUISize = (size, animate = true) => {
@@ -539,7 +516,7 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileDetailPanel.setAttribute("data-size", String(size));
 
     if (animate) {
-      mobileDetailPanel.style.transition = "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+      mobileDetailPanel.style.transition = "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
     } else {
       mobileDetailPanel.style.transition = "none";
     }
@@ -550,21 +527,58 @@ document.addEventListener("DOMContentLoaded", () => {
       if (mobileDetailPanel) {
         mobileDetailPanel.style.transition = "";
       }
-    }, 300);
+    }, 400);
 
     if (mapDetailOverlay) {
       mapDetailOverlay.classList.toggle("active", size > 1);
     }
-
-    setTimeout(() => {
-      updateMapControlsPosition(size);
-    }, animate ? 300 : 0);
 
     const mapSection = document.getElementById("map-section");
     if (mapSection) {
       mapSection.style.overflow = "hidden";
     }
   };
+
+  const imageZoomModal = document.getElementById("image-zoom-modal");
+  const zoomCloseBtn = document.getElementById("zoom-close-btn");
+  const zoomedImage = document.getElementById("zoomed-image");
+  let zoomStartY = 0;
+
+  const showImageZoom = (src) => {
+    if (!imageZoomModal || !zoomedImage) {
+      return;
+    }
+    zoomedImage.src = src;
+    imageZoomModal.classList.add("active");
+  };
+
+  const closeImageZoom = () => {
+    if (!imageZoomModal) {
+      return;
+    }
+    imageZoomModal.classList.remove("active");
+    if (currentUISize < 3) {
+      setUISize(3);
+    }
+  };
+
+  if (zoomCloseBtn) {
+    zoomCloseBtn.addEventListener("click", closeImageZoom);
+  }
+
+  if (imageZoomModal) {
+    imageZoomModal.addEventListener("touchstart", (event) => {
+      zoomStartY = event.touches[0].clientY;
+    }, { passive: true });
+
+    imageZoomModal.addEventListener("touchmove", (event) => {
+      const currentY = event.touches[0].clientY;
+      const diff = currentY - zoomStartY;
+      if (diff > 100) {
+        closeImageZoom();
+      }
+    }, { passive: true });
+  }
 
   const setupImageSlider = () => {
     if (!mobileDetailContent) {
@@ -583,6 +597,19 @@ document.addEventListener("DOMContentLoaded", () => {
       img.style.scrollSnapAlign = "center";
     });
   };
+
+  if (mobileDetailContent) {
+    mobileDetailContent.addEventListener("click", (event) => {
+      const imageItem = event.target.closest(".detail-image-item");
+      if (!imageItem) {
+        return;
+      }
+      const img = imageItem.querySelector("img");
+      if (img) {
+        showImageZoom(img.src);
+      }
+    });
+  }
 
   const showMobileCafeDetail = (cafe, size = 2) => {
     if (!mobileDetailPanel || !mobileDetailContent) {
@@ -611,12 +638,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (mapDetailOverlay) {
     mapDetailOverlay.addEventListener("click", (event) => {
-      event.preventDefault();
       event.stopPropagation();
-      if (currentUISize > 1) {
-        setUISize(1);
-      }
     });
+    mapDetailOverlay.style.pointerEvents = "none";
   }
 
   window.addEventListener("resize", () => {
@@ -638,7 +662,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     let scrollTimeout;
-    let hasShownPopup = false;
+    let currentImageIndex = -1;
+    let popupShownOnce = false;
     slider.addEventListener("scroll", () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
@@ -650,15 +675,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const gapValue =
           parseFloat(trackStyle.gap || trackStyle.columnGap || trackStyle.rowGap || "8") || 8;
         const itemWidth = item.getBoundingClientRect().width + gapValue;
-        const currentIndex = Math.round(slider.scrollLeft / itemWidth);
-        if (currentIndex === cafe.menuHighlight.imageIndex && !hasShownPopup) {
+        const newIndex = Math.round(slider.scrollLeft / itemWidth);
+
+        if (newIndex !== currentImageIndex) {
+          popup.style.opacity = "0";
+          popupShownOnce = false;
+        }
+
+        currentImageIndex = newIndex;
+
+        if (currentImageIndex === cafe.menuHighlight.imageIndex && !popupShownOnce) {
           setTimeout(() => {
             popup.style.opacity = "1";
-            hasShownPopup = true;
-            setTimeout(() => {
-              popup.style.opacity = "0";
-            }, 5000);
-          }, 200);
+            popupShownOnce = true;
+          }, 100);
         }
       }, 100);
     });
@@ -803,8 +833,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ズームレベルに応じてラベルの表示/非表示を制御
-  const CAFE_LABEL_MIN_ZOOM = isMobile ? 14.5 : 15;
-  const LOCATION_LABEL_MIN_ZOOM = 14;
+  const CAFE_LABEL_MIN_ZOOM = 15;
+  const LOCATION_LABEL_MIN_ZOOM = 13;
 
   const updateLabelVisibility = () => {
     const zoom = map.getZoom();
@@ -857,9 +887,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let autoScrollInterval = null;
   let autoScrollResumeTimer = null;
   let currentCarouselIndex = 0;
-  let carouselItemCount = 0;
   let isListMinimized = false;
-  const AUTO_SCROLL_SPEED = 3000;
+  const AUTO_SCROLL_SPEED = 2000;
   const AUTO_SCROLL_AMOUNT = 300;
 
   const animateCafeCount = () => {
@@ -929,11 +958,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebarCafeList = document.getElementById("sidebar-cafe-list");
   const sidebarSortSelect = document.getElementById("sidebar-sort");
   const bottomList = document.getElementById("fullscreen-bottom-list");
-  const listHandle = document.getElementById("list-handle");
-  const handleButton = document.getElementById("handle-button");
   const bottomCarousel = document.getElementById("bottom-cafe-carousel");
   const carouselTrack = document.getElementById("carousel-track");
-  const carouselIndicators = document.getElementById("carousel-indicators");
   let isMapFullscreen = false;
   let isSidebarOpen = true;
 
@@ -957,10 +983,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const matches = cafes
-      .filter(
-        (cafe) =>
-          cafe.name.toLowerCase().includes(trimmed) || cafe.area.toLowerCase().includes(trimmed)
-      )
+      .filter((cafe) => {
+        const nameMatch = cafe.name.toLowerCase().includes(trimmed);
+        const areaMatch = cafe.area.toLowerCase().includes(trimmed);
+        const kanaMatch = cafe.nameKana ? cafe.nameKana.includes(trimmed) : false;
+        const romajiMatch = cafe.nameRomaji ? cafe.nameRomaji.toLowerCase().includes(trimmed) : false;
+        return nameMatch || areaMatch || kanaMatch || romajiMatch;
+      })
       .slice(0, 5);
 
     if (!matches.length) {
@@ -1052,75 +1081,33 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const startAutoScrollMobile = () => {
-    if (!carouselTrack || !bottomCarousel || !carouselItemCount || autoScrollInterval) {
+    if (!bottomCarousel || !carouselTrack || autoScrollInterval) {
       return;
     }
+    const cards = carouselTrack.querySelectorAll(".cafe-card");
+    const totalCards = cards.length;
+    if (!totalCards) {
+      return;
+    }
+    currentCarouselIndex = 0;
     autoScrollInterval = setInterval(() => {
-      currentCarouselIndex = (currentCarouselIndex + 1) % carouselItemCount;
-      scrollToCarouselIndex(currentCarouselIndex);
+      currentCarouselIndex = (currentCarouselIndex + 1) % totalCards;
+      scrollToCarouselCard(currentCarouselIndex);
     }, AUTO_SCROLL_SPEED);
   };
 
-  const toggleListMinimize = () => {
-    if (!bottomList || !mapSection) {
-      return;
-    }
-    isListMinimized = !isListMinimized;
-    bottomList.classList.toggle("minimized", isListMinimized);
-    mapSection.classList.toggle("list-minimized", isListMinimized);
-    if (isListMinimized) {
-      stopAutoScroll();
-    } else if (isMapFullscreen && window.innerWidth <= 768) {
-      startAutoScrollMobile();
-    }
-  };
-
-  const updateCarouselIndicators = (activeIndex) => {
-    if (!carouselIndicators || !carouselItemCount) {
-      return;
-    }
-    const normalizedIndex =
-      ((activeIndex % carouselItemCount) + carouselItemCount) % carouselItemCount;
-    carouselIndicators.querySelectorAll(".carousel-indicator").forEach((indicator, index) => {
-      indicator.classList.toggle("active", index === normalizedIndex);
-    });
-  };
-
-  const scrollToCarouselIndex = (index) => {
+  const scrollToCarouselCard = (index) => {
     if (!bottomCarousel || !carouselTrack) {
       return;
     }
-    const card = carouselTrack.querySelector(".cafe-card");
-    if (!card) {
+    const cards = carouselTrack.querySelectorAll(".cafe-card");
+    if (!cards[index]) {
       return;
     }
-    const trackStyle = getComputedStyle(carouselTrack);
-    const gapValue =
-      parseFloat(trackStyle.gap || trackStyle.columnGap || trackStyle.rowGap || "12") || 12;
-    const cardWidth = card.getBoundingClientRect().width;
-    const normalizedIndex =
-      carouselItemCount && carouselItemCount > 0
-        ? ((index % carouselItemCount) + carouselItemCount) % carouselItemCount
-        : index;
-    const scrollPosition = (cardWidth + gapValue) * normalizedIndex;
+    const cardWidth = 140;
+    const gap = 12;
+    const scrollPosition = (cardWidth + gap) * index;
     bottomCarousel.scrollTo({ left: scrollPosition, behavior: "smooth" });
-    updateCarouselIndicators(normalizedIndex);
-  };
-
-  const createCarouselIndicators = (count) => {
-    if (!carouselIndicators) {
-      return;
-    }
-    carouselIndicators.innerHTML = "";
-    carouselItemCount = count;
-    for (let i = 0; i < count; i += 1) {
-      const dot = document.createElement("div");
-      dot.className = "carousel-indicator";
-      if (i === 0) {
-        dot.classList.add("active");
-      }
-      carouselIndicators.appendChild(dot);
-    }
   };
 
   const createPhotoEmphasizedCard = (cafe, sortType) => {
@@ -1177,7 +1164,6 @@ document.addEventListener("DOMContentLoaded", () => {
       carouselTrack.appendChild(createCarouselCard(cafe));
     });
     currentCarouselIndex = 0;
-    createCarouselIndicators(list.length);
     if (bottomCarousel) {
       bottomCarousel.scrollTo({ left: 0 });
     }
@@ -1294,6 +1280,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (keyword) {
         const content = [
           cafe.name,
+          cafe.nameKana || "",
+          cafe.nameRomaji || "",
           cafe.area,
           cafe.address,
           cafe.comment,
@@ -1744,8 +1732,13 @@ document.addEventListener("DOMContentLoaded", () => {
       bottomList.style.display = "none";
       bottomList.classList.remove("minimized");
     }
+    const currentScrollY = window.scrollY || window.pageYOffset;
     setTimeout(() => {
       map.invalidateSize();
+      window.scrollTo({
+        top: Math.max(0, currentScrollY - 100),
+        behavior: "smooth",
+      });
     }, 100);
   };
 
@@ -1800,71 +1793,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const handleListToggle = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (window.innerWidth <= 768) {
-      toggleListMinimize();
-    }
-  };
-
-  if (listHandle) {
-    listHandle.addEventListener("click", handleListToggle);
-  }
-
-  if (handleButton) {
-    handleButton.addEventListener("click", handleListToggle);
-  }
-
-  if (listHandle && bottomList) {
-    let startY = 0;
-    let currentY = 0;
-    let isDragging = false;
-
-    listHandle.addEventListener(
-      "touchstart",
-      (event) => {
-        isDragging = true;
-        startY = event.touches[0].clientY;
-        currentY = startY;
-      },
-      { passive: true }
-    );
-
-    listHandle.addEventListener(
-      "touchmove",
-      (event) => {
-        if (!isDragging) {
-          return;
-        }
-        currentY = event.touches[0].clientY;
-      },
-      { passive: true }
-    );
-
-    listHandle.addEventListener(
-      "touchend",
-      () => {
-        if (!isDragging) {
-          return;
-        }
-        const diff = currentY - startY;
-        const threshold = 30;
-        if (Math.abs(diff) > threshold) {
-          if (diff > 0 && !isListMinimized) {
-            toggleListMinimize();
-          } else if (diff < 0 && isListMinimized) {
-            toggleListMinimize();
-          }
-        }
-        isDragging = false;
-        startY = 0;
-        currentY = 0;
-      },
-      { passive: true }
-    );
-  }
-
   if (bottomCarousel) {
     let scrollTimeout;
     bottomCarousel.addEventListener("scroll", (event) => {
@@ -1880,17 +1808,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!carouselTrack) {
           return;
         }
-        const card = carouselTrack.querySelector(".cafe-card");
-        if (!card) {
-          return;
-        }
-        const trackStyle = getComputedStyle(carouselTrack);
-        const gapValue =
-          parseFloat(trackStyle.gap || trackStyle.columnGap || trackStyle.rowGap || "12") || 12;
-        const cardWidth = card.getBoundingClientRect().width;
+        const cardWidth = 140;
+        const gapValue = 12;
         const index = Math.round(bottomCarousel.scrollLeft / (cardWidth + gapValue));
         currentCarouselIndex = index;
-        updateCarouselIndicators(index);
       }, 100);
     });
   }

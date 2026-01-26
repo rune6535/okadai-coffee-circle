@@ -4,6 +4,8 @@ const CAFE_DATA = {
     {
       id: 1,
       name: "en.珈琲焙煎所",
+      nameKana: "えんこーひーばいせんじょ",
+      nameRomaji: "en coffee",
       area: "表町・柳川",
       address: "岡山市北区表町1丁目10-28",
       coordinates: [34.662781, 133.9292232],
@@ -34,7 +36,9 @@ const CAFE_DATA = {
     },
     {
       id: 2,
-      name: "cafe moyau",
+      name: "moyau",
+      nameKana: "もやう",
+      nameRomaji: "moyau",
       area: "岡山駅周辺",
       address: "岡山市北区出石町1-10-2",
       coordinates: [34.67004481835608, 133.9317590239433],
@@ -62,7 +66,7 @@ const CAFE_DATA = {
       reservable: false,
       menuHighlight: {
         imageIndex: 2,
-        itemName: "ハヤシライス",
+        itemName: "オムライス",
         price: "950円",
         menuUrl: "https://www.instagram.com/cafe_moyau",
       },
@@ -98,6 +102,8 @@ const CAFE_DATA = {
     {
       id: 4,
       name: "off.",
+      nameKana: "おふ",
+      nameRomaji: "off",
       area: "奉還町",
       address: "岡山市北区田町1丁目7-24",
       coordinates: [34.66210089393809, 133.92341386812015],
@@ -172,6 +178,8 @@ const CAFE_DATA = {
     {
       id: 7,
       name: "nes",
+      nameKana: "ねす",
+      nameRomaji: "nes",
       area: "岡山駅周辺",
       address: "岡山市北区富田町2丁目9-1",
       coordinates: [34.66946627508196, 133.92543399695583],
