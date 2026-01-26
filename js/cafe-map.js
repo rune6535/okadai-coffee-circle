@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     0: 0,
     1: window.innerHeight * 0.125,
     2: window.innerHeight * 0.4,
-    3: window.innerHeight * 0.875,
+    3: window.innerHeight * 0.8,
   };
 
   const mobileDetailPanel = document.getElementById("mobile-cafe-detail");
@@ -346,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const updateUISizes = () => {
     UI_SIZES[1] = window.innerHeight * 0.125;
     UI_SIZES[2] = window.innerHeight * 0.4;
-    UI_SIZES[3] = window.innerHeight * 0.875;
+    UI_SIZES[3] = window.innerHeight * 0.8;
   };
 
   const setupMobileUIInteraction = () => {
@@ -523,6 +523,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     mobileDetailPanel.style.height = `${UI_SIZES[size]}px`;
 
+    if (mobileDetailContent) {
+      mobileDetailContent.style.overflowY = "auto";
+      mobileDetailContent.style.pointerEvents = "auto";
+    }
+
     setTimeout(() => {
       if (mobileDetailPanel) {
         mobileDetailPanel.style.transition = "";
@@ -600,6 +605,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (mobileDetailContent) {
     mobileDetailContent.addEventListener("click", (event) => {
+      if (event.target.closest("button") || event.target.closest("a")) {
+        return;
+      }
       const imageItem = event.target.closest(".detail-image-item");
       if (!imageItem) {
         return;
@@ -626,6 +634,12 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUIState(size, true);
     setupMobileUIInteraction();
     setupImageSliderPopup(cafe);
+
+    if (isMapFullscreen && !isCarouselMinimized) {
+      setTimeout(() => {
+        minimizeCarousel();
+      }, 300);
+    }
   };
 
   if (detailCloseBtnMobile) {
@@ -739,7 +753,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const scrollY = window.scrollY || window.pageYOffset;
     currentDetailCafe = cafe;
     const isUIOpen = mobileDetailPanel && mobileDetailPanel.classList.contains("active");
-    if (skipAnimation) {
+    const mapCenter = map.getCenter();
+    const cafeLatLng = L.latLng(cafe.coordinates);
+    const distance = mapCenter.distanceTo(cafeLatLng);
+    const isNearCenter = distance < 50;
+    if (skipAnimation || isNearCenter) {
       highlightMarker(cafe.id);
       if (window.innerWidth <= 768) {
         closeDesktopCafeDetail();
@@ -887,7 +905,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let autoScrollInterval = null;
   let autoScrollResumeTimer = null;
   let currentCarouselIndex = 0;
-  let isListMinimized = false;
+  let isCarouselMinimized = false;
   const AUTO_SCROLL_SPEED = 2000;
   const AUTO_SCROLL_AMOUNT = 300;
 
@@ -960,11 +978,42 @@ document.addEventListener("DOMContentLoaded", () => {
   const bottomList = document.getElementById("fullscreen-bottom-list");
   const bottomCarousel = document.getElementById("bottom-cafe-carousel");
   const carouselTrack = document.getElementById("carousel-track");
+  const minimizeCarouselBtn = document.getElementById("minimize-carousel-btn");
+  const minimizedCarouselBtn = document.getElementById("carousel-minimized-btn");
   let isMapFullscreen = false;
   let isSidebarOpen = true;
 
   // 正規表現用エスケープ
   const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const toHiragana = (text) =>
+    text.replace(/[\u30a1-\u30f6]/g, (match) => String.fromCharCode(match.charCodeAt(0) - 0x60));
+
+  const fuzzyMatch = (text, searchTerm) => {
+    const textLower = text.toLowerCase();
+    const termLower = searchTerm.toLowerCase();
+    if (textLower.includes(termLower)) {
+      return true;
+    }
+    const textHiragana = toHiragana(textLower);
+    const termHiragana = toHiragana(termLower);
+    return textHiragana.includes(termHiragana);
+  };
+
+  const matchesSearchTerm = (cafe, term) => {
+    const tokens = [
+      cafe.name,
+      cafe.nameKana,
+      cafe.nameRomaji,
+      cafe.area,
+      cafe.address,
+      cafe.comment,
+      getCafeFeatures(cafe).join(" "),
+      ...(cafe.nameVariants || []),
+      ...(cafe.areaVariants || []),
+    ].filter(Boolean);
+    return tokens.some((token) => fuzzyMatch(String(token), term));
+  };
 
   // ボタンのアクティブ状態を切り替え
   const setActiveButton = (buttons, activeButton) => {
@@ -976,7 +1025,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!suggestionsList) {
       return;
     }
-    const trimmed = query.toLowerCase().trim();
+    const trimmed = query.trim();
     if (!trimmed) {
       hideSuggestions();
       return;
@@ -984,11 +1033,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const matches = cafes
       .filter((cafe) => {
-        const nameMatch = cafe.name.toLowerCase().includes(trimmed);
-        const areaMatch = cafe.area.toLowerCase().includes(trimmed);
-        const kanaMatch = cafe.nameKana ? cafe.nameKana.includes(trimmed) : false;
-        const romajiMatch = cafe.nameRomaji ? cafe.nameRomaji.toLowerCase().includes(trimmed) : false;
-        return nameMatch || areaMatch || kanaMatch || romajiMatch;
+        return matchesSearchTerm(cafe, trimmed);
       })
       .slice(0, 5);
 
@@ -1048,6 +1093,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  const updateCollapseButtonPosition = (minimized) => {
+    if (minimized) {
+      document.body.classList.add("carousel-minimized");
+    } else {
+      document.body.classList.remove("carousel-minimized");
+    }
+  };
+
+  const minimizeCarousel = () => {
+    if (!bottomList || !minimizedCarouselBtn) {
+      return;
+    }
+    isCarouselMinimized = true;
+    bottomList.classList.add("minimized");
+    minimizedCarouselBtn.style.display = "flex";
+    if (mapSection) {
+      mapSection.classList.add("list-minimized");
+    }
+    stopAutoScroll();
+    updateCollapseButtonPosition(true);
+  };
+
+  const expandCarousel = () => {
+    if (!bottomList || !minimizedCarouselBtn) {
+      return;
+    }
+    isCarouselMinimized = false;
+    bottomList.classList.remove("minimized");
+    minimizedCarouselBtn.style.display = "none";
+    if (mapSection) {
+      mapSection.classList.remove("list-minimized");
+    }
+    updateCollapseButtonPosition(false);
+    if (isMapFullscreen && window.innerWidth <= 768) {
+      startAutoScrollMobile();
+    }
+  };
+
   const scheduleAutoScrollResume = (platform, delay = 3000) => {
     if (autoScrollResumeTimer) {
       clearTimeout(autoScrollResumeTimer);
@@ -1059,7 +1142,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (platform === "pc" && window.innerWidth > 768) {
         startAutoScrollPC(sidebarCafeList);
       }
-      if (platform === "mobile" && window.innerWidth <= 768 && !isListMinimized) {
+      if (platform === "mobile" && window.innerWidth <= 768 && !isCarouselMinimized) {
         startAutoScrollMobile();
       }
     }, delay);
@@ -1081,33 +1164,23 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const startAutoScrollMobile = () => {
-    if (!bottomCarousel || !carouselTrack || autoScrollInterval) {
+    if (!bottomCarousel || !carouselTrack || autoScrollInterval || isCarouselMinimized) {
       return;
     }
-    const cards = carouselTrack.querySelectorAll(".cafe-card");
-    const totalCards = cards.length;
+    const totalCards = carouselTrack.querySelectorAll(".cafe-card:not(.clone)").length;
     if (!totalCards) {
       return;
     }
-    currentCarouselIndex = 0;
-    autoScrollInterval = setInterval(() => {
-      currentCarouselIndex = (currentCarouselIndex + 1) % totalCards;
-      scrollToCarouselCard(currentCarouselIndex);
-    }, AUTO_SCROLL_SPEED);
-  };
-
-  const scrollToCarouselCard = (index) => {
-    if (!bottomCarousel || !carouselTrack) {
-      return;
-    }
-    const cards = carouselTrack.querySelectorAll(".cafe-card");
-    if (!cards[index]) {
-      return;
-    }
-    const cardWidth = 140;
+    const cardWidth = 120;
     const gap = 12;
-    const scrollPosition = (cardWidth + gap) * index;
-    bottomCarousel.scrollTo({ left: scrollPosition, behavior: "smooth" });
+    const itemWidth = cardWidth + gap;
+    autoScrollInterval = setInterval(() => {
+      const currentScroll = bottomCarousel.scrollLeft;
+      bottomCarousel.scrollTo({
+        left: currentScroll + itemWidth,
+        behavior: "smooth",
+      });
+    }, AUTO_SCROLL_SPEED);
   };
 
   const createPhotoEmphasizedCard = (cafe, sortType) => {
@@ -1130,7 +1203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return card;
   };
 
-  const createCarouselCard = (cafe) => {
+  const createCarouselCafeCard = (cafe) => {
     const card = document.createElement("article");
     card.className = "cafe-card";
     card.dataset.cafeId = String(cafe.id);
@@ -1141,7 +1214,72 @@ document.addEventListener("DOMContentLoaded", () => {
         <p class="cafe-area">📍 ${cafe.area}</p>
       </div>
     `;
+    card.addEventListener("click", (event) => {
+      event.stopPropagation();
+      zoomToCafeFromCarousel(cafe);
+    });
     return card;
+  };
+
+  const zoomToCafeFromCarousel = (cafe) => {
+    stopAutoScroll();
+    map.flyTo(cafe.coordinates, 17, {
+      animate: true,
+      duration: 1,
+      easeLinearity: 0.25,
+    });
+    setTimeout(() => {
+      highlightMarker(cafe.id);
+      setTimeout(() => {
+        if (!isCarouselMinimized) {
+          startAutoScrollMobile();
+        }
+      }, 2000);
+    }, 1000);
+  };
+
+  const handleInfiniteScroll = () => {
+    if (!bottomCarousel || !carouselTrack) {
+      return;
+    }
+    const cardWidth = 120;
+    const gap = 12;
+    const itemWidth = cardWidth + gap;
+    const totalCards = carouselTrack.querySelectorAll(".cafe-card:not(.clone)").length;
+    if (!totalCards) {
+      return;
+    }
+    const scrollLeft = bottomCarousel.scrollLeft;
+    if (scrollLeft >= itemWidth * (totalCards + 1)) {
+      bottomCarousel.scrollLeft = itemWidth;
+    }
+    if (scrollLeft <= 0) {
+      bottomCarousel.scrollLeft = itemWidth * totalCards;
+    }
+  };
+
+  const initInfiniteCarousel = (list) => {
+    if (!carouselTrack || !bottomCarousel) {
+      return;
+    }
+    carouselTrack.innerHTML = "";
+    if (!list.length) {
+      return;
+    }
+    const lastClone = createCarouselCafeCard(list[list.length - 1]);
+    lastClone.classList.add("clone");
+    carouselTrack.appendChild(lastClone);
+    list.forEach((cafe) => {
+      carouselTrack.appendChild(createCarouselCafeCard(cafe));
+    });
+    const firstClone = createCarouselCafeCard(list[0]);
+    firstClone.classList.add("clone");
+    carouselTrack.appendChild(firstClone);
+    const cardWidth = 120;
+    const gap = 12;
+    bottomCarousel.scrollLeft = cardWidth + gap;
+    bottomCarousel.removeEventListener("scroll", handleInfiniteScroll);
+    bottomCarousel.addEventListener("scroll", handleInfiniteScroll);
   };
 
   const renderSidebarList = (list) => {
@@ -1159,14 +1297,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!carouselTrack) {
       return;
     }
-    carouselTrack.innerHTML = "";
-    list.forEach((cafe) => {
-      carouselTrack.appendChild(createCarouselCard(cafe));
-    });
     currentCarouselIndex = 0;
-    if (bottomCarousel) {
-      bottomCarousel.scrollTo({ left: 0 });
-    }
+    initInfiniteCarousel(list);
   };
 
   const updateFullscreenLists = (list) => {
@@ -1181,7 +1313,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       renderCarousel(list);
       stopAutoScroll();
-      if (!isListMinimized) {
+      if (!isCarouselMinimized) {
         startAutoScrollMobile();
       }
     }
@@ -1259,7 +1391,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const getFilteredCafes = () => {
-    const keyword = state.search.trim().toLowerCase();
+    const keyword = state.search.trim();
     let filtered = cafes.filter((cafe) => {
       if (state.favoritesOnly && !favorites.has(cafe.id)) {
         return false;
@@ -1278,18 +1410,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       if (keyword) {
-        const content = [
-          cafe.name,
-          cafe.nameKana || "",
-          cafe.nameRomaji || "",
-          cafe.area,
-          cafe.address,
-          cafe.comment,
-          getCafeFeatures(cafe).join(" "),
-        ]
-          .join(" ")
-          .toLowerCase();
-        return content.includes(keyword);
+        return matchesSearchTerm(cafe, keyword);
       }
       return true;
     });
@@ -1684,9 +1805,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     isMapFullscreen = true;
     isSidebarOpen = true;
-    isListMinimized = false;
+    isCarouselMinimized = false;
     stopAutoScroll();
     document.body.classList.add("map-fullscreen-mode");
+    updateCollapseButtonPosition(false);
     mapSection.classList.add("fullscreen");
     expandBtn.style.display = "none";
     collapseBtn.style.display = "flex";
@@ -1703,6 +1825,9 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (bottomList) {
       bottomList.style.display = "block";
       bottomList.classList.remove("minimized");
+      if (minimizedCarouselBtn) {
+        minimizedCarouselBtn.style.display = "none";
+      }
       mapSection.classList.add("mobile-list-visible");
       mapSection.classList.remove("list-minimized");
       renderCarousel(currentFiltered);
@@ -1719,9 +1844,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     isMapFullscreen = false;
-    isListMinimized = false;
+    isCarouselMinimized = false;
     stopAutoScroll();
     document.body.classList.remove("map-fullscreen-mode");
+    updateCollapseButtonPosition(false);
     mapSection.classList.remove("fullscreen", "sidebar-open", "mobile-list-visible", "list-minimized");
     expandBtn.style.display = "flex";
     collapseBtn.style.display = "none";
@@ -1731,6 +1857,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (bottomList) {
       bottomList.style.display = "none";
       bottomList.classList.remove("minimized");
+    }
+    if (minimizedCarouselBtn) {
+      minimizedCarouselBtn.style.display = "none";
     }
     const currentScrollY = window.scrollY || window.pageYOffset;
     setTimeout(() => {
@@ -1764,6 +1893,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (sidebarToggle) {
     sidebarToggle.addEventListener("click", toggleSidebar);
+  }
+
+  if (minimizeCarouselBtn) {
+    minimizeCarouselBtn.addEventListener("click", minimizeCarousel);
+  }
+
+  if (minimizedCarouselBtn) {
+    minimizedCarouselBtn.addEventListener("click", expandCarousel);
   }
 
   if (sidebarSortSelect && sortSelect) {
@@ -1808,10 +1945,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!carouselTrack) {
           return;
         }
-        const cardWidth = 140;
+        const cardWidth = 120;
         const gapValue = 12;
-        const index = Math.round(bottomCarousel.scrollLeft / (cardWidth + gapValue));
-        currentCarouselIndex = index;
+        const itemWidth = cardWidth + gapValue;
+        const totalCards = carouselTrack.querySelectorAll(".cafe-card:not(.clone)").length;
+        if (!totalCards) {
+          return;
+        }
+        const rawIndex = Math.round(bottomCarousel.scrollLeft / itemWidth) - 1;
+        currentCarouselIndex = ((rawIndex % totalCards) + totalCards) % totalCards;
       }, 100);
     });
   }
@@ -1837,7 +1979,11 @@ document.addEventListener("DOMContentLoaded", () => {
         bottomList.style.display = "none";
         bottomList.classList.remove("minimized");
       }
-      isListMinimized = false;
+      isCarouselMinimized = false;
+      updateCollapseButtonPosition(false);
+      if (minimizedCarouselBtn) {
+        minimizedCarouselBtn.style.display = "none";
+      }
       renderSidebarList(currentFiltered);
       syncSidebarSort();
       startAutoScrollPC(sidebarCafeList);
@@ -1849,11 +1995,14 @@ document.addEventListener("DOMContentLoaded", () => {
       mapSection.classList.add("mobile-list-visible");
       if (bottomList) {
         bottomList.style.display = "block";
-        bottomList.classList.toggle("minimized", isListMinimized);
+        bottomList.classList.toggle("minimized", isCarouselMinimized);
       }
-      mapSection.classList.toggle("list-minimized", isListMinimized);
+      mapSection.classList.toggle("list-minimized", isCarouselMinimized);
+      if (minimizedCarouselBtn) {
+        minimizedCarouselBtn.style.display = isCarouselMinimized ? "flex" : "none";
+      }
       renderCarousel(currentFiltered);
-      if (!isListMinimized) {
+      if (!isCarouselMinimized) {
         startAutoScrollMobile();
       }
     }

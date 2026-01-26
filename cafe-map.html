@@ -361,13 +361,14 @@
 
       /* ===== マップコントロール ===== */
       .map-controls {
-        position: absolute;
-        bottom: 20px;
+        position: fixed;
         right: 20px;
-        z-index: 1000;
+        bottom: 20px;
+        z-index: 10001;
         display: flex;
         flex-direction: column;
         gap: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       .expand-btn,
@@ -605,7 +606,56 @@
         backdrop-filter: blur(10px);
         box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
         z-index: 10000;
-        padding: 12px 0 16px 0;
+        padding: 8px 0 12px 0;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .fullscreen-bottom-list.minimized {
+        transform: translateY(100%);
+      }
+
+      .minimize-carousel-btn {
+        position: absolute;
+        top: -12px;
+        right: 60px;
+        width: 36px;
+        height: 36px;
+        background: white;
+        border: 2px solid #ddd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s;
+        z-index: 10001;
+      }
+
+      .minimize-carousel-btn:active {
+        transform: scale(0.95);
+      }
+
+      .carousel-minimized-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 80px;
+        width: 48px;
+        height: 48px;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        z-index: 10000;
+      }
+
+      .carousel-minimized-btn:active {
+        transform: scale(0.95);
       }
 
       .bottom-cafe-carousel {
@@ -629,8 +679,8 @@
       }
 
       .carousel-track .cafe-card {
-        flex: 0 0 140px;
-        width: 140px;
+        flex: 0 0 120px;
+        width: 120px;
         background: white;
         border-radius: 12px;
         overflow: hidden;
@@ -652,11 +702,11 @@
       }
 
       .carousel-track .cafe-card-content {
-        padding: 8px;
+        padding: 6px;
       }
 
       .carousel-track .cafe-name {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         color: #2d2424;
         margin: 0 0 4px 0;
@@ -666,7 +716,7 @@
       }
 
       .carousel-track .cafe-area {
-        font-size: 11px;
+        font-size: 10px;
         color: #666;
         display: flex;
         align-items: center;
@@ -1239,14 +1289,12 @@
       }
 
       @media (max-width: 768px) {
-        .map-controls {
-          bottom: 20px;
-          right: 20px;
-          transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        body.map-fullscreen-mode .map-controls {
+          bottom: calc(100px + 20px);
         }
 
-        body.map-fullscreen-mode .map-controls {
-          bottom: calc(140px + 20px);
+        body.map-fullscreen-mode.carousel-minimized .map-controls {
+          bottom: 20px;
         }
 
         .fullscreen-sidebar {
@@ -2179,9 +2227,20 @@
         </div>
 
         <div class="fullscreen-bottom-list" id="fullscreen-bottom-list" style="display: none;">
+          <button class="minimize-carousel-btn" id="minimize-carousel-btn" type="button" aria-label="カルーセルを最小化">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
           <div class="bottom-cafe-carousel" id="bottom-cafe-carousel">
             <div class="carousel-track" id="carousel-track"></div>
           </div>
+        </div>
+
+        <div class="carousel-minimized-btn" id="carousel-minimized-btn" style="display: none;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
         </div>
 
         <section class="recommend-section">
