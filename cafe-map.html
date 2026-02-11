@@ -215,6 +215,7 @@
 
       /* フィルターボタン */
       .filter-btn,
+      .area-btn,
       .feature-btn,
       .price-btn {
         padding: 8px 16px;
@@ -229,12 +230,14 @@
       }
 
       .filter-btn:hover,
+      .area-btn:hover,
       .feature-btn:hover,
       .price-btn:hover {
         border-color: #6b4423;
       }
 
       .filter-btn.active,
+      .area-btn.active,
       .price-btn.active {
         background: #6b4423;
         color: white;
@@ -249,6 +252,43 @@
 
       .price-detail {
         font-size: 12px;
+      }
+
+      /* 時間帯ボタン */
+      .timeslot-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 10px 16px;
+        background: white;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .timeslot-btn .time-range {
+        font-size: 11px;
+        font-weight: 400;
+        color: #999;
+      }
+
+      .timeslot-btn.active {
+        background: #6b4423;
+        border-color: #6b4423;
+        color: white;
+      }
+
+      .timeslot-btn.active .time-range {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .timeslot-btn:hover {
+        border-color: #6b4423;
+        background: #fff9f0;
       }
 
       /* お気に入りボタン */
@@ -361,7 +401,7 @@
 
       /* ===== マップコントロール ===== */
       .map-controls {
-        position: fixed;
+        position: absolute;
         right: 20px;
         bottom: 20px;
         z-index: 10001;
@@ -424,9 +464,11 @@
 
         /* サイドバー表示時は縮小ボタンをリスト横へ */
         .map-section.fullscreen.sidebar-open .map-controls {
-          top: 50%;
-          bottom: auto;
-          transform: translateY(-50%);
+          position: fixed;
+          top: auto;
+          bottom: 20px;
+          right: calc(400px + 30px);
+          transform: none;
         }
       }
 
@@ -855,7 +897,7 @@
         scrollbar-width: none;
         gap: 8px;
         padding-bottom: 8px;
-        touch-action: pan-x;
+        touch-action: pan-x pan-y;
       }
 
       .detail-images-slider::-webkit-scrollbar {
@@ -1087,12 +1129,13 @@
         z-index: 1001;
         transform: translateX(-100%);
         transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow-y: auto;
         display: none;
+        flex-direction: column;
+        overflow: hidden;
       }
 
       .desktop-cafe-detail.active {
-        display: block;
+        display: flex;
         transform: translateX(0);
       }
 
@@ -1290,7 +1333,7 @@
 
       @media (max-width: 768px) {
         body.map-fullscreen-mode .map-controls {
-          bottom: calc(100px + 20px);
+          bottom: calc(260px + 20px);
         }
 
         body.map-fullscreen-mode.carousel-minimized .map-controls {
@@ -2009,23 +2052,30 @@
           <div class="filter-row">
             <span class="filter-label">エリア:</span>
             <div class="filter-buttons">
-              <button class="filter-btn active" data-type="area" data-value="all" type="button">
-                すべて
-              </button>
-              <button class="filter-btn" data-type="area" data-value="岡山駅周辺" type="button">
+              <button class="area-btn active" data-area="all" type="button">すべて</button>
+              <button class="area-btn" data-area="岡山駅周辺" type="button">
                 岡山駅周辺
               </button>
-              <button class="filter-btn" data-type="area" data-value="表町・柳川" type="button">
-                表町・柳川
-              </button>
-              <button class="filter-btn" data-type="area" data-value="奉還町" type="button">
+              <button class="area-btn" data-area="奉還町" type="button">
                 奉還町
               </button>
-              <button class="filter-btn" data-type="area" data-value="大学周辺" type="button">
-                大学周辺
+              <button class="area-btn" data-area="表町" type="button">
+                表町
               </button>
-              <button class="filter-btn" data-type="area" data-value="その他" type="button">
-                その他のエリア
+              <button class="area-btn" data-area="岡山城周辺" type="button">
+                岡山城周辺
+              </button>
+              <button class="area-btn" data-area="大元町" type="button">
+                大元町
+              </button>
+              <button class="area-btn" data-area="岡山大学周辺" type="button">
+                岡山大学周辺
+              </button>
+              <button class="area-btn" data-area="中区" type="button">
+                中区
+              </button>
+              <button class="area-btn" data-area="その他" type="button">
+                その他
               </button>
             </div>
           </div>
@@ -2054,11 +2104,26 @@
               <button class="feature-btn" data-feature="ご飯あり" type="button">
                 ご飯あり
               </button>
-              <button class="feature-btn" data-feature="夜営業あり" type="button">
-                夜営業あり
-              </button>
               <button class="feature-btn" data-feature="予約可能" type="button">
                 予約可能
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <span class="filter-label">時間帯:</span>
+            <div class="filter-buttons">
+              <button class="timeslot-btn" data-timeslot="朝" type="button">
+                朝<span class="time-range">6:00~11:00</span>
+              </button>
+              <button class="timeslot-btn" data-timeslot="昼" type="button">
+                昼<span class="time-range">11:00~18:00</span>
+              </button>
+              <button class="timeslot-btn" data-timeslot="夜" type="button">
+                夜<span class="time-range">18:00~22:00</span>
+              </button>
+              <button class="timeslot-btn" data-timeslot="深夜" type="button">
+                深夜<span class="time-range">22:00~26:00</span>
               </button>
             </div>
           </div>

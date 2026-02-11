@@ -343,6 +343,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  const desktopDetailPanel = document.getElementById("desktop-cafe-detail");
+  const desktopDetailContent = document.getElementById("desktop-detail-content");
+
+
   const updateUISizes = () => {
     UI_SIZES[1] = window.innerHeight * 0.125;
     UI_SIZES[2] = window.innerHeight * 0.4;
@@ -377,11 +381,15 @@ document.addEventListener("DOMContentLoaded", () => {
     lastTouchTime = Date.now();
 
     const isInImageSlider = event.target.closest(".detail-images-slider");
+    const isInDetailContent = event.target.closest(".detail-content");
 
-    if (isInImageSlider) {
+    if (currentUISize === 3 && (isInImageSlider || isInDetailContent)) {
+      isSwipingImage = false;
+      isDraggingUI = false;
+    } else if (isInImageSlider) {
       isSwipingImage = null;
       isDraggingUI = null;
-    } else if (event.target.closest(".detail-content")) {
+    } else if (isInDetailContent) {
       initialScrollTop = mobileDetailContent ? mobileDetailContent.scrollTop : 0;
       if (initialScrollTop === 0) {
         isDraggingUI = true;
@@ -816,6 +824,30 @@ document.addEventListener("DOMContentLoaded", () => {
   if (closeButton) {
     closeButton.addEventListener("click", closeDesktopCafeDetail);
   }
+  if (desktopDetailPanel) {
+    desktopDetailPanel.addEventListener("mouseenter", () => {
+      if (map && map.scrollWheelZoom) {
+        map.scrollWheelZoom.disable();
+      }
+    });
+    desktopDetailPanel.addEventListener("mouseleave", () => {
+      if (map && map.scrollWheelZoom) {
+        map.scrollWheelZoom.enable();
+      }
+    });
+    desktopDetailPanel.addEventListener(
+      "wheel",
+      (event) => {
+        if (!desktopDetailPanel.classList.contains("active") || !desktopDetailContent) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        desktopDetailContent.scrollTop += event.deltaY * 0.7;
+      },
+      { passive: false }
+    );
+  }
 
   const modalCloseButton = document.getElementById("modal-close-btn");
   const modalOverlay = document.getElementById("modal-overlay");
@@ -886,13 +918,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const favoritesKey = "cafeFavorites";
   const favorites = new Set(JSON.parse(localStorage.getItem(favoritesKey) || "[]"));
 
-
   // フィルター状態
   const state = {
     search: "",
     area: "all",
     price: "all",
     features: new Set(),
+    timeSlots: new Set(),
     sort: "newest",
     favoritesOnly: false,
   };
@@ -1409,6 +1441,15 @@ document.addEventListener("DOMContentLoaded", () => {
           return false;
         }
       }
+      if (state.timeSlots.size) {
+        const cafeTimeSlots = cafe.timeSlots || [];
+        const matchesTimeSlot = [...state.timeSlots].every((slot) =>
+          cafeTimeSlots.includes(slot)
+        );
+        if (!matchesTimeSlot) {
+          return false;
+        }
+      }
       if (keyword) {
         return matchesSearchTerm(cafe, keyword);
       }
@@ -1449,6 +1490,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.area === "all" &&
     state.price === "all" &&
     state.features.size === 0 &&
+    state.timeSlots.size === 0 &&
     state.sort === "newest" &&
     !state.favoritesOnly;
 
@@ -1580,14 +1622,15 @@ document.addEventListener("DOMContentLoaded", () => {
     card.classList.toggle("expanded");
   };
 
-  const areaButtons = document.querySelectorAll('.filter-btn[data-type="area"]');
+  const areaButtons = document.querySelectorAll(".area-btn");
   const priceButtons = document.querySelectorAll('.price-btn[data-type="price"]');
   const featureButtons = document.querySelectorAll(".feature-btn");
+  const timeSlotButtons = document.querySelectorAll(".timeslot-btn");
 
   areaButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      const value = button.dataset.value || "all";
-      state.area = value === "その他" ? "その他のエリア" : value;
+      const value = button.dataset.area || "all";
+      state.area = value;
       setActiveButton(areaButtons, button);
       render();
     });
@@ -1612,6 +1655,23 @@ document.addEventListener("DOMContentLoaded", () => {
         button.classList.remove("active");
       } else {
         state.features.add(feature);
+        button.classList.add("active");
+      }
+      render();
+    });
+  });
+
+  timeSlotButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const slot = button.dataset.timeslot;
+      if (!slot) {
+        return;
+      }
+      if (state.timeSlots.has(slot)) {
+        state.timeSlots.delete(slot);
+        button.classList.remove("active");
+      } else {
+        state.timeSlots.add(slot);
         button.classList.add("active");
       }
       render();
@@ -1718,6 +1778,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.area = "all";
       state.price = "all";
       state.features.clear();
+      state.timeSlots.clear();
       state.sort = "newest";
       state.favoritesOnly = false;
       if (searchInput) {
@@ -1733,8 +1794,9 @@ document.addEventListener("DOMContentLoaded", () => {
       areaButtons.forEach((button) => button.classList.remove("active"));
       priceButtons.forEach((button) => button.classList.remove("active"));
       featureButtons.forEach((button) => button.classList.remove("active"));
+      timeSlotButtons.forEach((button) => button.classList.remove("active"));
 
-      const defaultArea = document.querySelector('.filter-btn[data-type="area"][data-value="all"]');
+      const defaultArea = document.querySelector('.area-btn[data-area="all"]');
       if (defaultArea) {
         defaultArea.classList.add("active");
       }
