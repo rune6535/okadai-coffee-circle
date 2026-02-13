@@ -200,7 +200,7 @@ const CAFE_DATA = {
       name: "EMPIRE COFFEE ROASTERS",
       area: "奉還町",
       address: "岡山市北区",
-      coordinates: [34.664, 133.92],
+      coordinates: [34.66946980331396, 133.91934071229772],
       features: ["おしゃれな空間", "静かで落ち着く"],
       timeSlots: ["朝", "昼"],
       comment: "焙煎所併設のスペシャルティコーヒー専門店。朝から営業しています。",
@@ -223,7 +223,7 @@ const CAFE_DATA = {
       name: "COUNTER COFFEE COUNTER",
       area: "岡山駅周辺",
       address: "岡山市北区",
-      coordinates: [34.663, 133.921],
+      coordinates: [34.658167425994215, 133.9195636392848],
       features: ["おしゃれな空間", "静かで落ち着く"],
       timeSlots: ["朝", "昼"],
       comment: "新聞社ビル1階のスタイリッシュなコーヒーカウンター。朝から営業しています。",
@@ -246,7 +246,7 @@ const CAFE_DATA = {
       name: "ごはんとおやつ iro",
       area: "岡山駅周辺",
       address: "岡山市北区",
-      coordinates: [34.67, 133.93],
+      coordinates: [34.67046772047364, 133.9251105392851],
       features: ["おしゃれな空間", "静かで落ち着く", "スイーツが美味しい"],
       timeSlots: ["昼"],
       comment: "ナチュラルで心地よい雰囲気のカフェ。定食スタイルのランチが人気です。",
@@ -336,6 +336,10 @@ const REFERENCE_POINTS = {
   station: {
     name: "岡山駅",
     coordinates: [34.66655797257619, 133.91773349699008],
+  },
+  omotoStation: {
+    name: "大元駅",
+    coordinates: [34.647770926664016, 133.91099310293703],
   },
   university: {
     name: "岡山大学",

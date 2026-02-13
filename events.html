@@ -611,49 +611,7 @@
         },
       };
 
-      const events = [
-        {
-          date: "2026-01-15",
-          title: "新年カフェ巡り",
-          type: "cafe-tour",
-          description: "2026年最初のカフェ巡り！新しいお店を開拓します。",
-          location: "岡山市内",
-          time: "13:00〜16:00",
-          signup: "参加希望はLINEまたはInstagramのDMでご連絡ください。",
-          image: "images/coming-soon.svg",
-        },
-        {
-          date: "2026-02-13",
-          type: "regular",
-          title: "定期活動",
-          time: "18:00〜20:00",
-          location: "岡山大学〇〇棟",
-          description:
-            "ゆげの定例会です。コーヒーの抽出や交流を中心に、気軽に参加できます。",
-          signup: "参加希望はLINEまたはInstagramのDMでご連絡ください。",
-          image: "images/coming-soon.svg",
-        },
-        {
-          date: "2026-02-20",
-          title: "バレンタインコーヒー会",
-          type: "event",
-          description: "チョコレートとコーヒーのペアリングを楽しもう！",
-          location: "サークル室",
-          time: "18:00〜20:00",
-          signup: "参加希望はLINEまたはInstagramのDMでご連絡ください。",
-          image: "images/coming-soon.svg",
-        },
-        {
-          date: "2026-03-05",
-          title: "ロースタリー見学会",
-          type: "roasting",
-          description: "焙煎の現場を見学し、豆の奥深さを学びます。",
-          location: "岡山市内ロースタリー",
-          time: "14:00〜16:00",
-          signup: "参加希望はLINEまたはInstagramのDMでご連絡ください。",
-          image: "images/coming-soon.svg",
-        },
-      ];
+      const events = [];
 
       const calendarGrid = document.getElementById("calendar-grid");
       const currentMonthLabel = document.getElementById("current-month");
@@ -820,6 +778,27 @@
         const filteredEvents = sortedEvents.filter(
           (event) => activeFilter === "all" || event.type === activeFilter
         );
+        if (filteredEvents.length === 0) {
+          const emptyCard = document.createElement("article");
+          emptyCard.className = "rounded-3xl bg-background/80 p-8 text-center shadow";
+          emptyCard.innerHTML = `
+            <p class="text-xl font-bold text-primary">Coming Soon</p>
+            <p class="mt-3 text-sm leading-6 text-muted">
+              イベント詳細は現在準備中です。公開までお待ちください。
+            </p>
+            <div class="mx-auto mt-5 max-w-xs overflow-hidden rounded-2xl">
+              <img
+                src="images/coming-soon.svg"
+                alt="イベント情報準備中"
+                loading="lazy"
+                decoding="async"
+                class="h-40 w-full object-cover"
+              />
+            </div>
+          `;
+          eventCards.appendChild(emptyCard);
+          return;
+        }
         const firstMonthKey = filteredEvents.length ? filteredEvents[0].date.slice(0, 7) : "";
         let initialCardIndex = 0;
         let staggerIndex = 0;
@@ -921,6 +900,13 @@
           });
           list.appendChild(item);
         });
+
+        if (!list.children.length) {
+          const emptyMessage = document.createElement("p");
+          emptyMessage.className = "rounded-2xl bg-background/70 px-4 py-5 text-sm text-muted";
+          emptyMessage.textContent = "イベント情報は現在準備中です。";
+          list.appendChild(emptyMessage);
+        }
 
         listView.appendChild(list);
       };

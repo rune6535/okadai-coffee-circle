@@ -291,6 +291,12 @@
         background: #fff9f0;
       }
 
+      .timeslot-buttons {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+
       /* お気に入りボタン */
       .favorite-btn {
         padding: 8px 16px;
@@ -1701,6 +1707,23 @@
           width: 100%;
         }
 
+        .timeslot-buttons {
+          gap: 6px;
+        }
+
+        .timeslot-btn {
+          flex: 1 1 0;
+          min-width: 0;
+          padding: 8px 6px;
+          gap: 2px;
+          font-size: 12px;
+        }
+
+        .timeslot-btn .time-range {
+          font-size: 9px;
+          white-space: nowrap;
+        }
+
         .price-detail {
           display: none;
         }
@@ -2112,7 +2135,7 @@
 
           <div class="filter-row">
             <span class="filter-label">時間帯:</span>
-            <div class="filter-buttons">
+            <div class="filter-buttons timeslot-buttons">
               <button class="timeslot-btn" data-timeslot="朝" type="button">
                 朝<span class="time-range">6:00~11:00</span>
               </button>
