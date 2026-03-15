@@ -310,7 +310,6 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        margin-left: auto;
       }
 
       .favorite-btn .heart-icon {
@@ -351,7 +350,8 @@
       .filter-result-row {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
         padding-top: 12px;
         border-top: 1px solid #e0e0e0;
       }
@@ -360,6 +360,7 @@
         font-size: 14px;
         color: #666;
         font-weight: 500;
+        margin-right: auto;
       }
 
       .reset-btn {
@@ -1728,7 +1729,7 @@
           display: none;
         }
 
-        .favorite-btn {
+        .filter-row .favorite-btn {
           width: 100%;
           justify-content: center;
           margin-left: 0;
@@ -2106,17 +2107,8 @@
           <div class="filter-row">
             <span class="filter-label">特徴:</span>
             <div class="filter-buttons">
-              <button class="feature-btn" data-feature="おしゃれな空間" type="button">
-                おしゃれな空間
-              </button>
-              <button class="feature-btn" data-feature="静かで落ち着く" type="button">
-                静かで落ち着く
-              </button>
-              <button class="feature-btn" data-feature="作業しやすい" type="button">
-                作業しやすい
-              </button>
-              <button class="feature-btn" data-feature="スイーツが美味しい" type="button">
-                スイーツが美味しい
+              <button class="feature-btn" data-feature="豆販売あり" type="button">
+                豆販売あり
               </button>
               <button class="feature-btn" data-feature="テラス席あり" type="button">
                 テラス席あり
@@ -2151,29 +2143,11 @@
             </div>
           </div>
 
-          <div class="filter-row">
-            <span class="filter-label">価格帯:</span>
-            <div class="filter-buttons">
-              <button class="price-btn active" data-type="price" data-value="all" type="button">
-                すべて
-              </button>
-              <button class="price-btn" data-type="price" data-value="1" type="button">
-                ￥<span class="price-detail">（〜500円）</span>
-              </button>
-              <button class="price-btn" data-type="price" data-value="2" type="button">
-                ￥￥<span class="price-detail">（500-800円）</span>
-              </button>
-              <button class="price-btn" data-type="price" data-value="3" type="button">
-                ￥￥￥<span class="price-detail">（800円〜）</span>
-              </button>
-            </div>
+          <div class="filter-result-row">
+            <span class="result-count" id="result-count">15件のカフェが見つかりました。</span>
             <button class="favorite-btn" id="favorite-filter" type="button" aria-pressed="false">
               <span class="heart-icon">♡</span> お気に入りのみ
             </button>
-          </div>
-
-          <div class="filter-result-row">
-            <span class="result-count" id="result-count">15件のカフェが見つかりました。</span>
             <button class="reset-btn" id="reset-filters" type="button">フィルターリセット</button>
           </div>
         </section>

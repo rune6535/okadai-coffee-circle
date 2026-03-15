@@ -14,6 +14,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
+    <link rel="stylesheet" href="activities.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -325,13 +326,16 @@
         .slide img {
           width: 100%;
           height: auto;
-          aspect-ratio: 4 / 5;
-          max-height: 300px;
+          aspect-ratio: 3 / 4;
+          max-height: 380px;
+          object-fit: contain;
           border-radius: 8px;
+          background: #f3eee7;
         }
 
         .slide img.cupping-ratio {
-          aspect-ratio: 4 / 5;
+          aspect-ratio: 3 / 4;
+          object-fit: contain;
         }
 
         .slider-nav {
@@ -532,19 +536,22 @@
 
     <!-- メインコンテンツ -->
     <main class="mx-auto max-w-screen-2xl px-6 pb-20">
-      <section class="mt-6">
-        <div class="rounded-3xl bg-white/80 p-8 shadow md:p-12">
+      <!-- 活動方針セクション -->
+      <section class="activities-policy mt-6">
+        <div class="container rounded-3xl bg-white/80 p-8 shadow md:p-12">
           <div class="hero-reveal flex flex-col gap-2 text-center" style="animation-delay: 0.8s;">
             <h2 class="text-2xl font-semibold text-primary md:text-3xl">活動方針</h2>
             <p class="text-sm text-muted">〜自分にあった活動の仕方で〜</p>
           </div>
-          <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+          <!-- PC版：既存のまま -->
+          <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3 desktop-only">
             <button
               type="button"
               class="hero-reveal hover-lift group w-full cursor-pointer rounded-3xl bg-gradient-to-br from-[#FFD700]/30 via-white to-[#FFA500]/30 p-6 text-left shadow"
               style="animation-delay: 1s;"
               data-scroll-target="#regular-activity"
-              aria-label="定期活動の詳細へスクロール"
+              aria-label="定例会の詳細へスクロール"
             >
               <span class="sr-only">クリックして詳細を見る</span>
               <div class="flex items-center justify-between">
@@ -631,27 +638,119 @@
               </div>
             </button>
           </div>
+
+          <!-- スマホ版：タブ切り替え -->
+          <div class="policy-tabs mobile-only mt-8">
+            <div class="tabs-header" role="tablist" aria-label="活動方針タブ">
+              <button
+                class="tab-btn active"
+                data-tab="1"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="policy-panel-1"
+                id="policy-tab-1"
+              >
+                <span class="tab-number">①</span>
+                <span class="tab-label">カフェ巡り</span>
+              </button>
+              <button
+                class="tab-btn"
+                data-tab="2"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="policy-panel-2"
+                id="policy-tab-2"
+              >
+                <span class="tab-number">②</span>
+                <span class="tab-label">珈琲の勉強</span>
+              </button>
+              <button
+                class="tab-btn"
+                data-tab="3"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="policy-panel-3"
+                id="policy-tab-3"
+              >
+                <span class="tab-number">③</span>
+                <span class="tab-label">交流イベント</span>
+              </button>
+            </div>
+
+            <div class="tabs-content">
+              <div
+                class="tab-panel active"
+                data-panel="1"
+                id="policy-panel-1"
+                role="tabpanel"
+                aria-labelledby="policy-tab-1"
+              >
+                <div class="policy-item">
+                  <h3 class="policy-title">カフェ巡り</h3>
+                  <p class="policy-description">
+                    岡山市内のカフェを巡り、コーヒーの味わいや雰囲気を楽しみます。
+                    メンバー同士で感想を共有し、お気に入りのお店を見つけましょう。
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="tab-panel"
+                data-panel="2"
+                id="policy-panel-2"
+                role="tabpanel"
+                aria-labelledby="policy-tab-2"
+              >
+                <div class="policy-item">
+                  <h3 class="policy-title">珈琲の勉強</h3>
+                  <p class="policy-description">
+                    コーヒーの淹れ方や豆の種類、焙煎について学びます。
+                    ハンドドリップの技術を磨き、自分好みの一杯を追求します。
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="tab-panel"
+                data-panel="3"
+                id="policy-panel-3"
+                role="tabpanel"
+                aria-labelledby="policy-tab-3"
+              >
+                <div class="policy-item">
+                  <h3 class="policy-title">交流イベント</h3>
+                  <p class="policy-description">
+                    コーヒーを通じて学年や学部を超えた交流を深めます。
+                    定期的な活動や特別イベントで楽しい時間を共有しましょう。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       <section class="space-y-10 mt-12">
         <section class="activity-section hover-lift group" id="regular-activity">
-          <h2 class="activity-title-top">定期活動</h2>
+          <h2 class="activity-title-top">定例会</h2>
           <div class="activity-slider-container">
             <div class="activity-slider">
               <div class="slider-wrapper">
                 <div class="slider-track" data-activity="regular" data-slider-track>
                   <div class="slide">
-                    <img src="images/定期活動/定期活動1.jpg" alt="定期活動の様子 1" />
+                    <img src="images/定期活動/定期活動1.jpg" alt="定例会の様子 1" />
                   </div>
                   <div class="slide">
-                    <img src="images/定期活動/定期活動2.jpg" alt="定期活動の様子 2" />
+                    <img src="images/定期活動/定期活動2.jpg" alt="定例会の様子 2" />
                   </div>
                   <div class="slide">
-                    <img src="images/定期活動/定期活動3.jpg" alt="定期活動の様子 3" />
+                    <img src="images/定期活動/定期活動3.jpg" alt="定例会の様子 3" />
                   </div>
                   <div class="slide">
-                    <img src="images/定期活動/定期活動4.jpg" alt="定期活動の様子 4" />
+                    <img src="images/定期活動/定期活動4.jpg" alt="定例会の様子 4" />
                   </div>
                 </div>
               </div>

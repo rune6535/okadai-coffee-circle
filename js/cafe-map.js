@@ -154,13 +154,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let dragStartX = 0;
   let currentDragY = 0;
   let currentDragX = 0;
-  let initialScrollTop = 0;
-  let dragTarget = null;
-  let isMobileUIReady = false;
-  let lastTouchY = 0;
-  let lastTouchTime = 0;
-  let touchVelocity = 0;
-  let uiDragStartHeight = 0;
+  let dragStartScrollTop = 0;
+  let dragStartHeight = 0;
 
   const UI_SIZES = {
     0: 0,
@@ -249,6 +244,14 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
 
+    const instagramActionHTML = cafe.instagram
+      ? `
+        <a href="${cafe.instagram}" target="_blank" rel="noreferrer" class="detail-action-btn instagram">
+          📷 Instagram
+        </a>
+      `
+      : "";
+
     return `
       ${imagesHTML}
       <h2 class="detail-cafe-name">${cafe.name}</h2>
@@ -295,9 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <a href="${googleMaps}" target="_blank" rel="noreferrer" class="detail-action-btn maps">
           🗺️ Googleマップ
         </a>
-        <a href="${cafe.instagram || "#"}" target="_blank" rel="noreferrer" class="detail-action-btn instagram">
-          📷 Instagram
-        </a>
+        ${instagramActionHTML}
       </div>
     `;
   };
@@ -347,21 +348,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const desktopDetailContent = document.getElementById("desktop-detail-content");
 
 
-  const updateUISizes = () => {
-    UI_SIZES[1] = window.innerHeight * 0.125;
-    UI_SIZES[2] = window.innerHeight * 0.4;
-    UI_SIZES[3] = window.innerHeight * 0.8;
-  };
-
   const setupMobileUIInteraction = () => {
     if (!mobileDetailPanel) {
       return;
     }
-    if (!isMobileUIReady) {
-      mobileDetailPanel.addEventListener("touchstart", handlePanelTouchStart, { passive: false });
-      isMobileUIReady = true;
-    }
-    setupImageSlider();
+    mobileDetailPanel.removeEventListener("touchstart", handlePanelTouchStart);
+    mobileDetailPanel.addEventListener("touchstart", handlePanelTouchStart, { passive: false });
   };
 
   const handlePanelTouchStart = (event) => {
@@ -376,32 +368,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const touch = event.touches[0];
     dragStartY = touch.clientY;
     dragStartX = touch.clientX;
-    dragTarget = event.target;
-    lastTouchY = dragStartY;
-    lastTouchTime = Date.now();
+    dragStartScrollTop = mobileDetailContent ? mobileDetailContent.scrollTop : 0;
+    dragStartHeight = parseInt(mobileDetailPanel.style.height, 10) || UI_SIZES[currentUISize];
 
     const isInImageSlider = event.target.closest(".detail-images-slider");
-    const isInDetailContent = event.target.closest(".detail-content");
 
-    if (currentUISize === 3 && (isInImageSlider || isInDetailContent)) {
-      isSwipingImage = false;
-      isDraggingUI = false;
-    } else if (isInImageSlider) {
+    if (isInImageSlider) {
       isSwipingImage = null;
       isDraggingUI = null;
-    } else if (isInDetailContent) {
-      initialScrollTop = mobileDetailContent ? mobileDetailContent.scrollTop : 0;
-      if (initialScrollTop === 0) {
-        isDraggingUI = true;
-      } else {
-        isDraggingUI = false;
-      }
     } else {
       isDraggingUI = true;
-    }
-
-    if (isDraggingUI) {
-      uiDragStartHeight = parseInt(mobileDetailPanel.style.height, 10) || UI_SIZES[currentUISize];
     }
 
     document.addEventListener("touchmove", handlePanelTouchMove, { passive: false });
@@ -419,14 +395,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const diffY = currentDragY - dragStartY;
     const diffX = currentDragX - dragStartX;
 
-    const now = Date.now();
-    const timeDiff = now - lastTouchTime;
-    if (timeDiff > 0) {
-      touchVelocity = (currentDragY - lastTouchY) / timeDiff;
-    }
-    lastTouchY = currentDragY;
-    lastTouchTime = now;
-
     if (isSwipingImage === null && isDraggingUI === null) {
       const absX = Math.abs(diffX);
       const absY = Math.abs(diffY);
@@ -438,7 +406,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           isSwipingImage = false;
           isDraggingUI = true;
-          uiDragStartHeight = parseInt(mobileDetailPanel.style.height, 10) || UI_SIZES[currentUISize];
         }
       }
     }
@@ -448,16 +415,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (isDraggingUI) {
-      event.preventDefault();
+      handleUIScroll(diffY, event);
+    }
+  };
 
-      if (currentUISize === 3 && mobileDetailContent.scrollTop > 0 && diffY < 0) {
-        return;
+  const handleUIScroll = (diffY, event) => {
+    if (!mobileDetailContent || !mobileDetailPanel) {
+      return;
+    }
+    const currentScrollTop = mobileDetailContent.scrollTop;
+    const isAtTop = currentScrollTop <= 0;
+    const isAtBottom =
+      currentScrollTop + mobileDetailContent.clientHeight >= mobileDetailContent.scrollHeight - 1;
+
+    if (currentUISize === 3) {
+      if (diffY < 0) {
+        if (isAtBottom) {
+          event.preventDefault();
+        } else {
+          return;
+        }
+      } else if (diffY > 0) {
+        if (isAtTop) {
+          event.preventDefault();
+          let newHeight = dragStartHeight - diffY;
+          newHeight = Math.max(UI_SIZES[1], Math.min(UI_SIZES[3], newHeight));
+          mobileDetailPanel.style.transition = "none";
+          mobileDetailPanel.style.height = `${newHeight}px`;
+        } else {
+          return;
+        }
       }
-
-      let newHeight = uiDragStartHeight - diffY;
-      newHeight = Math.max(0, Math.min(UI_SIZES[3], newHeight));
-      mobileDetailPanel.style.transition = "none";
-      mobileDetailPanel.style.height = `${newHeight}px`;
+    } else if (currentUISize === 1 || currentUISize === 2) {
+      if (diffY < 0) {
+        event.preventDefault();
+        let newHeight = dragStartHeight - diffY;
+        newHeight = Math.max(UI_SIZES[1], Math.min(UI_SIZES[3], newHeight));
+        mobileDetailPanel.style.transition = "none";
+        mobileDetailPanel.style.height = `${newHeight}px`;
+      } else if (diffY > 0) {
+        event.preventDefault();
+        let newHeight = dragStartHeight - diffY;
+        newHeight = Math.max(UI_SIZES[1], Math.min(UI_SIZES[3], newHeight));
+        mobileDetailPanel.style.transition = "none";
+        mobileDetailPanel.style.height = `${newHeight}px`;
+      }
     }
   };
 
@@ -466,25 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.removeEventListener("touchend", handlePanelTouchEnd);
 
     if (isDraggingUI) {
-      const diff = dragStartY - currentDragY;
-
-      let targetSize = currentUISize;
-
-      if (Math.abs(touchVelocity) > 0.5) {
-        if (touchVelocity < 0) {
-          targetSize = Math.min(3, currentUISize + 1);
-        } else {
-          targetSize = Math.max(1, currentUISize - 1);
-        }
-      } else if (diff > 50) {
-        targetSize = Math.min(3, currentUISize + 1);
-      } else if (diff < -50) {
-        targetSize = Math.max(1, currentUISize - 1);
-      } else {
-        targetSize = currentUISize;
-      }
-
-      setUISize(targetSize, true);
+      snapToNearestSize();
     }
 
     isDraggingUI = false;
@@ -493,7 +477,27 @@ document.addEventListener("DOMContentLoaded", () => {
     dragStartX = 0;
     currentDragY = 0;
     currentDragX = 0;
-    touchVelocity = 0;
+    dragStartScrollTop = 0;
+    dragStartHeight = 0;
+  };
+
+  const snapToNearestSize = () => {
+    if (!mobileDetailPanel) {
+      return;
+    }
+    const currentHeight = parseInt(mobileDetailPanel.style.height, 10) || UI_SIZES[currentUISize];
+    let nearestSize = 1;
+    let minDiff = Math.abs(currentHeight - UI_SIZES[1]);
+
+    for (let size = 2; size <= 3; size += 1) {
+      const diff = Math.abs(currentHeight - UI_SIZES[size]);
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearestSize = size;
+      }
+    }
+
+    setUISize(nearestSize, true);
   };
 
   const setUISize = (size, animate = true) => {
@@ -532,8 +536,7 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileDetailPanel.style.height = `${UI_SIZES[size]}px`;
 
     if (mobileDetailContent) {
-      mobileDetailContent.style.overflowY = "auto";
-      mobileDetailContent.style.pointerEvents = "auto";
+      mobileDetailContent.scrollTop = 0;
     }
 
     setTimeout(() => {
@@ -632,7 +635,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     mobileDetailContent.innerHTML = createDetailHTML(cafe, "mobile");
-    updateUISizes();
+    UI_SIZES[1] = window.innerHeight * 0.125;
+    UI_SIZES[2] = window.innerHeight * 0.4;
+    UI_SIZES[3] = window.innerHeight * 0.8;
     currentUISize = size;
     mobileDetailPanel.classList.add("active");
     if (mapDetailOverlay) {
@@ -641,6 +646,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("cafe-detail-open");
     updateUIState(size, true);
     setupMobileUIInteraction();
+    setupImageSlider();
     setupImageSliderPopup(cafe);
 
     if (isMapFullscreen && !isCarouselMinimized) {
@@ -667,7 +673,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("resize", () => {
     if (window.innerWidth <= 768 && currentUISize > 0) {
-      updateUISizes();
+      UI_SIZES[1] = window.innerHeight * 0.125;
+      UI_SIZES[2] = window.innerHeight * 0.4;
+      UI_SIZES[3] = window.innerHeight * 0.8;
       updateUIState(currentUISize, false);
     } else if (window.innerWidth > 768 && currentUISize > 0) {
       closeMobileCafeDetail();
@@ -922,7 +930,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const state = {
     search: "",
     area: "all",
-    price: "all",
     features: new Set(),
     timeSlots: new Set(),
     sort: "newest",
@@ -1431,9 +1438,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (state.area !== "all" && cafe.area !== state.area) {
         return false;
       }
-      if (state.price !== "all" && cafe.price !== Number(state.price)) {
-        return false;
-      }
       if (state.features.size) {
         const cafeFeatures = getCafeFeatures(cafe);
         const matchesFeature = [...state.features].every((feature) => cafeFeatures.includes(feature));
@@ -1488,7 +1492,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const isDefaultFilters = () =>
     state.search === "" &&
     state.area === "all" &&
-    state.price === "all" &&
     state.features.size === 0 &&
     state.timeSlots.size === 0 &&
     state.sort === "newest" &&
@@ -1623,7 +1626,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const areaButtons = document.querySelectorAll(".area-btn");
-  const priceButtons = document.querySelectorAll('.price-btn[data-type="price"]');
   const featureButtons = document.querySelectorAll(".feature-btn");
   const timeSlotButtons = document.querySelectorAll(".timeslot-btn");
 
@@ -1632,14 +1634,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const value = button.dataset.area || "all";
       state.area = value;
       setActiveButton(areaButtons, button);
-      render();
-    });
-  });
-
-  priceButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      state.price = button.dataset.value || "all";
-      setActiveButton(priceButtons, button);
       render();
     });
   });
@@ -1776,7 +1770,6 @@ document.addEventListener("DOMContentLoaded", () => {
     clearFilters.addEventListener("click", () => {
       state.search = "";
       state.area = "all";
-      state.price = "all";
       state.features.clear();
       state.timeSlots.clear();
       state.sort = "newest";
@@ -1792,17 +1785,12 @@ document.addEventListener("DOMContentLoaded", () => {
         sortSelect.value = "newest";
       }
       areaButtons.forEach((button) => button.classList.remove("active"));
-      priceButtons.forEach((button) => button.classList.remove("active"));
       featureButtons.forEach((button) => button.classList.remove("active"));
       timeSlotButtons.forEach((button) => button.classList.remove("active"));
 
       const defaultArea = document.querySelector('.area-btn[data-area="all"]');
       if (defaultArea) {
         defaultArea.classList.add("active");
-      }
-      const defaultPrice = document.querySelector('.price-btn[data-type="price"][data-value="all"]');
-      if (defaultPrice) {
-        defaultPrice.classList.add("active");
       }
       if (favoritesToggle) {
         favoritesToggle.classList.remove("active");

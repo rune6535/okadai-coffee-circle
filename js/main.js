@@ -117,6 +117,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // 活動方針タブ切り替え（activities.html）
+  const policyTabBtns = document.querySelectorAll(".tab-btn");
+  const policyTabPanels = document.querySelectorAll(".tab-panel");
+
+  if (policyTabBtns.length && policyTabPanels.length) {
+    policyTabBtns.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const tabNumber = this.getAttribute("data-tab");
+
+        policyTabBtns.forEach((tabBtn) => {
+          tabBtn.classList.remove("active");
+          tabBtn.setAttribute("aria-selected", "false");
+        });
+        policyTabPanels.forEach((panel) => panel.classList.remove("active"));
+
+        this.classList.add("active");
+        this.setAttribute("aria-selected", "true");
+
+        const activePanel = document.querySelector(`.tab-panel[data-panel="${tabNumber}"]`);
+        if (activePanel) {
+          activePanel.classList.add("active");
+        }
+      });
+    });
+  }
+
   // ボタン経由のスムーススクロール
   const scrollButtons = document.querySelectorAll("[data-scroll-target]");
   if (scrollButtons.length) {

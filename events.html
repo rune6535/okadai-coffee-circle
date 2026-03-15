@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>イベント・スケジュール | 岡山大学 珈琲サークル「ゆげ」</title>
+    <title>イベントスケジュール | 岡山大学 珈琲サークル「ゆげ」</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -107,10 +107,16 @@
         cursor: pointer;
         transition: all 0.2s;
         position: relative;
+        overflow: hidden;
       }
       .calendar-cell.has-event:hover {
         background: #f9f9f9;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .calendar-cell.has-event {
+        background: linear-gradient(180deg, #fff8ef 0%, #ffffff 100%);
+        border-color: #d8b899;
+        box-shadow: inset 0 0 0 1px rgba(107, 68, 35, 0.08);
       }
       .calendar-cell.today {
         background: #fff9f0;
@@ -127,16 +133,48 @@
         color: #333;
         margin-bottom: 4px;
       }
-      .event-dots {
-        display: flex;
-        gap: 3px;
-        margin-top: auto;
+      .event-title-block {
+        margin-top: 2px;
+        width: calc(100% + 4px);
+        margin-left: -2px;
+        border-radius: 8px;
+        padding: 4px 6px;
+        box-sizing: border-box;
+        font-size: 10px;
+        font-weight: 700;
+        color: #ffffff;
+        text-align: center;
+        overflow: hidden;
       }
-      .event-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        display: block;
+      .event-title-text {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.15;
+        max-height: calc(2 * 1.15em);
+      }
+      @media (min-width: 1024px) {
+        .calendar-cell {
+          padding: 10px 8px;
+          align-items: flex-start;
+        }
+        .date-number {
+          align-self: center;
+          font-size: 18px;
+          font-weight: 700;
+          line-height: 1;
+          margin-bottom: 6px;
+        }
+        .event-title-block {
+          font-size: 11px;
+          width: calc(100% + 8px);
+          margin-left: -4px;
+          padding: 6px 8px;
+        }
       }
       .calendar-fade {
         transition: opacity 0.25s ease;
@@ -283,6 +321,30 @@
         line-height: 1.6;
       }
       @media (max-width: 768px) {
+        .calendar-grid {
+          gap: 1px;
+        }
+        .calendar-cell {
+          min-width: 0;
+          padding: 3px 2px 6px;
+        }
+        .date-number {
+          font-size: 12px;
+          margin-bottom: 2px;
+          line-height: 1.1;
+        }
+        .event-title-block {
+          margin-top: 2px;
+          width: 100%;
+          margin-left: 0;
+          padding: 3px 4px;
+          font-size: 9px;
+          border-radius: 6px;
+        }
+        .event-title-text {
+          -webkit-line-clamp: 1;
+          line-height: 1.1;
+        }
         .legend-items {
           grid-template-columns: 1fr;
         }
@@ -361,7 +423,7 @@
           Events
         </p>
         <h1 class="hero-reveal mt-4 text-4xl font-semibold text-primary md:text-5xl" style="animation-delay: 0.4s;">
-          イベント・スケジュール
+          イベントスケジュール
         </h1>
         <p class="hero-reveal mt-4 text-base text-muted md:text-lg" style="animation-delay: 0.6s;">
           ゆげの活動予定をチェック
@@ -421,7 +483,7 @@
                     すべて
                   </button>
                   <button type="button" class="filter-button rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary" data-filter="regular">
-                    定期活動
+                    定例会
                   </button>
                 </div>
               </div>
@@ -442,20 +504,20 @@
                 <div class="legend-title">イベントの種類</div>
                 <div class="legend-items">
                   <div class="legend-item" data-type="regular">
-                    <span class="legend-dot" style="background-color: #6b4423;"></span>
-                    <span class="legend-label">定期活動</span>
+                    <span class="legend-dot" style="background-color: #2563eb;"></span>
+                    <span class="legend-label">定例会</span>
                   </div>
                   <div class="legend-item" data-type="cafe-tour">
-                    <span class="legend-dot" style="background-color: #e8926f;"></span>
-                    <span class="legend-label">カフェ巡り</span>
+                    <span class="legend-dot" style="background-color: #eab308;"></span>
+                    <span class="legend-label">出店・販売</span>
                   </div>
                   <div class="legend-item" data-type="event">
-                    <span class="legend-dot" style="background-color: #ffb347;"></span>
+                    <span class="legend-dot" style="background-color: #dc2626;"></span>
                     <span class="legend-label">特別イベント</span>
                   </div>
                   <div class="legend-item" data-type="roasting">
                     <span class="legend-dot" style="background-color: #8b4513;"></span>
-                    <span class="legend-label">焙煎見学</span>
+                    <span class="legend-label">珈琲を学ぶ会</span>
                   </div>
                 </div>
               </div>
@@ -586,32 +648,53 @@
 
       const eventTypes = {
         regular: {
-          label: "定期活動",
-          color: "#6B4423",
+          label: "定例会",
+          color: "#2563EB",
           icon: "☕",
-          badge: "bg-[#6B4423] text-white transition hover:bg-[#5B3A1E]",
+          badge: "bg-[#2563EB] text-white transition hover:bg-[#1D4ED8]",
         },
         "cafe-tour": {
-          label: "カフェ巡り",
-          color: "#E8926F",
+          label: "出店・販売",
+          color: "#EAB308",
           icon: "🚶",
-          badge: "bg-[#E8926F] text-white transition hover:bg-[#D98460]",
+          badge: "bg-[#EAB308] text-white transition hover:bg-[#CA8A04]",
         },
         event: {
           label: "特別イベント",
-          color: "#FFB347",
+          color: "#DC2626",
           icon: "🎉",
-          badge: "bg-[#FFB347] text-primary transition hover:bg-[#F0A53D]",
+          badge: "bg-[#DC2626] text-white transition hover:bg-[#B91C1C]",
         },
         roasting: {
-          label: "焙煎見学",
+          label: "珈琲を学ぶ会",
           color: "#8B4513",
           icon: "🔥",
           badge: "bg-[#8B4513] text-white transition hover:bg-[#7A3D11]",
         },
       };
 
-      const events = [];
+      const events = [
+        {
+          date: "2026-04-11",
+          type: "event",
+          title: "合同新歓",
+          time: "14:00〜18:00",
+          location: "フォーティーン（岡山県岡山市北区中央町9-20）",
+          description: "新入生歓迎の合同イベントです。はじめての方も気軽に参加できます。",
+          signup: "参加費無料・当日参加OK",
+          image: "images/coming-soon.svg",
+        },
+        {
+          date: "2026-04-16",
+          type: "regular",
+          title: "ラテアート・ハンドドリップ体験会",
+          time: "18:00〜20:00",
+          location: "ツドイバ（岡山県岡山市北区奉還町4丁目12-22 1F）",
+          description: "ラテアートとハンドドリップを実際に体験する定例会です。",
+          signup: "参加費無料・当日参加OK",
+          image: "images/coming-soon.svg",
+        },
+      ];
 
       const calendarGrid = document.getElementById("calendar-grid");
       const currentMonthLabel = document.getElementById("current-month");
@@ -619,7 +702,8 @@
       const listView = document.getElementById("list-view");
       const eventCards = document.getElementById("event-cards");
 
-      let currentMonth = new Date(2026, 0, 1);
+      const now = new Date();
+      let currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       let activeFilter = "all";
       let activeView = "calendar";
 
@@ -627,13 +711,29 @@
       const formatDateLabel = (date) =>
         `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
 
-      const toDateKey = (date) => date.toISOString().split("T")[0];
+      const toDateKey = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      };
+      const parseDateKey = (dateKey) => {
+        const [year, month, day] = dateKey.split("-").map(Number);
+        return new Date(year, month - 1, day);
+      };
+      const getTodayLocalDateKey = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const day = String(today.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      };
 
       const getEventsForDate = (dateKey) =>
         events.filter((event) => event.date === dateKey && (activeFilter === "all" || event.type === activeFilter));
 
       const formatDate = (dateString) => {
-        const date = new Date(dateString);
+        const date = parseDateKey(dateString);
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
         const day = date.getDate();
@@ -651,7 +751,10 @@
 
       const showEventsByType = (eventType) => {
         const typeInfo = eventTypes[eventType];
-        const filteredEvents = events.filter((event) => event.type === eventType);
+        const todayKey = getTodayLocalDateKey();
+        const filteredEvents = events.filter(
+          (event) => event.type === eventType && event.date >= todayKey
+        );
         if (!filteredEvents.length) {
           window.alert(`${typeInfo.label}のイベントは現在予定されていません。`);
           return;
@@ -729,16 +832,16 @@
         cell.appendChild(dateNumber);
 
         if (dayEvents.length > 0) {
-          const eventDots = document.createElement("div");
-          eventDots.className = "event-dots";
-          dayEvents.slice(0, 3).forEach((event) => {
-            const dot = document.createElement("span");
-            dot.className = "event-dot";
-            dot.style.backgroundColor = eventTypes[event.type].color;
-            dot.setAttribute("data-event-type", event.type);
-            eventDots.appendChild(dot);
-          });
-          cell.appendChild(eventDots);
+          const firstEvent = dayEvents[0];
+          const titleBlock = document.createElement("div");
+          titleBlock.className = "event-title-block";
+          titleBlock.style.backgroundColor = eventTypes[firstEvent.type].color;
+          const titleText = document.createElement("span");
+          titleText.className = "event-title-text";
+          titleText.textContent = firstEvent.title;
+          titleBlock.appendChild(titleText);
+          cell.appendChild(titleBlock);
+
           cell.classList.add("has-event");
           cell.addEventListener("click", () => showEventDetails(date, dayEvents));
         }
@@ -804,7 +907,7 @@
         let staggerIndex = 0;
 
         filteredEvents.forEach((event) => {
-          const date = new Date(event.date);
+          const date = parseDateKey(event.date);
           const card = document.createElement("article");
           const isFirstMonth = event.date.startsWith(firstMonthKey);
           if (isFirstMonth) {
@@ -879,7 +982,7 @@
           if (activeFilter !== "all" && event.type !== activeFilter) {
             return;
           }
-          const date = new Date(event.date);
+          const date = parseDateKey(event.date);
           const item = document.createElement("button");
           item.type = "button";
           item.className = "flex w-full items-center justify-between rounded-2xl bg-background/70 px-4 py-3 text-left text-sm transition hover:bg-background";
