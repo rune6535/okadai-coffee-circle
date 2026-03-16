@@ -156,6 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentDragX = 0;
   let dragStartScrollTop = 0;
   let dragStartHeight = 0;
+  const UI_SWIPE_STEP_THRESHOLD = 18;
+  const UI_SWIPE_STEP_MAX = 140;
 
   const UI_SIZES = {
     0: 0,
@@ -368,6 +370,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const touch = event.touches[0];
     dragStartY = touch.clientY;
     dragStartX = touch.clientX;
+    currentDragY = dragStartY;
+    currentDragX = dragStartX;
     dragStartScrollTop = mobileDetailContent ? mobileDetailContent.scrollTop : 0;
     dragStartHeight = parseInt(mobileDetailPanel.style.height, 10) || UI_SIZES[currentUISize];
 
@@ -468,7 +472,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.removeEventListener("touchend", handlePanelTouchEnd);
 
     if (isDraggingUI) {
-      snapToNearestSize();
+      const gestureDeltaY = currentDragY - dragStartY;
+      snapToNearestSize(gestureDeltaY);
     }
 
     isDraggingUI = false;
@@ -481,7 +486,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dragStartHeight = 0;
   };
 
-  const snapToNearestSize = () => {
+  const snapToNearestSize = (gestureDeltaY = 0) => {
     if (!mobileDetailPanel) {
       return;
     }
@@ -497,10 +502,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    const absDeltaY = Math.abs(gestureDeltaY);
+    if (absDeltaY >= UI_SWIPE_STEP_THRESHOLD && absDeltaY <= UI_SWIPE_STEP_MAX) {
+      if (gestureDeltaY < 0) {
+        nearestSize = Math.min(3, currentUISize + 1);
+      } else if (gestureDeltaY > 0) {
+        nearestSize = Math.max(1, currentUISize - 1);
+      }
+    }
+
     setUISize(nearestSize, true);
   };
 
-  const setUISize = (size, animate = true) => {
+  const setUISize = (size, animate = true, options = {}) => {
     if (!mobileDetailPanel || !mobileDetailContent) {
       return;
     }
@@ -512,14 +526,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (size === 0) {
       closeMobileCafeDetail();
     } else {
-      updateUIState(size, animate);
+      updateUIState(size, animate, options);
     }
   };
 
-  const updateUIState = (size, animate = true) => {
+  const updateUIState = (size, animate = true, options = {}) => {
     if (!mobileDetailPanel) {
       return;
     }
+    const { resetScroll = false } = options;
     document.body.classList.remove("ui-size-1", "ui-size-2", "ui-size-3");
     document.body.classList.add(`ui-size-${size}`);
     if (size > 0) {
@@ -535,7 +550,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     mobileDetailPanel.style.height = `${UI_SIZES[size]}px`;
 
-    if (mobileDetailContent) {
+    if (mobileDetailContent && resetScroll) {
       mobileDetailContent.scrollTop = 0;
     }
 
@@ -644,7 +659,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mapDetailOverlay.classList.add("active");
     }
     document.body.classList.add("cafe-detail-open");
-    updateUIState(size, true);
+    updateUIState(size, true, { resetScroll: true });
     setupMobileUIInteraction();
     setupImageSlider();
     setupImageSliderPopup(cafe);

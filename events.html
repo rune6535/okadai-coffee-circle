@@ -321,6 +321,10 @@
         line-height: 1.6;
       }
       @media (max-width: 768px) {
+        #calendar-wrapper {
+          margin-left: calc(50% - 50vw);
+          margin-right: calc(50% - 50vw);
+        }
         .calendar-grid {
           gap: 1px;
         }
@@ -433,7 +437,7 @@
 
     <!-- メインコンテンツ -->
     <main class="mx-auto max-w-screen-2xl px-6 pb-20">
-      <section class="rounded-3xl bg-white/80 p-6 shadow md:p-10">
+      <section class="p-0 md:rounded-3xl md:bg-white/80 md:p-10 md:shadow">
         <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <div class="flex flex-wrap items-center justify-between gap-4">
