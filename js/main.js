@@ -139,6 +139,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activePanel) {
           activePanel.classList.add("active");
         }
+
+        // スマホ版ではタブ切り替え時に見出し位置まで戻して、内容を読み始めやすくする
+        if (window.matchMedia("(max-width: 768px)").matches) {
+          const policyTabs = this.closest(".policy-tabs");
+          if (policyTabs) {
+            const nav = document.getElementById("site-nav");
+            const offset = nav ? nav.getBoundingClientRect().height + 12 : 12;
+            const top = policyTabs.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({
+              top: Math.max(0, top),
+              behavior: "smooth",
+            });
+          }
+        }
       });
     });
   }

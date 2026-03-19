@@ -545,7 +545,7 @@
           </div>
 
           <!-- PC版：カード表示 -->
-          <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3 desktop-only">
+          <div class="desktop-only mt-8 hidden gap-6 md:grid md:grid-cols-2 lg:grid-cols-3">
             <button
               type="button"
               class="hero-reveal hover-lift group w-full cursor-pointer rounded-3xl bg-gradient-to-br from-[#FFD700]/30 via-white to-[#FFA500]/30 p-6 text-left shadow"
@@ -628,7 +628,7 @@
           </div>
 
           <!-- スマホ版：タブ切り替え -->
-          <div class="policy-tabs mobile-only mt-8">
+          <div class="policy-tabs mobile-only fade-section mt-8" style="transition-delay: 1s; transition-duration: 0.7s;">
             <div class="tabs-header" role="tablist" aria-label="活動方針タブ">
               <button
                 class="tab-btn active"

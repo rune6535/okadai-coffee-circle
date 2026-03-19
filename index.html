@@ -284,7 +284,7 @@
     <script src="js/cafe-data.js" defer></script>
     <script src="js/main.js" defer></script>
   </head>
-  <body class="bg-background text-textbase font-sans">
+  <body class="overflow-x-hidden bg-background text-textbase font-sans">
     <!-- グローバルナビゲーション -->
     <nav
       id="site-nav"
@@ -292,7 +292,7 @@
       aria-label="メインナビゲーション"
     >
       <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-4">
-        <a href="#home" class="text-lg font-semibold transition hover:text-secondary md:text-xl">
+        <a href="#home" class="min-w-0 flex-1 pr-4 text-base font-semibold leading-tight transition hover:text-secondary md:text-xl">
           岡山大学 珈琲サークル「ゆげ」
         </a>
         <div class="hidden items-center gap-8 text-base font-semibold md:flex md:text-lg">
@@ -310,7 +310,7 @@
         </div>
         <button
           id="menu-toggle"
-          class="md:hidden"
+          class="shrink-0 md:hidden"
           type="button"
           aria-expanded="false"
           aria-controls="mobile-menu"
@@ -345,7 +345,7 @@
     </nav>
 
     <!-- ヒーローセクション -->
-    <header id="home" class="relative min-h-screen" data-bg-image="images/hero.jpg">
+    <header id="home" class="relative min-h-screen overflow-hidden" data-bg-image="images/hero.jpg">
       <div
         class="absolute inset-0 bg-cover bg-center"
         style="background-image: url('images/hero.jpg');"
@@ -584,9 +584,10 @@
               初めての人でも入りやすいお店を中心にピックアップしました。
             </p>
             <div class="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-primary">
-              <span class="rounded-full bg-accent/40 px-4 py-2">落ち着いた読書カフェ</span>
-              <span class="rounded-full bg-accent/40 px-4 py-2">ラテアート自慢</span>
+              <span class="rounded-full bg-accent/40 px-4 py-2">豆販売あり</span>
+              <span class="rounded-full bg-accent/40 px-4 py-2">駐車場あり</span>
               <span class="rounded-full bg-accent/40 px-4 py-2">テイクアウトOK</span>
+              <span class="rounded-full bg-accent/40 px-4 py-2">予約可能</span>
             </div>
           </div>
           <div class="hover-lift rounded-3xl bg-gradient-to-br from-secondary/30 via-accent/30 to-background p-8 shadow">
@@ -627,8 +628,8 @@
             </h3>
             <p class="mt-3 text-sm leading-6 text-muted">
               日時 : 4月11日(土) 14:00〜18:00<br />
-              会場 : フォーティーン（岡山県岡山市北区中央町9-20）<br />
-              参加費 : 無料
+              会場 : フォーティーン（岡山県岡山市北区本町6-36）<br />
+              参加費 : 無料<br />入退室自由
             </p>
           </article>
           <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm">
@@ -639,16 +640,18 @@
             <p class="mt-3 text-sm leading-6 text-muted">
               日時 : 4月16日(木) 18:00〜20:00<br />
               会場 : ツドイバ（岡山県岡山市北区奉還町4丁目12-22 1F）<br />
-              参加費 : 無料
+              参加費 : 無料<br />入退室自由
             </p>
           </article>
           <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm">
-            <p class="text-xs uppercase tracking-widest text-secondary">Coming Soon</p>
+            <p class="text-xs uppercase tracking-widest text-secondary">4/23 Thu</p>
             <h3 class="mt-3 text-lg font-semibold text-primary">
-              新着イベント準備中
+              [知るカフェコラボ] ボードゲーム交流会
             </h3>
             <p class="mt-3 text-sm leading-6 text-muted">
-              詳細は近日公開します。もう少しお待ちください。
+              日時 : 4月23日(木) 17:30〜19:30<br />
+              会場 : 知るカフェ 岡山大学前店（岡山県岡山市北区学南町2丁目6-16）<br />
+              参加費 : 無料<br />入退室自由
             </p>
           </article>
         </div>

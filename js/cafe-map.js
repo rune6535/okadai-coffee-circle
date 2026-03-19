@@ -1176,6 +1176,9 @@ document.addEventListener("DOMContentLoaded", () => {
     isCarouselMinimized = false;
     bottomList.classList.remove("minimized");
     minimizedCarouselBtn.style.display = "none";
+    if (window.innerWidth <= 768 && currentUISize > 1) {
+      setUISize(1, true);
+    }
     if (mapSection) {
       mapSection.classList.remove("list-minimized");
     }
@@ -1225,7 +1228,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!totalCards) {
       return;
     }
-    const cardWidth = 120;
+    const cardWidth = 148;
     const gap = 12;
     const itemWidth = cardWidth + gap;
     autoScrollInterval = setInterval(() => {
@@ -1242,11 +1245,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const distanceHTML = distanceInfo
       ? `<div class="sidebar-distance">${distanceInfo.label} ${distanceInfo.value}</div>`
       : "";
+    const imageSrc = getPrimaryImage(cafe);
+    const imageClass = imageSrc.includes("coming-soon")
+      ? "cafe-card-image is-coming-soon"
+      : "cafe-card-image";
     const card = document.createElement("article");
     card.className = "cafe-card";
     card.dataset.cafeId = String(cafe.id);
     card.innerHTML = `
-      <img src="${getPrimaryImage(cafe)}" alt="${cafe.name}" class="cafe-card-image" />
+      <img src="${imageSrc}" alt="${cafe.name}" class="${imageClass}" />
       <div class="cafe-card-content">
         <h3 class="cafe-name">${cafe.name}</h3>
         ${distanceHTML}
@@ -1258,57 +1265,44 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const createCarouselCafeCard = (cafe) => {
+    const imageSrc = getPrimaryImage(cafe);
+    const imageClass = imageSrc.includes("coming-soon")
+      ? "cafe-card-image is-coming-soon"
+      : "cafe-card-image";
     const card = document.createElement("article");
     card.className = "cafe-card";
     card.dataset.cafeId = String(cafe.id);
     card.innerHTML = `
-      <img src="${getPrimaryImage(cafe)}" alt="${cafe.name}" class="cafe-card-image" />
+      <img src="${imageSrc}" alt="${cafe.name}" class="${imageClass}" />
       <div class="cafe-card-content">
         <h3 class="cafe-name">${cafe.name}</h3>
         <p class="cafe-area">📍 ${cafe.area}</p>
       </div>
     `;
-    card.addEventListener("click", (event) => {
-      event.stopPropagation();
-      zoomToCafeFromCarousel(cafe);
-    });
     return card;
   };
 
   const zoomToCafeFromCarousel = (cafe) => {
-    stopAutoScroll();
-    map.flyTo(cafe.coordinates, 17, {
-      animate: true,
-      duration: 1,
-      easeLinearity: 0.25,
-    });
-    setTimeout(() => {
-      highlightMarker(cafe.id);
-      setTimeout(() => {
-        if (!isCarouselMinimized) {
-          startAutoScrollMobile();
-        }
-      }, 2000);
-    }, 1000);
+    openCafeFromFullscreenList(cafe.id);
   };
 
   const handleInfiniteScroll = () => {
     if (!bottomCarousel || !carouselTrack) {
       return;
     }
-    const cardWidth = 120;
+    const cardWidth = 148;
     const gap = 12;
     const itemWidth = cardWidth + gap;
     const totalCards = carouselTrack.querySelectorAll(".cafe-card:not(.clone)").length;
     if (!totalCards) {
       return;
     }
+    const blockWidth = itemWidth * totalCards;
     const scrollLeft = bottomCarousel.scrollLeft;
-    if (scrollLeft >= itemWidth * (totalCards + 1)) {
-      bottomCarousel.scrollLeft = itemWidth;
-    }
-    if (scrollLeft <= 0) {
-      bottomCarousel.scrollLeft = itemWidth * totalCards;
+    if (scrollLeft < blockWidth) {
+      bottomCarousel.scrollLeft = scrollLeft + blockWidth;
+    } else if (scrollLeft >= blockWidth * 2) {
+      bottomCarousel.scrollLeft = scrollLeft - blockWidth;
     }
   };
 
@@ -1320,18 +1314,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!list.length) {
       return;
     }
-    const lastClone = createCarouselCafeCard(list[list.length - 1]);
-    lastClone.classList.add("clone");
-    carouselTrack.appendChild(lastClone);
+    // 前後に全件複製して3ブロック化し、左右どちらでもシームレスに循環させる
+    list.forEach((cafe) => {
+      const clonedCard = createCarouselCafeCard(cafe);
+      clonedCard.classList.add("clone");
+      carouselTrack.appendChild(clonedCard);
+    });
     list.forEach((cafe) => {
       carouselTrack.appendChild(createCarouselCafeCard(cafe));
     });
-    const firstClone = createCarouselCafeCard(list[0]);
-    firstClone.classList.add("clone");
-    carouselTrack.appendChild(firstClone);
-    const cardWidth = 120;
+    list.forEach((cafe) => {
+      const clonedCard = createCarouselCafeCard(cafe);
+      clonedCard.classList.add("clone");
+      carouselTrack.appendChild(clonedCard);
+    });
+    const cardWidth = 148;
     const gap = 12;
-    bottomCarousel.scrollLeft = cardWidth + gap;
+    bottomCarousel.scrollLeft = (cardWidth + gap) * list.length;
     bottomCarousel.removeEventListener("scroll", handleInfiniteScroll);
     bottomCarousel.addEventListener("scroll", handleInfiniteScroll);
   };
@@ -1543,6 +1542,18 @@ document.addEventListener("DOMContentLoaded", () => {
     listElement.innerHTML = list
       .map((cafe) => {
         const distanceInfo = getDistanceLabel(state.sort, cafe);
+        const featureTags = getCafeFeatures(cafe)
+          .map(
+            (feature) =>
+              `<span class="rounded-full bg-secondary/20 px-2 py-0.5 text-primary">${feature}</span>`
+          )
+          .join("");
+        const timeSlotTags = (cafe.timeSlots || [])
+          .map(
+            (slot) =>
+              `<span class="rounded-full bg-primary/10 px-2 py-0.5 text-primary">${slot}</span>`
+          )
+          .join("");
         const distanceHTML = distanceInfo
           ? `
                 <div class="cafe-distance">
@@ -1563,10 +1574,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     <h3 class="cafe-name text-sm font-semibold text-primary">${cafe.name}</h3>
                     ${distanceHTML}
                   </div>
-                  <div class="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted">
-                    <span class="rounded-full px-2 py-0.5 text-primary" style="background:#E3C5A4">${
+                  <div class="mt-1 space-y-1 text-[11px] text-muted">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="rounded-full px-2 py-0.5 text-primary" style="background:#E3C5A4">${
           cafe.area
         }</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      ${featureTags}
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      ${timeSlotTags}
+                    </div>
                   </div>
                 </div>
                 <button type="button" class="favorite-icon-btn text-secondary" data-action="favorite" data-cafe-id="${
@@ -1852,6 +1871,57 @@ document.addEventListener("DOMContentLoaded", () => {
     zoomToCafe(cafe, 1000);
   };
 
+  const openCafeFromFullscreenList = (id) => {
+    const cafe = cafes.find((item) => item.id === id);
+    if (!cafe) {
+      return;
+    }
+    stopAutoScroll();
+
+    let handled = false;
+    const finalizeAfterMove = () => {
+      if (handled) {
+        return;
+      }
+      handled = true;
+      highlightMarker(cafe.id);
+      if (isMapFullscreen) {
+        if (window.innerWidth <= 768) {
+          isCarouselMinimized = true;
+          if (bottomList) {
+            bottomList.classList.add("minimized");
+          }
+          if (minimizedCarouselBtn) {
+            minimizedCarouselBtn.style.display = "flex";
+          }
+          if (mapSection) {
+            mapSection.classList.add("list-minimized");
+          }
+          updateCollapseButtonPosition(true);
+        } else if (fullscreenSidebar && mapSection) {
+          isSidebarOpen = false;
+          fullscreenSidebar.classList.add("collapsed");
+          mapSection.classList.remove("sidebar-open");
+        }
+      }
+      if (window.innerWidth <= 768) {
+        closeDesktopCafeDetail();
+        showMobileCafeDetail(cafe, 2);
+      } else {
+        closeMobileCafeDetail();
+        showDesktopCafeDetail(cafe);
+      }
+    };
+
+    map.once("moveend", finalizeAfterMove);
+    map.flyTo(cafe.coordinates, 17, {
+      animate: true,
+      duration: 1,
+      easeLinearity: 0.25,
+    });
+    setTimeout(finalizeAfterMove, 1400);
+  };
+
   const viewCafeOnMap = (cafe) => {
     if (!cafe) {
       return;
@@ -1982,7 +2052,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       const id = Number(card.dataset.cafeId);
-      focusCafe(id);
+      openCafeFromFullscreenList(id);
     });
     sidebarCafeList.addEventListener("scroll", (event) => {
       if (!event.isTrusted) {
@@ -1996,6 +2066,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (bottomCarousel) {
+    bottomCarousel.addEventListener("click", (event) => {
+      const card = event.target.closest(".cafe-card[data-cafe-id]");
+      if (!card) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const id = Number(card.dataset.cafeId);
+      openCafeFromFullscreenList(id);
+    });
+
     let scrollTimeout;
     bottomCarousel.addEventListener("scroll", (event) => {
       if (!event.isTrusted) {
@@ -2010,14 +2091,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!carouselTrack) {
           return;
         }
-        const cardWidth = 120;
+        const cardWidth = 148;
         const gapValue = 12;
         const itemWidth = cardWidth + gapValue;
         const totalCards = carouselTrack.querySelectorAll(".cafe-card:not(.clone)").length;
         if (!totalCards) {
           return;
         }
-        const rawIndex = Math.round(bottomCarousel.scrollLeft / itemWidth) - 1;
+        const rawIndex = Math.round(bottomCarousel.scrollLeft / itemWidth) - totalCards;
         currentCarouselIndex = ((rawIndex % totalCards) + totalCards) % totalCards;
       }, 100);
     });

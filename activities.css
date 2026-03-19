@@ -89,6 +89,12 @@
     }
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .tab-panel {
+      animation: none;
+    }
+  }
+
 }
 
 @media (max-width: 380px) {

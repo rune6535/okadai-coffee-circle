@@ -193,6 +193,21 @@
         flex-wrap: wrap;
         align-items: center;
         gap: 8px;
+        opacity: 0;
+        transform: translateY(16px);
+        animation: fadeInUp 0.8s ease-out forwards;
+      }
+
+      .filters-section .filter-row:nth-of-type(1) {
+        animation-delay: 0.55s;
+      }
+
+      .filters-section .filter-row:nth-of-type(2) {
+        animation-delay: 0.8s;
+      }
+
+      .filters-section .filter-row:nth-of-type(3) {
+        animation-delay: 1.05s;
       }
 
       .filter-row:last-of-type {
@@ -354,6 +369,18 @@
         flex-wrap: wrap;
         padding-top: 12px;
         border-top: 1px solid #e0e0e0;
+        opacity: 0;
+        transform: translateY(16px);
+        animation: fadeInUp 0.8s ease-out 1.3s forwards;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .filter-row,
+        .filter-result-row {
+          animation: none;
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .result-count {
@@ -581,8 +608,14 @@
       .photo-emphasized .cafe-card-image {
         width: 100%;
         height: 200px;
-        object-fit: cover;
+        object-fit: contain;
+        object-position: center;
+        background: #f3eee7;
         display: block;
+      }
+
+      .photo-emphasized .cafe-card-image.is-coming-soon {
+        object-fit: cover;
       }
 
       .photo-emphasized .cafe-card-content {
@@ -728,8 +761,8 @@
       }
 
       .carousel-track .cafe-card {
-        flex: 0 0 120px;
-        width: 120px;
+        flex: 0 0 148px;
+        width: 148px;
         background: white;
         border-radius: 12px;
         overflow: hidden;
@@ -745,9 +778,15 @@
 
       .carousel-track .cafe-card-image {
         width: 100%;
-        aspect-ratio: 2 / 3;
-        object-fit: cover;
+        aspect-ratio: 4 / 5;
+        object-fit: contain;
+        object-position: center;
+        background: #f3eee7;
         display: block;
+      }
+
+      .carousel-track .cafe-card-image.is-coming-soon {
+        object-fit: cover;
       }
 
       .carousel-track .cafe-card-content {
