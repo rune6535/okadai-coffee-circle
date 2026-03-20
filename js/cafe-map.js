@@ -960,6 +960,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let autoScrollResumeTimer = null;
   let currentCarouselIndex = 0;
   let isCarouselMinimized = false;
+  let ignoreCarouselScrollUntil = 0;
+  let isAdjustingInfiniteCarousel = false;
   const AUTO_SCROLL_SPEED = 2000;
   const AUTO_SCROLL_AMOUNT = 300;
 
@@ -1233,6 +1235,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const itemWidth = cardWidth + gap;
     autoScrollInterval = setInterval(() => {
       const currentScroll = bottomCarousel.scrollLeft;
+      // 自動スクロール由来のscrollイベントをユーザー操作として扱わない
+      ignoreCarouselScrollUntil = Date.now() + 700;
       bottomCarousel.scrollTo({
         left: currentScroll + itemWidth,
         behavior: "smooth",
@@ -1287,7 +1291,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const handleInfiniteScroll = () => {
-    if (!bottomCarousel || !carouselTrack) {
+    if (!bottomCarousel || !carouselTrack || isAdjustingInfiniteCarousel) {
       return;
     }
     const cardWidth = 148;
@@ -1300,9 +1304,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const blockWidth = itemWidth * totalCards;
     const scrollLeft = bottomCarousel.scrollLeft;
     if (scrollLeft < blockWidth) {
+      isAdjustingInfiniteCarousel = true;
       bottomCarousel.scrollLeft = scrollLeft + blockWidth;
+      requestAnimationFrame(() => {
+        isAdjustingInfiniteCarousel = false;
+      });
     } else if (scrollLeft >= blockWidth * 2) {
+      isAdjustingInfiniteCarousel = true;
       bottomCarousel.scrollLeft = scrollLeft - blockWidth;
+      requestAnimationFrame(() => {
+        isAdjustingInfiniteCarousel = false;
+      });
     }
   };
 
@@ -2079,6 +2091,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let scrollTimeout;
     bottomCarousel.addEventListener("scroll", (event) => {
+      if (Date.now() < ignoreCarouselScrollUntil || isAdjustingInfiniteCarousel) {
+        return;
+      }
       if (!event.isTrusted) {
         return;
       }

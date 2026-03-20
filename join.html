@@ -131,7 +131,13 @@
     <!-- ページヘッダー -->
     <header class="relative pt-24">
       <div class="mx-auto max-w-screen-2xl px-6 py-16 md:py-20">
-        <p class="text-xs uppercase tracking-[0.35em] text-secondary">Join Us</p>
+        <a
+          href="index.html"
+          class="inline-flex items-center rounded-full border border-primary/15 px-3 py-1 text-xs font-medium text-muted transition hover:border-primary/30 hover:text-primary"
+        >
+          トップページ
+        </a>
+        <p class="mt-4 text-xs uppercase tracking-[0.35em] text-secondary">Join Us</p>
         <h1 class="mt-4 text-4xl font-semibold text-primary md:text-5xl">
           入会案内
         </h1>
@@ -144,9 +150,9 @@
     <!-- メインコンテンツ -->
     <main class="mx-auto max-w-screen-2xl px-6 pb-20">
       <section class="fade-section">
-        <div class="rounded-3xl bg-white/80 p-6 shadow md:p-8">
+        <div class="p-6 md:p-8">
           <h2 class="text-center text-2xl font-semibold text-primary">新入生・入会希望の皆さんへ</h2>
-          <div class="mx-auto mt-6 max-w-3xl overflow-hidden rounded-2xl">
+          <div class="-mx-5 mt-6 w-[calc(100%+2.5rem)] overflow-hidden rounded-2xl md:mx-auto md:w-full md:max-w-4xl">
             <img
               src="images/代表の言葉.jpg"
               alt="代表からのメッセージ"
@@ -160,28 +166,6 @@
             <div class="absolute -top-2 left-[62%] h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-accent/50 bg-[#fff8ef]"></div>
             <p class="text-xs font-semibold tracking-[0.2em] text-secondary">槇野 翔太・三室 惺真</p>
             <p class="mt-2">ここにメッセージを記入してください。</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="fade-section mt-10 rounded-3xl bg-white/80 p-8 shadow md:p-12">
-        <div class="grid gap-6 md:grid-cols-[1.2fr_1fr]">
-          <div>
-            <h2 class="text-2xl font-semibold text-primary md:text-3xl">「ゆげ」について</h2>
-            <p class="mt-4 text-sm text-muted md:text-base">
-              立ち上げ：2025年8月1日
-            </p>
-            <p class="mt-4 text-base leading-7 text-textbase">
-              温かい場所に立ち昇るゆげのように、いつも温かさと活気があるサークルにしたいです。
-              人と人が自然に集まり、交流の輪が広がっていくことを願っています。
-            </p>
-          </div>
-          <div class="rounded-2xl bg-gradient-to-br from-primary/90 via-primary to-secondary/90 p-6 text-white">
-            <p class="text-sm uppercase tracking-[0.3em] text-white/70">Coffee Circle</p>
-            <p class="mt-4 text-lg font-semibold">岡山大学 珈琲サークル「ゆげ」</p>
-            <p class="mt-3 text-sm text-white/80">
-              初心者でも大歓迎です。あなたのペースで参加してください。
-            </p>
           </div>
         </div>
       </section>
@@ -560,7 +544,7 @@
       const form = document.getElementById("contact-form");
       const status = document.getElementById("form-status");
       const submitButton = form.querySelector('button[type="submit"]');
-      const FORM_ENDPOINT = "https://formsubmit.co/ajax/okadaicoffeecircle@gmail.com";
+      const FORM_ENDPOINT = "https://formsubmit.co/ajax/ff4c6323c88a937dfd5a050511c1dfb7";
       const validators = {
         name: (value) => value.trim().length > 0,
         email: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
