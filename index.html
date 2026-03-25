@@ -352,12 +352,6 @@
         role="img"
         aria-label="ゆったりとしたカフェ空間のイメージ"
       ></div>
-      <div
-        class="hidden absolute right-6 top-24 rounded-full bg-secondary/90 px-4 py-2 text-xs font-semibold text-primary shadow"
-        data-bg-badge
-      >
-        Coming Soon
-      </div>
       <div class="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-background/80"></div>
       <div class="steam" aria-hidden="true"></div>
       <div class="steam steam-two" aria-hidden="true"></div>
@@ -427,7 +421,7 @@
           </div>
           <div class="grid gap-4">
             <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
-              <h3 class="text-lg font-semibold text-primary">初心者でも安心です</h3>
+              <h3 class="text-lg font-semibold text-primary">初心者でも大歓迎です</h3>
               <p class="mt-2 text-sm leading-6 text-muted">
                 初めての方でもリラックスして楽しめる雰囲気を大切にしています。
               </p>
@@ -435,13 +429,13 @@
             <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
               <h3 class="text-lg font-semibold text-primary">ゆったり週末活動</h3>
               <p class="mt-2 text-sm leading-6 text-muted">
-                授業やアルバイトと両立しやすいペースで活動しています。
+                月１～２回の活動頻度なので、他のサークルやアルバイトと両立しやすいペースで活動しています。
               </p>
             </div>
             <div class="hover-lift rounded-2xl bg-white/80 p-6 shadow">
               <h3 class="text-lg font-semibold text-primary">交流の輪が広がります</h3>
               <p class="mt-2 text-sm leading-6 text-muted">
-                コーヒーをきっかけに学部を越えたつながりが生まれます。
+                コーヒーをきっかけに学部や学年を越えたつながりが生まれます。
               </p>
             </div>
           </div>
@@ -620,8 +614,8 @@
             イベント一覧を見る →
           </a>
         </div>
-        <div class="mt-10 grid gap-6 md:grid-cols-3">
-          <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm">
+        <div class="mt-10 grid gap-6 md:grid-cols-3" data-news-list>
+          <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm" data-news-item data-event-date="2026-04-11">
             <p class="text-xs uppercase tracking-widest text-secondary">4/11 Sat</p>
             <h3 class="mt-3 text-lg font-semibold text-primary">
               合同新歓
@@ -632,9 +626,9 @@
               参加費 : 無料<br />入退室自由
             </p>
           </article>
-          <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm">
+          <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm" data-news-item data-event-date="2026-04-16">
             <p class="text-xs uppercase tracking-widest text-secondary">4/16 Thu</p>
-            <h3 class="mt-3 text-lg font-semibold text-primary">
+            <h3 class="mt-3 text-lg font-semibold text-primary whitespace-nowrap sm:whitespace-normal">
               ラテアート・ハンドドリップ体験会
             </h3>
             <p class="mt-3 text-sm leading-6 text-muted">
@@ -643,10 +637,10 @@
               参加費 : 無料<br />入退室自由
             </p>
           </article>
-          <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm">
+          <article class="hover-lift rounded-2xl border border-accent/40 bg-white p-6 shadow-sm" data-news-item data-event-date="2026-04-23">
             <p class="text-xs uppercase tracking-widest text-secondary">4/23 Thu</p>
             <h3 class="mt-3 text-lg font-semibold text-primary">
-              [知るカフェコラボ] ボードゲーム交流会
+              新入生歓迎会-お菓子party,ボードゲーム交流会-
             </h3>
             <p class="mt-3 text-sm leading-6 text-muted">
               日時 : 4月23日(木) 17:30〜19:30<br />
@@ -655,6 +649,9 @@
             </p>
           </article>
         </div>
+        <p class="mt-8 hidden rounded-2xl border border-accent/40 bg-white px-6 py-5 text-sm text-muted" data-news-empty>
+          新着情報更新中です。
+        </p>
       </section>
 
       <section class="fade-section bg-white/70">

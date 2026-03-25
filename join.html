@@ -408,15 +408,12 @@
         </div>
         <form
           id="contact-form"
-          action="https://formsubmit.co/okadaicoffeecircle@gmail.com"
+          action="#"
           method="POST"
+          data-gas-endpoint="https://script.google.com/macros/s/AKfycbxN3e0ZHHedESm9F80lDLRFP0O5w4RamLws9LoyRcYuVS2TDyEWlWOVmNAULsfq-dqRVg/exec"
           class="hover-lift mt-8 grid gap-6 rounded-2xl bg-white/80 p-6 shadow md:grid-cols-2"
           novalidate
         >
-          <input type="hidden" name="_subject" value="【入会案内フォーム】新しいお問い合わせ" />
-          <input type="hidden" name="_captcha" value="false" />
-          <input type="hidden" name="_template" value="table" />
-          <input type="hidden" name="_replyto" value="" />
           <div class="md:col-span-1">
             <label class="text-sm font-semibold text-primary" for="name">お名前</label>
             <input
@@ -570,43 +567,88 @@
 
       const form = document.getElementById("contact-form");
       const status = document.getElementById("form-status");
-      const validators = {
-        name: (value) => value.trim().length > 0,
-        email: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-        grade: (value) => value.trim().length > 0,
-        message: (value) => value.trim().length > 0,
-      };
+      if (form && status) {
+        const submitButton = form.querySelector('button[type="submit"]');
+        const validators = {
+          name: (value) => value.trim().length > 0,
+          email: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+          grade: (value) => value.trim().length > 0,
+          message: (value) => value.trim().length > 0,
+        };
 
-      form.addEventListener("submit", (event) => {
-        let isValid = true;
-        Object.keys(validators).forEach((field) => {
-          const input = form.querySelector(`[name="${field}"]`);
-          const error = form.querySelector(`[data-error-for="${field}"]`);
-          const valid = validators[field](input.value);
-          if (!valid) {
-            error.classList.remove("hidden");
-            input.classList.add("border-red-500");
-            isValid = false;
-          } else {
-            error.classList.add("hidden");
-            input.classList.remove("border-red-500");
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          let isValid = true;
+          Object.keys(validators).forEach((field) => {
+            const input = form.querySelector(`[name="${field}"]`);
+            const error = form.querySelector(`[data-error-for="${field}"]`);
+            const valid = validators[field](input.value);
+            if (!valid) {
+              error.classList.remove("hidden");
+              input.classList.add("border-red-500");
+              isValid = false;
+            } else {
+              error.classList.add("hidden");
+              input.classList.remove("border-red-500");
+            }
+          });
+
+          if (!isValid) {
+            status.textContent = "未入力の項目があります。内容をご確認ください。";
+            return;
+          }
+
+          const endpoint = form.dataset.gasEndpoint || "";
+          if (!endpoint) {
+            status.textContent = "フォーム送信先が未設定です。join.html の data-gas-endpoint にGASのURLを設定してください。";
+            return;
+          }
+
+          if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.classList.add("opacity-70", "cursor-not-allowed");
+          }
+          status.textContent = "送信中です...";
+
+          const payload = {
+            name: form.elements["name"].value.trim(),
+            email: form.elements["email"].value.trim(),
+            grade: form.elements["grade"].value.trim(),
+            message: form.elements["message"].value.trim(),
+            source: location.href,
+            submittedAt: new Date().toISOString(),
+          };
+
+          try {
+            const response = await fetch(endpoint, {
+              method: "POST",
+              headers: {
+                "Content-Type": "text/plain;charset=utf-8",
+              },
+              body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            if (!result.ok) {
+              throw new Error(result.error || "送信先でエラーが発生しました。");
+            }
+
+            status.textContent = "送信ありがとうございました。確認後にご連絡します。";
+            form.reset();
+          } catch (error) {
+            status.textContent = "送信に失敗しました。GASの公開設定とCORS設定を確認してください。";
+          } finally {
+            if (submitButton) {
+              submitButton.disabled = false;
+              submitButton.classList.remove("opacity-70", "cursor-not-allowed");
+            }
           }
         });
-
-        if (!isValid) {
-          event.preventDefault();
-          status.textContent = "未入力の項目があります。内容をご確認ください。";
-          return;
-        }
-
-        const replyToInput = form.querySelector('[name="_replyto"]');
-        const emailInput = form.querySelector('[name="email"]');
-        if (replyToInput && emailInput) {
-          replyToInput.value = emailInput.value.trim();
-        }
-
-        status.textContent = "送信中です...";
-      });
+      }
     </script>
   </body>
 </html>

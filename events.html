@@ -157,6 +157,16 @@
         line-height: 1.15;
         max-height: calc(2 * 1.15em);
       }
+      @media (max-width: 640px) {
+        .event-title-text.event-title-nowrap-mobile {
+          display: block;
+          -webkit-line-clamp: 1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-height: none;
+        }
+      }
       @media (min-width: 1024px) {
         .calendar-cell {
           padding: 10px 8px;
@@ -682,9 +692,11 @@
           title: "合同新歓",
           time: "14:00〜18:00",
           location: "フォーティーン（岡山県岡山市北区本町6-36）",
+          mapUrl:
+            "https://www.google.co.jp/maps/place/REST%EF%BC%86EVENT+HALL+%E3%83%95%E3%82%A9%E3%83%BC%E3%83%86%E3%82%A3%E3%83%BC%E3%83%B3/@34.664417,133.8867974,14z/data=!3m1!5s0x3554064c804649c1:0x603dd0512bd55b2d!4m10!1m2!2m1!1z44G144GJ44O844OG44Kj44O844Oz!3m6!1s0x3554064c80768c1d:0x4b852c04876c7d43!8m2!3d34.664422!4d133.919763!15sChXjgbXjgYnjg7zjg4bjgqPjg7zjg7NaGSIX44G1IOOBiSDjg7zjg4bjgqPjg7zjg7OSAQpyZXN0YXVyYW504AEA!16s%2Fg%2F1tl7ljxw?hl=en&entry=ttu&g_ep=EgoyMDI2MDMyMi4wIKXMDSoASAFQAw%3D%3D",
           description: "新入生歓迎の合同イベントです。はじめての方も気軽に参加できます。",
           signup: "参加費無料・当日参加OK・入退室自由",
-          image: "images/coming-soon.svg",
+          image: "images/イベント/フォーティーン.webp",
         },
         {
           date: "2026-04-16",
@@ -692,19 +704,23 @@
           title: "ラテアート・ハンドドリップ体験会",
           time: "18:00〜20:00",
           location: "ツドイバ（岡山県岡山市北区奉還町4丁目12-22 1F）",
+          mapUrl:
+            "https://www.google.co.jp/maps/place/%E3%82%B7%E3%82%A7%E3%82%A2%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97+%E3%83%84%E3%83%89%E3%82%A4%E3%83%90/@34.6688777,133.9087443,17z/data=!3m2!4b1!5s0x35540653970849af:0x7184915536464cdd!4m6!3m5!1s0x355407ed44a439ff:0xc537a63e98cb29be!8m2!3d34.6688777!4d133.9113192!16s%2Fg%2F11rrzpy3v8?hl=en&entry=ttu&g_ep=EgoyMDI2MDMyMi4wIKXMDSoASAFQAw%3D%3D",
           description: "ラテアートとハンドドリップを実際に体験する定例会です。",
           signup: "参加費無料・当日参加OK・入退室自由",
-          image: "images/coming-soon.svg",
+          image: "images/イベント/ツドイバ.webp",
         },
         {
           date: "2026-04-23",
           type: "event",
-          title: "[知るカフェコラボ] ボードゲーム交流会",
+          title: "新入生歓迎会-お菓子party,ボードゲーム交流会-",
           time: "17:30〜19:30",
           location: "知るカフェ 岡山大学前店（岡山県岡山市北区学南町2丁目6-16）",
+          mapUrl:
+            "https://www.google.co.jp/maps/place/%E7%9F%A5%E3%82%8B%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%BB%E5%B2%A1%E5%B1%B1%E5%A4%A7%E5%AD%A6%E5%89%8D%E5%BA%97%EF%BC%BD/@34.6836963,133.9173561,17z/data=!3m1!4b1!4m6!3m5!1s0x355407007ab08957:0x4bb1c538b93efa33!8m2!3d34.6836963!4d133.919931!16s%2Fg%2F11x5c6f3vp?hl=en&entry=ttu&g_ep=EgoyMDI2MDMyMi4wIKXMDSoASAFQAw%3D%3D",
           description: "知るカフェとのコラボ企画で、ボードゲームを通して交流を楽しむイベントです。",
           signup: "参加費無料・当日参加OK・入退室自由",
-          image: "images/coming-soon.svg",
+          image: "images/イベント/知るカフェ.png",
         },
       ];
 
@@ -753,6 +769,9 @@
         const weekday = weekdays[date.getDay()];
         return `${year}年${month}月${day}日（${weekday}）`;
       };
+      const isMobileNoWrapTitle = (title) => title === "ラテアート・ハンドドリップ体験会";
+      const getMobileNoWrapClass = (title) =>
+        isMobileNoWrapTitle(title) ? "overflow-hidden text-ellipsis whitespace-nowrap sm:whitespace-normal" : "";
 
       const closeEventModal = () => {
         const modal = document.getElementById("event-modal");
@@ -784,12 +803,17 @@
             <div class="modal-event-item" style="border-left-color: ${typeInfo.color};">
               <div class="modal-event-header">
                 <span class="modal-event-icon">${typeInfo.icon}</span>
-                <span class="modal-event-title">${event.title}</span>
+                <span class="modal-event-title ${getMobileNoWrapClass(event.title)}">${event.title}</span>
               </div>
               <div class="modal-event-time">📅 ${formatDate(event.date)}${
               event.time ? ` | 🕐 ${event.time}` : ""
             }</div>
               ${event.location ? `<div class="modal-event-time">📍 ${event.location}</div>` : ""}
+              ${
+                event.mapUrl
+                  ? `<div class="modal-event-time"><a href="${event.mapUrl}" target="_blank" rel="noreferrer" class="text-primary underline hover:text-secondary">Googleマップで見る</a></div>`
+                  : ""
+              }
               <div class="modal-event-description">${event.description}</div>
             </div>
           `
@@ -813,10 +837,15 @@
             <div class="modal-event-item" style="border-left-color: ${typeInfo.color};">
               <div class="modal-event-header">
                 <span class="modal-event-icon">${typeInfo.icon}</span>
-                <span class="modal-event-title">${event.title}</span>
+                <span class="modal-event-title ${getMobileNoWrapClass(event.title)}">${event.title}</span>
               </div>
               ${event.time ? `<div class="modal-event-time">🕐 ${event.time}</div>` : ""}
               ${event.location ? `<div class="modal-event-time">📍 ${event.location}</div>` : ""}
+              ${
+                event.mapUrl
+                  ? `<div class="modal-event-time"><a href="${event.mapUrl}" target="_blank" rel="noreferrer" class="text-primary underline hover:text-secondary">Googleマップで見る</a></div>`
+                  : ""
+              }
               <div class="modal-event-description">${event.description}</div>
             </div>
           `;
@@ -850,6 +879,9 @@
           titleBlock.style.backgroundColor = eventTypes[firstEvent.type].color;
           const titleText = document.createElement("span");
           titleText.className = "event-title-text";
+          if (isMobileNoWrapTitle(firstEvent.title)) {
+            titleText.classList.add("event-title-nowrap-mobile");
+          }
           titleText.textContent = firstEvent.title;
           titleBlock.appendChild(titleText);
           cell.appendChild(titleBlock);
@@ -907,7 +939,7 @@
                 alt="イベント情報準備中"
                 loading="lazy"
                 decoding="async"
-                class="h-40 w-full object-cover"
+                class="h-40 w-full object-cover lg:h-56"
               />
             </div>
           `;
@@ -938,7 +970,7 @@
             <div class="flex items-start justify-between">
               <div>
                 <p class="text-lg font-semibold text-primary">${formatDateLabel(date)}</p>
-                <p class="mt-1 text-sm font-semibold text-muted">${event.title}</p>
+                <p class="mt-1 text-sm font-semibold text-muted ${getMobileNoWrapClass(event.title)}">${event.title}</p>
               </div>
               <span class="whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${eventTypes[event.type].badge}">
                 ${eventTypes[event.type].label}
@@ -947,6 +979,11 @@
             <div class="mt-4 space-y-2 text-sm text-muted">
               <p class="flex items-center gap-2"><i class="fa-regular fa-clock" aria-hidden="true"></i>${event.time}</p>
               <p class="flex items-center gap-2"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>${event.location}</p>
+              ${
+                event.mapUrl
+                  ? `<p class="pl-6"><a href="${event.mapUrl}" target="_blank" rel="noreferrer" class="text-primary underline hover:text-secondary">Googleマップで見る</a></p>`
+                  : ""
+              }
             </div>
             <p class="mt-4 text-sm leading-6 text-muted">${event.description}</p>
             <p class="mt-4 text-sm font-semibold text-primary">参加方法：<span class="text-muted">${event.signup}</span></p>
@@ -956,7 +993,7 @@
                 alt="${event.title}のイメージ"
                 loading="lazy"
                 decoding="async"
-                class="h-40 w-full object-cover"
+                class="h-40 w-full object-cover lg:h-56"
                
               />
             </div>
@@ -1001,7 +1038,7 @@
           item.innerHTML = `
             <div>
               <p class="font-semibold text-primary">${formatDateLabel(date)}</p>
-              <p class="text-muted">${event.title}</p>
+              <p class="text-muted ${getMobileNoWrapClass(event.title)}">${event.title}</p>
             </div>
             <span class="whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${eventTypes[event.type].badge}">
               ${eventTypes[event.type].label}

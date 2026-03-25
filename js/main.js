@@ -61,6 +61,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // 新着情報: イベント日から10日以上経過した項目を自動で非表示
+  const newsList = document.querySelector("[data-news-list]");
+  const newsItems = document.querySelectorAll("[data-news-item][data-event-date]");
+  const newsEmpty = document.querySelector("[data-news-empty]");
+  if (newsList && newsItems.length > 0) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let visibleCount = 0;
+    newsItems.forEach((item) => {
+      const rawDate = item.dataset.eventDate || "";
+      const parts = rawDate.split("-").map((value) => Number(value));
+      if (parts.length !== 3 || parts.some((value) => Number.isNaN(value))) {
+        visibleCount += 1;
+        return;
+      }
+
+      const eventDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      eventDate.setHours(0, 0, 0, 0);
+      const diffDays = Math.floor((today.getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24));
+      const isExpired = diffDays >= 10;
+
+      if (isExpired) {
+        item.classList.add("hidden");
+        item.setAttribute("aria-hidden", "true");
+      } else {
+        visibleCount += 1;
+      }
+    });
+
+    if (newsEmpty) {
+      if (visibleCount === 0) {
+        newsEmpty.classList.remove("hidden");
+      } else {
+        newsEmpty.classList.add("hidden");
+      }
+    }
+  }
+
   // 画面内に入ったらフェードイン
   const observer = new IntersectionObserver(
     (entries) => {
