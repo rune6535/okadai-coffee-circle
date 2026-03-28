@@ -738,6 +738,7 @@
       const formatMonth = (date) => `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
       const formatDateLabel = (date) =>
         `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+      const EVENT_DETAILS_VISIBLE_DAYS_AFTER_END = 10;
 
       const toDateKey = (date) => {
         const year = date.getFullYear();
@@ -748,6 +749,23 @@
       const parseDateKey = (dateKey) => {
         const [year, month, day] = dateKey.split("-").map(Number);
         return new Date(year, month - 1, day);
+      };
+      const isVisibleInEventDetails = (event) => {
+        const eventDate = parseDateKey(event.date);
+        const eventEnd = new Date(
+          eventDate.getFullYear(),
+          eventDate.getMonth(),
+          eventDate.getDate(),
+          23,
+          59,
+          59,
+          999
+        );
+        const visibilityLimit = new Date(eventEnd);
+        visibilityLimit.setDate(
+          visibilityLimit.getDate() + EVENT_DETAILS_VISIBLE_DAYS_AFTER_END
+        );
+        return new Date() <= visibilityLimit;
       };
       const getTodayLocalDateKey = () => {
         const today = new Date();
@@ -923,7 +941,9 @@
         eventCards.innerHTML = "";
         const sortedEvents = [...events].sort((a, b) => a.date.localeCompare(b.date));
         const filteredEvents = sortedEvents.filter(
-          (event) => activeFilter === "all" || event.type === activeFilter
+          (event) =>
+            (activeFilter === "all" || event.type === activeFilter) &&
+            isVisibleInEventDetails(event)
         );
         if (filteredEvents.length === 0) {
           const emptyCard = document.createElement("article");

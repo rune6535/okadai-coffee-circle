@@ -61,6 +61,70 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ホームの最終更新日を6ページの最新更新日に合わせて自動表示
+  const lastUpdatedDateEl = document.getElementById("last-updated-date");
+  if (lastUpdatedDateEl) {
+    const trackedPages = [
+      "index.html",
+      "activities.html",
+      "cafe-map.html",
+      "members.html",
+      "events.html",
+      "join.html",
+    ];
+
+    const formatJapaneseDate = (date) =>
+      `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+
+    const parseHeaderDate = (value) => {
+      if (!value) {
+        return null;
+      }
+      const time = Date.parse(value);
+      if (Number.isNaN(time)) {
+        return null;
+      }
+      return new Date(time);
+    };
+
+    const fetchPageLastModified = async (pagePath) => {
+      const url = `${pagePath}?ts=${Date.now()}`;
+      try {
+        const response = await fetch(url, { method: "HEAD", cache: "no-store" });
+        const headerDate =
+          parseHeaderDate(response.headers.get("last-modified")) ||
+          parseHeaderDate(response.headers.get("date"));
+        if (headerDate) {
+          return headerDate;
+        }
+      } catch (error) {
+        // HEADで取得できない環境を考慮してGETで再試行
+      }
+
+      try {
+        const response = await fetch(url, { cache: "no-store" });
+        return (
+          parseHeaderDate(response.headers.get("last-modified")) ||
+          parseHeaderDate(response.headers.get("date"))
+        );
+      } catch (error) {
+        return null;
+      }
+    };
+
+    const updateLastUpdatedDate = async () => {
+      const dates = await Promise.all(trackedPages.map((pagePath) => fetchPageLastModified(pagePath)));
+      const validDates = dates.filter((date) => date instanceof Date);
+      if (!validDates.length) {
+        return;
+      }
+      const latestTime = Math.max(...validDates.map((date) => date.getTime()));
+      lastUpdatedDateEl.textContent = formatJapaneseDate(new Date(latestTime));
+    };
+
+    updateLastUpdatedDate();
+  }
+
   // 新着情報: イベント日から10日以上経過した項目を自動で非表示
   const newsList = document.querySelector("[data-news-list]");
   const newsItems = document.querySelectorAll("[data-news-item][data-event-date]");

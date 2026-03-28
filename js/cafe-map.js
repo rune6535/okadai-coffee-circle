@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wheelPxPerZoomLevel: 80,
       zoomAnimation: true,
       fadeAnimation: true,
-    }).setView(stationCenter, 13.5);
+    }).setView(stationCenter, 14);
 
     L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       attribution:
@@ -961,9 +961,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentCarouselIndex = 0;
   let isCarouselMinimized = false;
   let ignoreCarouselScrollUntil = 0;
-  let isAdjustingInfiniteCarousel = false;
   const AUTO_SCROLL_SPEED = 2000;
   const AUTO_SCROLL_AMOUNT = 300;
+  const ENABLE_AUTO_SCROLL = false;
+  const ENABLE_MOBILE_AUTO_SCROLL = false;
+  const DESKTOP_FULLSCREEN_MIN_ZOOM = 15;
+  const isViewportZoomed = () =>
+    Boolean(window.visualViewport && window.visualViewport.scale > 1.01);
 
   const animateCafeCount = () => {
     if (!cafeCountEl) {
@@ -1201,14 +1205,20 @@ document.addEventListener("DOMContentLoaded", () => {
       if (platform === "pc" && window.innerWidth > 768) {
         startAutoScrollPC(sidebarCafeList);
       }
-      if (platform === "mobile" && window.innerWidth <= 768 && !isCarouselMinimized) {
+      if (
+        platform === "mobile" &&
+        ENABLE_MOBILE_AUTO_SCROLL &&
+        window.innerWidth <= 768 &&
+        !isCarouselMinimized &&
+        !isViewportZoomed()
+      ) {
         startAutoScrollMobile();
       }
     }, delay);
   };
 
   const startAutoScrollPC = (list) => {
-    if (!list || autoScrollInterval) {
+    if (!ENABLE_AUTO_SCROLL || !list || autoScrollInterval) {
       return;
     }
     autoScrollInterval = setInterval(() => {
@@ -1223,10 +1233,18 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const startAutoScrollMobile = () => {
-    if (!bottomCarousel || !carouselTrack || autoScrollInterval || isCarouselMinimized) {
+    if (
+      !ENABLE_AUTO_SCROLL ||
+      !ENABLE_MOBILE_AUTO_SCROLL ||
+      !bottomCarousel ||
+      !carouselTrack ||
+      autoScrollInterval ||
+      isCarouselMinimized ||
+      isViewportZoomed()
+    ) {
       return;
     }
-    const totalCards = carouselTrack.querySelectorAll(".cafe-card:not(.clone)").length;
+    const totalCards = carouselTrack.querySelectorAll(".cafe-card").length;
     if (!totalCards) {
       return;
     }
@@ -1235,10 +1253,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const itemWidth = cardWidth + gap;
     autoScrollInterval = setInterval(() => {
       const currentScroll = bottomCarousel.scrollLeft;
+      const maxScroll = bottomCarousel.scrollWidth - bottomCarousel.clientWidth;
+      if (maxScroll <= 0) {
+        return;
+      }
+      const nextScroll = currentScroll + itemWidth >= maxScroll - itemWidth / 2 ? 0 : currentScroll + itemWidth;
       // 自動スクロール由来のscrollイベントをユーザー操作として扱わない
       ignoreCarouselScrollUntil = Date.now() + 700;
       bottomCarousel.scrollTo({
-        left: currentScroll + itemWidth,
+        left: nextScroll,
         behavior: "smooth",
       });
     }, AUTO_SCROLL_SPEED);
@@ -1290,61 +1313,19 @@ document.addEventListener("DOMContentLoaded", () => {
     openCafeFromFullscreenList(cafe.id);
   };
 
-  const handleInfiniteScroll = () => {
-    if (!bottomCarousel || !carouselTrack || isAdjustingInfiniteCarousel) {
-      return;
-    }
-    const cardWidth = 148;
-    const gap = 12;
-    const itemWidth = cardWidth + gap;
-    const totalCards = carouselTrack.querySelectorAll(".cafe-card:not(.clone)").length;
-    if (!totalCards) {
-      return;
-    }
-    const blockWidth = itemWidth * totalCards;
-    const scrollLeft = bottomCarousel.scrollLeft;
-    if (scrollLeft < blockWidth) {
-      isAdjustingInfiniteCarousel = true;
-      bottomCarousel.scrollLeft = scrollLeft + blockWidth;
-      requestAnimationFrame(() => {
-        isAdjustingInfiniteCarousel = false;
-      });
-    } else if (scrollLeft >= blockWidth * 2) {
-      isAdjustingInfiniteCarousel = true;
-      bottomCarousel.scrollLeft = scrollLeft - blockWidth;
-      requestAnimationFrame(() => {
-        isAdjustingInfiniteCarousel = false;
-      });
-    }
-  };
-
-  const initInfiniteCarousel = (list) => {
+  const initCarousel = (list) => {
     if (!carouselTrack || !bottomCarousel) {
       return;
     }
     carouselTrack.innerHTML = "";
     if (!list.length) {
+      bottomCarousel.scrollLeft = 0;
       return;
     }
-    // 前後に全件複製して3ブロック化し、左右どちらでもシームレスに循環させる
-    list.forEach((cafe) => {
-      const clonedCard = createCarouselCafeCard(cafe);
-      clonedCard.classList.add("clone");
-      carouselTrack.appendChild(clonedCard);
-    });
     list.forEach((cafe) => {
       carouselTrack.appendChild(createCarouselCafeCard(cafe));
     });
-    list.forEach((cafe) => {
-      const clonedCard = createCarouselCafeCard(cafe);
-      clonedCard.classList.add("clone");
-      carouselTrack.appendChild(clonedCard);
-    });
-    const cardWidth = 148;
-    const gap = 12;
-    bottomCarousel.scrollLeft = (cardWidth + gap) * list.length;
-    bottomCarousel.removeEventListener("scroll", handleInfiniteScroll);
-    bottomCarousel.addEventListener("scroll", handleInfiniteScroll);
+    bottomCarousel.scrollLeft = 0;
   };
 
   const renderSidebarList = (list) => {
@@ -1363,7 +1344,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     currentCarouselIndex = 0;
-    initInfiniteCarousel(list);
+    initCarousel(list);
   };
 
   const updateFullscreenLists = (list) => {
@@ -1983,6 +1964,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
       map.invalidateSize();
+      if (window.innerWidth > 768) {
+        const currentZoom = map.getZoom();
+        if (currentZoom < DESKTOP_FULLSCREEN_MIN_ZOOM) {
+          map.setView(map.getCenter(), DESKTOP_FULLSCREEN_MIN_ZOOM, {
+            animate: true,
+            duration: 0.35,
+          });
+        }
+      }
     }, 100);
   };
 
@@ -2091,10 +2081,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let scrollTimeout;
     bottomCarousel.addEventListener("scroll", (event) => {
-      if (Date.now() < ignoreCarouselScrollUntil || isAdjustingInfiniteCarousel) {
+      const maxScrollLeft = Math.max(0, bottomCarousel.scrollWidth - bottomCarousel.clientWidth);
+      if (bottomCarousel.scrollLeft < 0) {
+        bottomCarousel.scrollLeft = 0;
+      } else if (bottomCarousel.scrollLeft > maxScrollLeft) {
+        bottomCarousel.scrollLeft = maxScrollLeft;
+      }
+      if (Date.now() < ignoreCarouselScrollUntil) {
         return;
       }
       if (!event.isTrusted) {
+        return;
+      }
+      if (isViewportZoomed()) {
+        stopAutoScroll();
         return;
       }
       if (isMapFullscreen && window.innerWidth <= 768) {
@@ -2109,12 +2109,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const cardWidth = 148;
         const gapValue = 12;
         const itemWidth = cardWidth + gapValue;
-        const totalCards = carouselTrack.querySelectorAll(".cafe-card:not(.clone)").length;
+        const totalCards = carouselTrack.querySelectorAll(".cafe-card").length;
         if (!totalCards) {
           return;
         }
-        const rawIndex = Math.round(bottomCarousel.scrollLeft / itemWidth) - totalCards;
-        currentCarouselIndex = ((rawIndex % totalCards) + totalCards) % totalCards;
+        const rawIndex = Math.round(bottomCarousel.scrollLeft / itemWidth);
+        currentCarouselIndex = Math.max(0, Math.min(totalCards - 1, rawIndex));
       }, 100);
     });
   }
@@ -2164,13 +2164,27 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       renderCarousel(currentFiltered);
       if (!isCarouselMinimized) {
-        startAutoScrollMobile();
+        if (!isViewportZoomed()) {
+          startAutoScrollMobile();
+        }
       }
     }
     setTimeout(() => {
       map.invalidateSize();
     }, 200);
   });
+
+  if (window.visualViewport) {
+    const handleViewportZoomChange = () => {
+      if (isViewportZoomed()) {
+        stopAutoScroll();
+      } else if (isMapFullscreen && window.innerWidth <= 768 && !isCarouselMinimized) {
+        scheduleAutoScrollResume("mobile", 500);
+      }
+    };
+    window.visualViewport.addEventListener("resize", handleViewportZoomChange);
+    window.visualViewport.addEventListener("scroll", handleViewportZoomChange);
+  }
 
   let userLocationMarker = null;
   let userLocationCircle = null;

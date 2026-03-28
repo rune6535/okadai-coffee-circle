@@ -600,6 +600,19 @@
         background: white;
       }
 
+      @media (min-width: 769px) {
+        .fullscreen-sidebar .photo-emphasized .cafe-card {
+          width: 84%;
+          max-width: none;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .fullscreen-sidebar .photo-emphasized .cafe-card-image {
+          height: 360px;
+        }
+      }
+
       .photo-emphasized .cafe-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
@@ -748,6 +761,8 @@
         -ms-overflow-style: none;
         scroll-behavior: smooth;
         scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        touch-action: pan-x;
       }
 
       .bottom-cafe-carousel::-webkit-scrollbar {
@@ -2008,6 +2023,21 @@
       .location-label-marker {
         border: none !important;
         background: transparent !important;
+      }
+
+      @media (min-width: 769px) {
+        .map-section.fullscreen .custom-cafe-marker i {
+          font-size: 50px;
+        }
+
+        .map-section.fullscreen .marker-label {
+          bottom: 58px;
+          font-size: 16px;
+        }
+
+        .map-section.fullscreen .location-label {
+          font-size: 16px;
+        }
       }
 
       .cafe-popup-persistent .leaflet-popup-content-wrapper {
